@@ -1,0 +1,431 @@
+<style>
+  body.page-id-103 .page-header {
+    display: none !important;
+  }
+
+  .ewc-membership-v2 {
+    --ewc-bg: #06080d;
+    --ewc-surface: rgba(255, 255, 255, 0.05);
+    --ewc-border: rgba(255, 255, 255, 0.12);
+    --ewc-text: #f5f7fb;
+    --ewc-muted: #9fa9bc;
+    --ewc-soft: #dde5f4;
+    --ewc-accent: #8ab6ff;
+    --ewc-accent-2: #6bf1d3;
+    background:
+      radial-gradient(circle at top left, rgba(68, 98, 255, 0.2), transparent 28%),
+      radial-gradient(circle at top right, rgba(59, 191, 255, 0.16), transparent 24%),
+      linear-gradient(180deg, #070a10 0%, #05070b 100%);
+    color: var(--ewc-text);
+    width: 100vw;
+    margin: 0 0 0 calc(50% - 50vw);
+    overflow: hidden;
+  }
+
+  .ewc-membership-v2,
+  .ewc-membership-v2 * {
+    box-sizing: border-box;
+  }
+
+  .ewc-membership-v2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ewc-membership-shell {
+    width: min(1160px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+
+  .ewc-membership-section {
+    padding: 88px 0;
+  }
+
+  .ewc-membership-eyebrow,
+  .ewc-membership-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--ewc-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ewc-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ewc-membership-hero .ewc-membership-eyebrow,
+  .ewc-membership-final .ewc-membership-eyebrow {
+    border-color: rgba(107, 241, 211, 0.22);
+    background: rgba(107, 241, 211, 0.08);
+    color: #cff8ef;
+  }
+
+  .ewc-membership-hero {
+    padding: 104px 0 72px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+    gap: 24px;
+    align-items: end;
+  }
+
+  .ewc-membership-hero h1,
+  .ewc-membership-section h2,
+  .ewc-membership-card h3 {
+    margin: 0;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    color: var(--ewc-text);
+  }
+
+  .ewc-membership-hero h1 {
+    margin-top: 24px;
+    font-size: clamp(46px, 7vw, 80px);
+    max-width: 11ch;
+  }
+
+  .ewc-membership-lead,
+  .ewc-membership-section p,
+  .ewc-membership-card p {
+    margin: 0;
+    color: var(--ewc-muted);
+    line-height: 1.7;
+  }
+
+  .ewc-membership-lead {
+    margin-top: 22px;
+    max-width: 58ch;
+    font-size: 19px;
+  }
+
+  .ewc-membership-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+  }
+
+  .ewc-membership-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 15px;
+    font-weight: 700;
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .ewc-membership-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .ewc-membership-button-primary {
+    background: linear-gradient(135deg, #f8fbff 0%, #b8d6ff 100%);
+    color: #05070b;
+    box-shadow: 0 18px 40px rgba(132, 181, 255, 0.2);
+  }
+
+  .ewc-membership-button-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--ewc-border);
+    color: var(--ewc-text);
+  }
+
+  .ewc-membership-proof,
+  .ewc-membership-pricing,
+  .ewc-membership-grid,
+  .ewc-membership-faq {
+    display: grid;
+    gap: 18px;
+  }
+
+  .ewc-membership-proof {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ewc-membership-proof-card,
+  .ewc-membership-card,
+  .ewc-membership-faq details,
+  .ewc-membership-final {
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px);
+  }
+
+  .ewc-membership-proof-card,
+  .ewc-membership-card,
+  .ewc-membership-final {
+    padding: 28px;
+  }
+
+  .ewc-membership-proof-card strong {
+    display: block;
+    font-size: clamp(30px, 4vw, 46px);
+    letter-spacing: -0.05em;
+  }
+
+  .ewc-membership-proof-card span {
+    display: block;
+    margin-top: 10px;
+    color: var(--ewc-muted);
+  }
+
+  .ewc-membership-section-head {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+
+  .ewc-membership-section-head h2 {
+    font-size: clamp(34px, 5vw, 54px);
+    max-width: 12ch;
+  }
+
+  .ewc-membership-pricing {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ewc-membership-card h3 {
+    font-size: 30px;
+  }
+
+  .ewc-membership-price {
+    display: block;
+    margin-top: 18px;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .ewc-membership-note {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .ewc-membership-list {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  .ewc-membership-list li {
+    color: var(--ewc-soft);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  .ewc-membership-list span {
+    color: var(--ewc-muted);
+  }
+
+  .ewc-membership-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ewc-membership-faq details {
+    padding: 22px 24px;
+  }
+
+  .ewc-membership-faq summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ewc-text);
+  }
+
+  .ewc-membership-faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ewc-membership-faq p {
+    margin-top: 14px;
+  }
+
+  .ewc-membership-final {
+    display: grid;
+    gap: 16px;
+    margin-top: 26px;
+  }
+
+  .ewc-membership-final h2 {
+    font-size: clamp(30px, 4vw, 44px);
+  }
+
+  @media (max-width: 920px) {
+    .ewc-membership-hero,
+    .ewc-membership-proof,
+    .ewc-membership-pricing,
+    .ewc-membership-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ewc-membership-section {
+      padding: 72px 0;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ewc-membership-shell {
+      width: min(100%, calc(100% - 24px));
+    }
+
+    .ewc-membership-proof-card,
+    .ewc-membership-card,
+    .ewc-membership-final,
+    .ewc-membership-faq details {
+      padding: 24px 20px;
+    }
+  }
+</style>
+
+<div class="ewc-membership-v2">
+  <section class="ewc-membership-shell ewc-membership-hero">
+    <div>
+      <span class="ewc-membership-eyebrow">Elliott Wave Club Membership</span>
+      <h1>Choose the access path that fits how you trade.</h1>
+      <p class="ewc-membership-lead">
+        Elliott Wave Club is a premium trading research and education membership with two
+        clear entry points: Free for low-friction access and Elite for the full daily process.
+      </p>
+      <div class="ewc-membership-actions">
+        <a class="ewc-membership-button ewc-membership-button-primary" href="https://whop.com/checkout/1x5V3IH7AxpTASVp17-j4oY-pbEJ-1zcl-59BtejJjOvV0/" target="_blank" rel="noopener noreferrer">Join Free</a>
+        <a class="ewc-membership-button ewc-membership-button-secondary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+      </div>
+    </div>
+    <div class="ewc-membership-proof">
+      <div class="ewc-membership-proof-card">
+        <strong>1,400+</strong>
+        <span>Total members across the ecosystem.</span>
+      </div>
+      <div class="ewc-membership-proof-card">
+        <strong>4.75 / 5</strong>
+        <span>Public review score shown on Whop.</span>
+      </div>
+      <div class="ewc-membership-proof-card">
+        <strong>Discord + Archive</strong>
+        <span>Community access plus structured case-study proof.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-membership-shell ewc-membership-section">
+    <div class="ewc-membership-section-head">
+      <h2>Free vs Elite.</h2>
+      <p>
+        Keep the choice simple. Free gets someone into the ecosystem. Elite unlocks the full
+        research, education, archive, and premium community layer.
+      </p>
+    </div>
+    <div class="ewc-membership-pricing">
+      <article class="ewc-membership-card">
+        <span class="ewc-membership-eyebrow">Free</span>
+        <h3>Start with the public side of the brand.</h3>
+        <span class="ewc-membership-price">Free</span>
+        <p>Best for newer visitors who want context first and a low-friction way to enter the community.</p>
+        <ul class="ewc-membership-list">
+          <li><strong>Access:</strong> <span>Entry path into the community and analysis style.</span></li>
+          <li><strong>Use case:</strong> <span>See how the framework is presented before upgrading.</span></li>
+          <li><strong>Best for:</strong> <span>New visitors and traders who want to warm up to the ecosystem.</span></li>
+        </ul>
+        <div class="ewc-membership-actions">
+          <a class="ewc-membership-button ewc-membership-button-primary" href="https://whop.com/checkout/1x5V3IH7AxpTASVp17-j4oY-pbEJ-1zcl-59BtejJjOvV0/" target="_blank" rel="noopener noreferrer">Join Free</a>
+        </div>
+      </article>
+      <article class="ewc-membership-card">
+        <span class="ewc-membership-eyebrow">Elite</span>
+        <h3>The full daily research and education flow.</h3>
+        <span class="ewc-membership-price">$99<span style="font-size: 18px; color: var(--ewc-muted);"> / month</span></span>
+        <p>Built for traders who want the complete process: planning, setups, education, archive access, and the premium community.</p>
+        <ul class="ewc-membership-list">
+          <li><strong>Included:</strong> <span>Daily market plans, swing trade setups, education, archive, premium Discord.</span></li>
+          <li><strong>Positioning:</strong> <span>For traders who want structured context and the complete member experience.</span></li>
+          <li><strong>Checkout:</strong> <span>Handled on Whop using the live offer path.</span></li>
+        </ul>
+        <div class="ewc-membership-actions">
+          <a class="ewc-membership-button ewc-membership-button-primary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+        </div>
+        <p class="ewc-membership-note">Pricing shown here matches the current public Whop offer.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="ewc-membership-shell ewc-membership-section">
+    <div class="ewc-membership-section-head">
+      <h2>What Elite includes.</h2>
+      <p>
+        These are the core reasons traders upgrade into the full membership.
+      </p>
+    </div>
+    <div class="ewc-membership-grid">
+      <article class="ewc-membership-card">
+        <span class="ewc-membership-pill">Daily plans</span>
+        <h3>Structured market prep</h3>
+        <p>SPX, ES, and NQ context with the levels, scenarios, and structure that matter most.</p>
+      </article>
+      <article class="ewc-membership-card">
+        <span class="ewc-membership-pill">Swing setups</span>
+        <h3>Thesis + invalidation</h3>
+        <p>Ideas framed around structure, risk, invalidation, and target path instead of random alerts.</p>
+      </article>
+      <article class="ewc-membership-card">
+        <span class="ewc-membership-pill">Education</span>
+        <h3>Cleaner learning curve</h3>
+        <p>Focused Elliott Wave education designed to make the framework more usable for real traders.</p>
+      </article>
+      <article class="ewc-membership-card">
+        <span class="ewc-membership-pill">Archive</span>
+        <h3>Resolved proof</h3>
+        <p>Case studies and archived setups that show how the process behaved after the market resolved.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="ewc-membership-shell ewc-membership-section">
+    <div class="ewc-membership-section-head">
+      <h2>Questions before joining.</h2>
+      <p>Short answers to the biggest objections.</p>
+    </div>
+    <div class="ewc-membership-faq">
+      <details>
+        <summary>Is this an alert service?</summary>
+        <p>No. Elliott Wave Club is a research and education membership. Members get context and setups they can use to build their own plan.</p>
+      </details>
+      <details>
+        <summary>Can newer traders use it?</summary>
+        <p>Yes. The education layer is designed to shorten the Elliott Wave learning curve and make the framework more usable for newer traders.</p>
+      </details>
+      <details>
+        <summary>What makes Elite different from Free?</summary>
+        <p>Free is the entry path into the ecosystem. Elite adds the full daily plans, swing setups, archive, education, and premium Discord experience.</p>
+      </details>
+      <details>
+        <summary>Is this financial advice?</summary>
+        <p>No. The membership is educational and research-focused. Every trader is responsible for their own execution, risk, and position sizing.</p>
+      </details>
+    </div>
+
+    <div class="ewc-membership-final">
+      <span class="ewc-membership-eyebrow">Trust</span>
+      <h2>Educational research. Real risk.</h2>
+      <p>
+        Elliott Wave Club exists to help traders think more clearly about market structure. Past
+        case studies show process, not guaranteed outcomes. Personal judgment and risk management still matter.
+      </p>
+      <div class="ewc-membership-actions">
+        <a class="ewc-membership-button ewc-membership-button-secondary" href="https://test.elliottwaveclub.com/previous-projections/">View Case Studies</a>
+        <a class="ewc-membership-button ewc-membership-button-primary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+      </div>
+    </div>
+  </section>
+</div>

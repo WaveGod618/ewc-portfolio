@@ -1,0 +1,169 @@
+<svg width="1600" height="1236" viewBox="0 0 1600 1236" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="800" y1="0" x2="800" y2="1236" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#171A1E"/>
+      <stop offset="1" stop-color="#101214"/>
+    </linearGradient>
+    <radialGradient id="aquaGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 90) rotate(39.8) scale(615.38 352.17)">
+      <stop stop-color="#5DCAB9" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#5DCAB9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="goldGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1330 84) rotate(144.7) scale(397.44 231.12)">
+      <stop stop-color="#D7BD8B" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#D7BD8B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="card" x1="800" y1="188" x2="800" y2="1116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.03"/>
+    </linearGradient>
+    <linearGradient id="summaryCard" x1="248" y1="242" x2="1352" y2="442" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24342F"/>
+      <stop offset="0.42" stop-color="#1A2125"/>
+      <stop offset="1" stop-color="#202326"/>
+    </linearGradient>
+    <linearGradient id="lineFade" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-40" y="-40" width="1680" height="1316" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="34" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1236" fill="url(#bg)"/>
+  <rect width="1600" height="1236" fill="url(#aquaGlow)"/>
+  <rect width="1600" height="1236" fill="url(#goldGlow)"/>
+
+  <g opacity="0.18">
+    <path d="M0 116H1600" stroke="white" stroke-opacity="0.06"/>
+    <path d="M0 284H1600" stroke="white" stroke-opacity="0.04"/>
+    <path d="M0 452H1600" stroke="white" stroke-opacity="0.04"/>
+    <path d="M0 620H1600" stroke="white" stroke-opacity="0.04"/>
+    <path d="M0 788H1600" stroke="white" stroke-opacity="0.04"/>
+    <path d="M0 956H1600" stroke="white" stroke-opacity="0.04"/>
+    <path d="M0 1124H1600" stroke="white" stroke-opacity="0.04"/>
+    <path d="M180 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M380 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M580 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M780 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M980 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M1180 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M1380 0V1236" stroke="white" stroke-opacity="0.03"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="28" y="20" width="1544" height="1196" rx="30" fill="rgba(255,255,255,0.01)" stroke="rgba(255,255,255,0.06)"/>
+  </g>
+
+  <g id="Header">
+    <rect x="58" y="44" width="54" height="54" rx="16" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.10)"/>
+    <text x="85" y="78" text-anchor="middle" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="3">EWC</text>
+
+    <text x="126" y="57" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="500" letter-spacing="3.2">CLIENT RESEARCH NOTE</text>
+    <text x="126" y="86" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="31" font-weight="600">Elliott Wave Club</text>
+
+    <g transform="translate(58 120)">
+      <rect width="86" height="34" rx="17" fill="rgba(93,202,185,0.10)" stroke="rgba(93,202,185,0.20)"/>
+      <text x="43" y="22" text-anchor="middle" fill="#5DCAB9" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="2.2">PAIR</text>
+    </g>
+    <g transform="translate(152 120)">
+      <rect width="138" height="34" rx="17" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)"/>
+      <text x="69" y="22" text-anchor="middle" fill="#D7DDE3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="2.2">TIMEFRAME NOTE</text>
+    </g>
+    <g transform="translate(298 120)">
+      <rect width="132" height="34" rx="17" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)"/>
+      <text x="66" y="22" text-anchor="middle" fill="#D7DDE3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="2.2">PAGE 01 OF 03</text>
+    </g>
+
+    <text x="58" y="204" fill="#D7BD8B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="4.2">MACRO TECHNICAL BRIEF</text>
+    <text x="58" y="252" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="58" font-weight="650">Client Note Title Placeholder</text>
+    <text x="58" y="294" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="25" font-weight="400">Executive summary, structure, levels, and invalidation framework.</text>
+    <text x="58" y="350" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="500" letter-spacing="3.4">DATE PLACEHOLDER</text>
+
+    <g transform="translate(1246 58)">
+      <text x="296" y="0" text-anchor="end" dominant-baseline="hanging" fill="#8F98A2" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="500" letter-spacing="3.2">REUSABLE FIGMA TEMPLATE</text>
+      <text x="296" y="34" text-anchor="end" dominant-baseline="hanging" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="600">Premium client note deck</text>
+    </g>
+  </g>
+
+  <g id="Executive-Summary">
+    <rect x="58" y="384" width="1484" height="210" rx="30" fill="url(#summaryCard)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="84" y="420" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.4">EXECUTIVE SUMMARY</text>
+    <text x="84" y="478" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="500">Use this card for the highest-conviction top-down call.</text>
+    <text x="84" y="524" fill="#D7DDE3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="22" font-weight="400">Keep the language concise. This block should summarize the dominant scenario, target zone, and key risk point.</text>
+
+    <g transform="translate(84 546)">
+      <rect width="438" height="34" rx="17" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+      <text x="22" y="22" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="600" letter-spacing="2.2">BASE CASE</text>
+      <text x="132" y="22" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="500">Primary directional thesis</text>
+    </g>
+    <g transform="translate(536 546)">
+      <rect width="438" height="34" rx="17" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+      <text x="22" y="22" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="600" letter-spacing="2.2">MAIN TARGET</text>
+      <text x="140" y="22" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="500">Key destination or support zone</text>
+    </g>
+    <g transform="translate(988 546)">
+      <rect width="470" height="34" rx="17" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+      <text x="22" y="22" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="600" letter-spacing="2.2">RISK POINT</text>
+      <text x="132" y="22" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="500">Level that invalidates the active view</text>
+    </g>
+  </g>
+
+  <g id="Macro-Weekly-Cards">
+    <rect x="58" y="620" width="732" height="178" rx="28" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="84" y="656" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.4">MACRO VIEW</text>
+    <text x="84" y="700" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600">Macro structure header</text>
+    <text x="84" y="742" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="20" font-weight="400">Use this card for the yearly narrative, target logic, and broader wave context.</text>
+
+    <rect x="810" y="620" width="732" height="178" rx="28" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="836" y="656" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.4">WEEKLY STRUCTURE</text>
+    <text x="836" y="700" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600">Weekly structure header</text>
+    <text x="836" y="742" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Use this card for active count and corrective behavior.</text>
+  </g>
+
+  <g id="Key-Levels">
+    <rect x="58" y="824" width="366" height="146" rx="26" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="84" y="824" width="230" height="3" rx="1.5" fill="#E06F6A"/>
+    <text x="84" y="862" fill="#E06F6A" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="600" letter-spacing="3">BEARISH INVALIDATION</text>
+    <text x="84" y="914" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="40" font-weight="650">0.0000</text>
+    <text x="84" y="946" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Short descriptor for invalidation logic.</text>
+
+    <rect x="450" y="824" width="366" height="146" rx="26" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="476" y="824" width="230" height="3" rx="1.5" fill="#D7BD8B"/>
+    <text x="476" y="862" fill="#D7BD8B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="600" letter-spacing="3">WEEKLY RESISTANCE 1</text>
+    <text x="476" y="914" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="40" font-weight="650">0.0000 - 0.0000</text>
+    <text x="476" y="946" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Use for the first corrective rejection zone.</text>
+
+    <rect x="842" y="824" width="366" height="146" rx="26" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="868" y="824" width="230" height="3" rx="1.5" fill="#D7BD8B"/>
+    <text x="868" y="862" fill="#D7BD8B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="600" letter-spacing="3">WEEKLY RESISTANCE 2</text>
+    <text x="868" y="914" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="40" font-weight="650">0.0000 - 0.0000</text>
+    <text x="868" y="946" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Use for the secondary rejection zone.</text>
+
+    <rect x="1234" y="824" width="308" height="146" rx="26" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="1260" y="824" width="200" height="3" rx="1.5" fill="#5DCAB9"/>
+    <text x="1260" y="862" fill="#5DCAB9" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="600" letter-spacing="3">MAIN TARGET</text>
+    <text x="1260" y="914" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="36" font-weight="650">0.0000 - 0.0000</text>
+    <text x="1260" y="946" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="400">Use for the primary support or target zone.</text>
+  </g>
+
+  <g id="Bottom-Line">
+    <rect x="58" y="996" width="1484" height="166" rx="30" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="84" y="1034" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.4">INVALIDATION</text>
+    <text x="84" y="1080" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="26" font-weight="600">State what would invalidate the active view.</text>
+    <text x="84" y="1115" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Keep this concise and operational.</text>
+
+    <rect x="792" y="1020" width="1" height="112" fill="rgba(255,255,255,0.10)"/>
+
+    <text x="826" y="1034" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.4">BOTTOM LINE</text>
+    <text x="826" y="1080" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="600">Final analyst takeaway.</text>
+    <text x="826" y="1115" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Keep this clean, direct, and client-facing.</text>
+  </g>
+
+  <g id="Footer">
+    <rect x="58" y="1184" width="1484" height="1" fill="url(#lineFade)"/>
+    <text x="58" y="1208" fill="#8F98A2" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="500" letter-spacing="3.2">PREPARED BY ELLIOTT WAVE CLUB</text>
+    <text x="1542" y="1208" text-anchor="end" fill="#C8D0D8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="500">Summary page template</text>
+  </g>
+</svg>

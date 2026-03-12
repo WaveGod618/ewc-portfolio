@@ -1,0 +1,404 @@
+// This Pine Script code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=6
+indicator("SMT -> iFVG Prototype [EWC]", shorttitle="SMTv1", overlay=true, max_lines_count=500, max_boxes_count=500, max_labels_count=500)
+
+// --- Colors ---
+COLOR_BULL = #089981
+COLOR_BEAR = #f23645
+COLOR_INFO = #4da3ff
+
+// --- Types ---
+type Pivot
+    int index
+    float price
+    bool isHigh
+
+type Setup
+    int id
+    bool isBearish
+    int smtBar
+    int expiryBar
+    float targetPrice
+    string refName
+    line smtLine
+    label smtLabel
+
+type PendingFvg
+    int setupId
+    bool isBearishSignal
+    int startBar
+    float top
+    float bottom
+    float triggerOpen
+    float targetPrice
+    box gapBox
+
+// --- Inputs ---
+grp_main = "1. Core Logic"
+compSymbol = input.symbol("CME_MINI:NQ1!", "Comparison Symbol", group=grp_main)
+pivotLookback = input.int(2, "Swing Pivot Length", minval=1, group=grp_main)
+pivotTolerance = input.int(3, "Pivot Pairing Tolerance", minval=0, maxval=10, group=grp_main)
+sweepMemory = input.int(20, "Bars Between Sweep And SMT", minval=1, group=grp_main)
+smtMemory = input.int(20, "Bars Between SMT And FVG", minval=1, group=grp_main)
+fvgExpiry = input.int(15, "Bars To Trigger Pending iFVG", minval=1, group=grp_main)
+rrRatio = input.float(2.0, "Target R:R", minval=0.5, step=0.5, group=grp_main)
+slBufferTicks = input.float(2.0, "Stop Buffer (Ticks)", minval=0, group=grp_main)
+
+grp_refs = "2. Reference Filters"
+useSwingSweeps = input.bool(true, "Use Swing Sweeps", group=grp_refs)
+useAsia = input.bool(true, "Use Asia High/Low", group=grp_refs)
+asiaSession = input.session("1800-0000", "Asia Session", group=grp_refs)
+useLondon = input.bool(true, "Use London High/Low", group=grp_refs)
+londonSession = input.session("0200-0500", "London Session", group=grp_refs)
+usePrevDay = input.bool(true, "Use Prior Day High/Low", group=grp_refs)
+usePrevWeek = input.bool(false, "Use Prior Week High/Low", group=grp_refs)
+usePrevMonth = input.bool(false, "Use Prior Month High/Low", group=grp_refs)
+
+grp_vis = "3. Visuals"
+showReferenceLevels = input.bool(true, "Plot Reference Levels", group=grp_vis)
+showSwingMarkers = input.bool(false, "Plot Swing Pivots", group=grp_vis)
+showSweepMarkers = input.bool(true, "Plot Sweep Markers", group=grp_vis)
+showSmtMarkers = input.bool(true, "Plot SMT Markers", group=grp_vis)
+showPendingFvgs = input.bool(true, "Plot Pending FVG", group=grp_vis)
+showTargets = input.bool(true, "Plot Target Line", group=grp_vis)
+
+// --- State ---
+var chartHighs = array.new<Pivot>()
+var chartLows = array.new<Pivot>()
+var compHighs = array.new<Pivot>()
+var compLows = array.new<Pivot>()
+var setups = array.new<Setup>()
+var pendingFvgs = array.new<PendingFvg>()
+
+var float asiaHighLive = na
+var float asiaLowLive = na
+var float asiaHigh = na
+var float asiaLow = na
+
+var float londonHighLive = na
+var float londonLowLive = na
+var float londonHigh = na
+var float londonLow = na
+
+var int lastBearSweepBar = na
+var float lastBearSweepPrice = na
+var string lastBearSweepRef = ""
+
+var int lastBullSweepBar = na
+var float lastBullSweepPrice = na
+var string lastBullSweepRef = ""
+
+// --- Functions ---
+method updatePivots(array<Pivot> pivots, float price, bool isHigh) =>
+    if not na(price)
+        array.unshift(pivots, Pivot.new(bar_index[pivotLookback], price, isHigh))
+        if array.size(pivots) > 50
+            array.pop(pivots)
+
+get_ohlc() =>
+    [open, high, low, close]
+
+findMatchingPivot(array<Pivot> pivots, int targetIndex, int tolerance) =>
+    Pivot result = na
+    if array.size(pivots) > 0
+        int bestDistance = 1000000
+        for i = 0 to array.size(pivots) - 1
+            Pivot p = array.get(pivots, i)
+            int distance = math.abs(p.index - targetIndex)
+            if distance <= tolerance and distance < bestDistance
+                bestDistance := distance
+                result := p
+    result
+
+setupExists(int setupId) =>
+    bool exists = false
+    if array.size(setups) > 0
+        for i = 0 to array.size(setups) - 1
+            if array.get(setups, i).id == setupId
+                exists := true
+                break
+    exists
+
+pendingExistsForSetup(int setupId) =>
+    bool exists = false
+    if array.size(pendingFvgs) > 0
+        for i = 0 to array.size(pendingFvgs) - 1
+            if array.get(pendingFvgs, i).setupId == setupId
+                exists := true
+                break
+    exists
+
+findActiveSetup(bool wantBearish) =>
+    Setup result = na
+    if array.size(setups) > 0
+        for i = 0 to array.size(setups) - 1
+            Setup s = array.get(setups, i)
+            if s.isBearish == wantBearish and not pendingExistsForSetup(s.id)
+                result := s
+                break
+    result
+
+// --- Correlated Data ---
+[compOpen, compHigh, compLow, compClose] = request.security(compSymbol, timeframe.period, get_ohlc())
+
+// --- Session Reference Levels ---
+bool inAsia = not na(time(timeframe.period, asiaSession))
+bool inLondon = not na(time(timeframe.period, londonSession))
+
+if inAsia and not inAsia[1]
+    asiaHighLive := high
+    asiaLowLive := low
+else if inAsia
+    asiaHighLive := math.max(asiaHighLive, high)
+    asiaLowLive := math.min(asiaLowLive, low)
+else if not inAsia and inAsia[1]
+    asiaHigh := asiaHighLive
+    asiaLow := asiaLowLive
+
+if inLondon and not inLondon[1]
+    londonHighLive := high
+    londonLowLive := low
+else if inLondon
+    londonHighLive := math.max(londonHighLive, high)
+    londonLowLive := math.min(londonLowLive, low)
+else if not inLondon and inLondon[1]
+    londonHigh := londonHighLive
+    londonLow := londonLowLive
+
+prevDayHigh = request.security(syminfo.tickerid, "D", high[1], lookahead=barmerge.lookahead_off)
+prevDayLow = request.security(syminfo.tickerid, "D", low[1], lookahead=barmerge.lookahead_off)
+prevWeekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead=barmerge.lookahead_off)
+prevWeekLow = request.security(syminfo.tickerid, "W", low[1], lookahead=barmerge.lookahead_off)
+prevMonthHigh = request.security(syminfo.tickerid, "M", high[1], lookahead=barmerge.lookahead_off)
+prevMonthLow = request.security(syminfo.tickerid, "M", low[1], lookahead=barmerge.lookahead_off)
+
+plot(showReferenceLevels and useAsia ? asiaHigh : na, "Asia High", color=color.new(COLOR_INFO, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and useAsia ? asiaLow : na, "Asia Low", color=color.new(COLOR_INFO, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and useLondon ? londonHigh : na, "London High", color=color.new(COLOR_BEAR, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and useLondon ? londonLow : na, "London Low", color=color.new(COLOR_BULL, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and usePrevDay ? prevDayHigh : na, "PDH", color=color.new(color.orange, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and usePrevDay ? prevDayLow : na, "PDL", color=color.new(color.orange, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and usePrevWeek ? prevWeekHigh : na, "PWH", color=color.new(color.yellow, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and usePrevWeek ? prevWeekLow : na, "PWL", color=color.new(color.yellow, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and usePrevMonth ? prevMonthHigh : na, "PMH", color=color.new(color.fuchsia, 0), linewidth=1, style=plot.style_linebr)
+plot(showReferenceLevels and usePrevMonth ? prevMonthLow : na, "PML", color=color.new(color.fuchsia, 0), linewidth=1, style=plot.style_linebr)
+
+// --- Swing Detection ---
+chartPH = ta.pivothigh(pivotLookback, pivotLookback)
+chartPL = ta.pivotlow(pivotLookback, pivotLookback)
+compPH = ta.pivothigh(compHigh, pivotLookback, pivotLookback)
+compPL = ta.pivotlow(compLow, pivotLookback, pivotLookback)
+
+chartHighs.updatePivots(chartPH, true)
+chartLows.updatePivots(chartPL, false)
+compHighs.updatePivots(compPH, true)
+compLows.updatePivots(compPL, false)
+
+plotshape(showSwingMarkers ? chartPH : na, "Swing High", shape.xcross, location.abovebar, color=color.gray, size=size.tiny, offset=-pivotLookback)
+plotshape(showSwingMarkers ? chartPL : na, "Swing Low", shape.xcross, location.belowbar, color=color.gray, size=size.tiny, offset=-pivotLookback)
+
+// --- Reference Sweeps ---
+bool bearSweep = false
+float bearSweepPrice = na
+string bearSweepRef = ""
+
+bool bullSweep = false
+float bullSweepPrice = na
+string bullSweepRef = ""
+
+if useAsia
+    bool asiaBearSweep = not na(asiaHigh) and high > asiaHigh and close < asiaHigh
+    if asiaBearSweep and not bearSweep
+        bearSweep := true
+        bearSweepPrice := asiaHigh
+        bearSweepRef := "Asia High"
+    bool asiaBullSweep = not na(asiaLow) and low < asiaLow and close > asiaLow
+    if asiaBullSweep and not bullSweep
+        bullSweep := true
+        bullSweepPrice := asiaLow
+        bullSweepRef := "Asia Low"
+
+if useLondon
+    bool londonBearSweep = not na(londonHigh) and high > londonHigh and close < londonHigh
+    if londonBearSweep and not bearSweep
+        bearSweep := true
+        bearSweepPrice := londonHigh
+        bearSweepRef := "London High"
+    bool londonBullSweep = not na(londonLow) and low < londonLow and close > londonLow
+    if londonBullSweep and not bullSweep
+        bullSweep := true
+        bullSweepPrice := londonLow
+        bullSweepRef := "London Low"
+
+if usePrevDay
+    bool pdBearSweep = not na(prevDayHigh) and high > prevDayHigh and close < prevDayHigh
+    if pdBearSweep and not bearSweep
+        bearSweep := true
+        bearSweepPrice := prevDayHigh
+        bearSweepRef := "PDH"
+    bool pdBullSweep = not na(prevDayLow) and low < prevDayLow and close > prevDayLow
+    if pdBullSweep and not bullSweep
+        bullSweep := true
+        bullSweepPrice := prevDayLow
+        bullSweepRef := "PDL"
+
+if usePrevWeek
+    bool pwBearSweep = not na(prevWeekHigh) and high > prevWeekHigh and close < prevWeekHigh
+    if pwBearSweep and not bearSweep
+        bearSweep := true
+        bearSweepPrice := prevWeekHigh
+        bearSweepRef := "PWH"
+    bool pwBullSweep = not na(prevWeekLow) and low < prevWeekLow and close > prevWeekLow
+    if pwBullSweep and not bullSweep
+        bullSweep := true
+        bullSweepPrice := prevWeekLow
+        bullSweepRef := "PWL"
+
+if usePrevMonth
+    bool pmBearSweep = not na(prevMonthHigh) and high > prevMonthHigh and close < prevMonthHigh
+    if pmBearSweep and not bearSweep
+        bearSweep := true
+        bearSweepPrice := prevMonthHigh
+        bearSweepRef := "PMH"
+    bool pmBullSweep = not na(prevMonthLow) and low < prevMonthLow and close > prevMonthLow
+    if pmBullSweep and not bullSweep
+        bullSweep := true
+        bullSweepPrice := prevMonthLow
+        bullSweepRef := "PML"
+
+if useSwingSweeps and array.size(chartHighs) > 0
+    Pivot lastSwingHigh = array.get(chartHighs, 0)
+    if high > lastSwingHigh.price and close < lastSwingHigh.price and not bearSweep
+        bearSweep := true
+        bearSweepPrice := lastSwingHigh.price
+        bearSweepRef := "Swing High"
+
+if useSwingSweeps and array.size(chartLows) > 0
+    Pivot lastSwingLow = array.get(chartLows, 0)
+    if low < lastSwingLow.price and close > lastSwingLow.price and not bullSweep
+        bullSweep := true
+        bullSweepPrice := lastSwingLow.price
+        bullSweepRef := "Swing Low"
+
+if bearSweep
+    lastBearSweepBar := bar_index
+    lastBearSweepPrice := bearSweepPrice
+    lastBearSweepRef := bearSweepRef
+
+if bullSweep
+    lastBullSweepBar := bar_index
+    lastBullSweepPrice := bullSweepPrice
+    lastBullSweepRef := bullSweepRef
+
+plotshape(showSweepMarkers and bearSweep ? high : na, "Bear Sweep", shape.triangledown, location.abovebar, color=COLOR_BEAR, size=size.tiny)
+plotshape(showSweepMarkers and bullSweep ? low : na, "Bull Sweep", shape.triangleup, location.belowbar, color=COLOR_BULL, size=size.tiny)
+
+// --- SMT Detection ---
+if array.size(chartHighs) >= 2 and array.size(compHighs) >= 2 and not na(lastBearSweepBar) and bar_index - lastBearSweepBar <= sweepMemory
+    Pivot esHigh2 = array.get(chartHighs, 0)
+    Pivot esHigh1 = array.get(chartHighs, 1)
+    Pivot nqHigh2 = findMatchingPivot(compHighs, esHigh2.index, pivotTolerance)
+    Pivot nqHigh1 = findMatchingPivot(compHighs, esHigh1.index, pivotTolerance)
+
+    if not na(nqHigh2) and not na(nqHigh1)
+        bool bearishSmt = esHigh2.price < esHigh1.price and nqHigh2.price > nqHigh1.price and esHigh2.index >= lastBearSweepBar
+        if bearishSmt and not setupExists(esHigh2.index)
+            float targetPrice = array.size(chartLows) > 0 ? array.get(chartLows, 0).price : low
+            line smtLine = line.new(esHigh1.index, esHigh1.price, esHigh2.index, esHigh2.price, color=COLOR_BEAR, width=1)
+            label smtLabel = showSmtMarkers ? label.new(esHigh2.index, esHigh2.price, "Bear SMT\n" + lastBearSweepRef, color=COLOR_BEAR, textcolor=color.white, style=label.style_label_down, size=size.tiny) : na
+            array.unshift(setups, Setup.new(esHigh2.index, true, esHigh2.index, esHigh2.index + smtMemory, targetPrice, lastBearSweepRef, smtLine, smtLabel))
+
+if array.size(chartLows) >= 2 and array.size(compLows) >= 2 and not na(lastBullSweepBar) and bar_index - lastBullSweepBar <= sweepMemory
+    Pivot esLow2 = array.get(chartLows, 0)
+    Pivot esLow1 = array.get(chartLows, 1)
+    Pivot nqLow2 = findMatchingPivot(compLows, esLow2.index, pivotTolerance)
+    Pivot nqLow1 = findMatchingPivot(compLows, esLow1.index, pivotTolerance)
+
+    if not na(nqLow2) and not na(nqLow1)
+        bool bullishSmt = esLow2.price > esLow1.price and nqLow2.price < nqLow1.price and esLow2.index >= lastBullSweepBar
+        if bullishSmt and not setupExists(esLow2.index)
+            float targetPrice = array.size(chartHighs) > 0 ? array.get(chartHighs, 0).price : high
+            line smtLine = line.new(esLow1.index, esLow1.price, esLow2.index, esLow2.price, color=COLOR_BULL, width=1)
+            label smtLabel = showSmtMarkers ? label.new(esLow2.index, esLow2.price, "Bull SMT\n" + lastBullSweepRef, color=COLOR_BULL, textcolor=color.white, style=label.style_label_up, size=size.tiny) : na
+            array.unshift(setups, Setup.new(esLow2.index, false, esLow2.index, esLow2.index + smtMemory, targetPrice, lastBullSweepRef, smtLine, smtLabel))
+
+// --- Setup Cleanup ---
+int setupIdx = 0
+while setupIdx < array.size(setups)
+    Setup s = array.get(setups, setupIdx)
+    if bar_index > s.expiryBar
+        if not na(s.smtLine)
+            line.delete(s.smtLine)
+        if not na(s.smtLabel)
+            label.delete(s.smtLabel)
+        array.remove(setups, setupIdx)
+    else
+        setupIdx += 1
+
+// --- First FVG After SMT ---
+bool bullishFvg = high[2] < low and close[1] > open[1]
+bool bearishFvg = low[2] > high and close[1] < open[1]
+
+if bullishFvg
+    Setup activeBear = findActiveSetup(true)
+    if not na(activeBear) and bar_index > activeBear.smtBar
+        box gapBox = showPendingFvgs ? box.new(bar_index[2], low, bar_index, high[2], bgcolor=color.new(COLOR_BEAR, 88), border_color=na) : na
+        array.unshift(pendingFvgs, PendingFvg.new(activeBear.id, true, bar_index, low, high[2], open[2], activeBear.targetPrice, gapBox))
+
+if bearishFvg
+    Setup activeBull = findActiveSetup(false)
+    if not na(activeBull) and bar_index > activeBull.smtBar
+        box gapBox = showPendingFvgs ? box.new(bar_index[2], low[2], bar_index, high, bgcolor=color.new(COLOR_BULL, 88), border_color=na) : na
+        array.unshift(pendingFvgs, PendingFvg.new(activeBull.id, false, bar_index, low[2], high, open[2], activeBull.targetPrice, gapBox))
+
+// --- Pending FVG Trigger ---
+int fvgIdx = 0
+while fvgIdx < array.size(pendingFvgs)
+    PendingFvg f = array.get(pendingFvgs, fvgIdx)
+    bool parentExists = false
+
+    if array.size(setups) > 0
+        for i = 0 to array.size(setups) - 1
+            if array.get(setups, i).id == f.setupId
+                parentExists := true
+                break
+
+    bool expired = bar_index - f.startBar > fvgExpiry
+    bool triggered = f.isBearishSignal ? close < f.triggerOpen : close > f.triggerOpen
+
+    if triggered and parentExists
+        bool isSell = f.isBearishSignal
+        color sigColor = isSell ? COLOR_BEAR : COLOR_BULL
+        float entry = close
+        float stopPrice = isSell ? f.top + (syminfo.mintick * slBufferTicks) : f.bottom - (syminfo.mintick * slBufferTicks)
+        float risk = math.abs(entry - stopPrice)
+        float targetPrice = f.targetPrice
+        float rrTarget = isSell ? entry - (risk * rrRatio) : entry + (risk * rrRatio)
+        float finalTarget = isSell ? math.min(targetPrice, rrTarget) : math.max(targetPrice, rrTarget)
+
+        box.new(f.startBar, f.top, bar_index, f.bottom, bgcolor=color.new(sigColor, 70), border_color=sigColor)
+        label.new(bar_index, isSell ? high : low, isSell ? "SELL" : "BUY", color=sigColor, textcolor=color.white, style=isSell ? label.style_label_down : label.style_label_up, size=size.small)
+
+        float riskTop = math.max(entry, stopPrice)
+        float riskBottom = math.min(entry, stopPrice)
+        float rewardTop = math.max(entry, finalTarget)
+        float rewardBottom = math.min(entry, finalTarget)
+        box.new(bar_index, riskTop, bar_index + 10, riskBottom, bgcolor=color.new(COLOR_BEAR, 82), border_color=COLOR_BEAR)
+        box.new(bar_index, rewardTop, bar_index + 10, rewardBottom, bgcolor=color.new(COLOR_BULL, 82), border_color=COLOR_BULL)
+
+        if showTargets
+            line.new(bar_index, f.targetPrice, bar_index + 20, f.targetPrice, color=color.new(sigColor, 0), width=2, style=line.style_dashed)
+
+        if not na(f.gapBox)
+            box.delete(f.gapBox)
+        array.remove(pendingFvgs, fvgIdx)
+    else if expired or not parentExists
+        if not na(f.gapBox)
+            box.delete(f.gapBox)
+        array.remove(pendingFvgs, fvgIdx)
+    else
+        if not na(f.gapBox)
+            box.set_right(f.gapBox, bar_index)
+        fvgIdx += 1
+
+alertcondition(false, "SMT iFVG Alert", "SMT to iFVG prototype signal.")

@@ -1,0 +1,1258 @@
+//@version=6
+indicator("EW 2.0 SMT + iFVG Trigger", shorttitle="EW2 SMT+iFVG", overlay=true, max_lines_count=250, max_boxes_count=200, max_labels_count=250)
+
+//==============================================================================
+// A. INPUTS
+//==============================================================================
+
+groupSymbols = "A. Symbols"
+comparisonSymbol1 = input.symbol("CME_MINI:NQ1!", "Comparison Symbol 1", group=groupSymbols)
+comparisonSymbol2 = input.symbol("CBOT_MINI:YM1!", "Comparison Symbol 2", group=groupSymbols)
+smtConfirmationMode = input.string("Either symbol divergence", "SMT Confirmation Mode", options=["Either symbol divergence", "Both symbols divergence"], group=groupSymbols)
+
+groupPivots = "B. Pivot / SMT"
+pivotLeftBars = input.int(2, "Pivot Left Bars", minval=1, group=groupPivots)
+pivotRightBars = input.int(2, "Pivot Right Bars", minval=1, group=groupPivots)
+maxPivotMatchingBars = input.int(8, "Max Pivot Matching Bars", minval=0, group=groupPivots)
+minSwingSizeTicks = input.int(0, "Minimum Swing Size Filter (Ticks)", minval=0, group=groupPivots)
+smtActiveLifeBars = input.int(20, "SMT Active Life (Bars)", minval=1, group=groupPivots)
+smtMode = input.string("Pivot Divergence", "SMT Mode", options=["Pivot Divergence", "Key-Level Sweep Divergence", "Either"], group=groupPivots)
+
+groupFvg = "C. FVG / iFVG"
+atrLength = input.int(14, "ATR Length", minval=1, group=groupFvg)
+minFvgTicks = input.int(1, "Minimum FVG Size (Ticks)", minval=0, group=groupFvg)
+minFvgAtrUnits = input.float(0.0, "Minimum FVG Size (ATR Units)", minval=0.0, step=0.1, group=groupFvg)
+maxFvgAgeBars = input.int(50, "Maximum FVG Age (Bars)", minval=1, group=groupFvg)
+maxBarsBetweenSmtAndIfvg = input.int(10, "Maximum Bars Between SMT and iFVG", minval=1, group=groupFvg)
+requireSmtBeforeIfvg = input.bool(true, "Require SMT Before iFVG", group=groupFvg)
+bullishFvgColor = input.color(color.new(color.rgb(16, 185, 129), 86), "Bullish FVG Color", group=groupFvg)
+bearishFvgColor = input.color(color.new(color.rgb(239, 68, 68), 86), "Bearish FVG Color", group=groupFvg)
+bullishIfvgColor = input.color(color.new(color.rgb(34, 197, 94), 76), "Bullish iFVG Color", group=groupFvg)
+bearishIfvgColor = input.color(color.new(color.rgb(220, 38, 38), 76), "Bearish iFVG Color", group=groupFvg)
+
+groupLevels = "D. Key Levels"
+showPDH = input.bool(true, "Show Previous Day High", group=groupLevels)
+showPDL = input.bool(true, "Show Previous Day Low", group=groupLevels)
+showAsiaHigh = input.bool(true, "Show Asia High", group=groupLevels)
+showAsiaLow = input.bool(true, "Show Asia Low", group=groupLevels)
+showLondonHigh = input.bool(true, "Show London High", group=groupLevels)
+showLondonLow = input.bool(true, "Show London Low", group=groupLevels)
+removeMitigatedLevels = input.bool(true, "Remove Mitigated Levels", group=groupLevels)
+pdhColor = input.color(color.new(color.rgb(239, 68, 68), 0), "PDH Color", group=groupLevels)
+pdlColor = input.color(color.new(color.rgb(16, 185, 129), 0), "PDL Color", group=groupLevels)
+asiaHighColor = input.color(color.new(color.rgb(245, 158, 11), 0), "Asia High Color", group=groupLevels)
+asiaLowColor = input.color(color.new(color.rgb(234, 179, 8), 0), "Asia Low Color", group=groupLevels)
+londonHighColor = input.color(color.new(color.rgb(59, 130, 246), 0), "London High Color", group=groupLevels)
+londonLowColor = input.color(color.new(color.rgb(96, 165, 250), 0), "London Low Color", group=groupLevels)
+sessionTimezone = input.string("America/New_York", "Session Timezone", group=groupLevels)
+asiaSession = input.session("1800-0000", "Asia Session", group=groupLevels)
+londonSession = input.session("0200-0500", "London Session", group=groupLevels)
+
+groupKeyFilter = "E. Key-Level Filter"
+useKeyLevelFilter = input.bool(false, "Use Key-Level Filter", group=groupKeyFilter)
+requireSmtAtSelectedKeyLevel = input.bool(true, "Require SMT At Selected Key Level", group=groupKeyFilter)
+keyLevelMatchMode = input.string("At least one selected level", "Key-Level Match Mode", options=["At least one selected level", "Any high for bearish / any low for bullish", "Strict exact selected side only"], group=groupKeyFilter)
+usePdhPdlFilter = input.bool(true, "Use PDH/PDL as SMT Filter", group=groupKeyFilter)
+useAsiaFilter = input.bool(true, "Use Asia High/Low as SMT Filter", group=groupKeyFilter)
+useLondonFilter = input.bool(true, "Use London High/Low as SMT Filter", group=groupKeyFilter)
+keyLevelToleranceTicks = input.int(2, "Key Level Tolerance (Ticks)", minval=0, group=groupKeyFilter)
+minimumSweepTicks = input.int(1, "Minimum Sweep Amount (Ticks)", minval=0, group=groupKeyFilter)
+allowSimpleTouch = input.bool(true, "Allow Simple Touch", group=groupKeyFilter)
+requireSweepBeyondLevel = input.bool(false, "Require Sweep Beyond Level", group=groupKeyFilter)
+
+groupExecution = "F. Execution"
+entryMode = input.string("Inversion Close", "Entry Mode", options=["Inversion Close", "Retrace"], group=groupExecution)
+retraceWindowBars = input.int(8, "Retrace Window Bars", minval=1, group=groupExecution)
+invalidationSource = input.string("More Conservative", "Invalidation Source", options=["SMT Swing", "iFVG Zone", "More Conservative"], group=groupExecution)
+
+groupVisuals = "G. Visuals"
+showSmtMarkers = input.bool(true, "Show SMT Markers", group=groupVisuals)
+showFvgBoxes = input.bool(true, "Show FVG Boxes", group=groupVisuals)
+showIfvgBoxes = input.bool(true, "Show iFVG Boxes", group=groupVisuals)
+showTriggerArrows = input.bool(true, "Show Trigger Arrows", group=groupVisuals)
+showEntryStop = input.bool(true, "Show Entry / Stop", group=groupVisuals)
+showKeyLevelSmtLabels = input.bool(false, "Show Key-Level SMT Labels", group=groupVisuals)
+latestSetupOnly = input.bool(true, "Latest Setup Only", group=groupVisuals)
+
+//==============================================================================
+// B. DATA
+//==============================================================================
+
+getHighLow() =>
+    [high, low]
+
+[comp1High, comp1Low] = request.security(comparisonSymbol1, timeframe.period, getHighLow())
+[comp2High, comp2Low] = request.security(comparisonSymbol2, timeframe.period, getHighLow())
+chartAtr = ta.atr(atrLength)
+
+prevDayHigh = request.security(syminfo.tickerid, "D", high[1], gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on)
+prevDayLow = request.security(syminfo.tickerid, "D", low[1], gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on)
+comp1PrevDayHigh = request.security(comparisonSymbol1, "D", high[1], gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on)
+comp1PrevDayLow = request.security(comparisonSymbol1, "D", low[1], gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on)
+comp2PrevDayHigh = request.security(comparisonSymbol2, "D", high[1], gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on)
+comp2PrevDayLow = request.security(comparisonSymbol2, "D", low[1], gaps=barmerge.gaps_off, lookahead=barmerge.lookahead_on)
+dayToken = time("D")
+bool newTradingDay = barstate.isfirst or ta.change(dayToken) != 0
+
+bool inAsia = not na(time(timeframe.period, asiaSession, sessionTimezone))
+bool wasInAsia = bar_index > 0 ? inAsia[1] : false
+bool asiaSessionStart = inAsia and not wasInAsia
+bool asiaSessionEnd = not inAsia and wasInAsia
+
+bool inLondon = not na(time(timeframe.period, londonSession, sessionTimezone))
+bool wasInLondon = bar_index > 0 ? inLondon[1] : false
+bool londonSessionStart = inLondon and not wasInLondon
+bool londonSessionEnd = not inLondon and wasInLondon
+
+//==============================================================================
+// C. TYPES / STATE
+//==============================================================================
+
+colorBull = color.rgb(16, 185, 129)
+colorBear = color.rgb(239, 68, 68)
+transparentBg = color.new(color.black, 100)
+
+type Pivot
+    int index
+    float price
+
+type SMTState
+    int id
+    bool bullish
+    int pivotIndex
+    float swingPrice
+    string keyLevelName
+    int activeBar
+    int expiryBar
+    line guideLine
+    label markerLabel
+    label keyLevelLabel
+
+type FVGState
+    int id
+    bool bullish
+    float top
+    float bottom
+    int originBar
+    int leftBar
+    int expiryBar
+    box zoneBox
+
+type IFVGState
+    int id
+    bool bullish
+    float top
+    float bottom
+    int inversionBar
+    int leftBar
+    int expiryBar
+    bool matched
+    box zoneBox
+
+type SetupState
+    int id
+    bool bullish
+    int smtId
+    int ifvgId
+    float smtSwingPrice
+    float zoneTop
+    float zoneBottom
+    int confirmBar
+    int retraceExpiryBar
+    bool waitingForEntry
+    bool entryTriggered
+    float entryPrice
+    int entryBar
+    float stopPrice
+    label triggerArrow
+    line entryLine
+    line stopLine
+
+var chartHighPivots = array.new<Pivot>()
+var chartLowPivots = array.new<Pivot>()
+var comp1HighPivots = array.new<Pivot>()
+var comp1LowPivots = array.new<Pivot>()
+var comp2HighPivots = array.new<Pivot>()
+var comp2LowPivots = array.new<Pivot>()
+
+var smtStates = array.new<SMTState>()
+var activeFvgs = array.new<FVGState>()
+var activeIfvgs = array.new<IFVGState>()
+var setupStates = array.new<SetupState>()
+
+var int nextSmtId = 0
+var int nextFvgId = 0
+var int nextIfvgId = 0
+var int nextSetupId = 0
+
+var float activePdhLevel = na
+var float activePdlLevel = na
+var float activeAsiaHighLevel = na
+var float activeAsiaLowLevel = na
+var float activeLondonHighLevel = na
+var float activeLondonLowLevel = na
+
+var float comp1ActiveAsiaHighLevel = na
+var float comp1ActiveAsiaLowLevel = na
+var float comp2ActiveAsiaHighLevel = na
+var float comp2ActiveAsiaLowLevel = na
+var float comp1ActiveLondonHighLevel = na
+var float comp1ActiveLondonLowLevel = na
+var float comp2ActiveLondonHighLevel = na
+var float comp2ActiveLondonLowLevel = na
+
+var int pdhStartBar = na
+var int pdlStartBar = na
+var int asiaStartBar = na
+var int londonStartBar = na
+
+var line pdhLine = na
+var line pdlLine = na
+var line asiaHighLine = na
+var line asiaLowLine = na
+var line londonHighLine = na
+var line londonLowLine = na
+
+var label pdhLabel = na
+var label pdlLabel = na
+var label asiaHighLabel = na
+var label asiaLowLabel = na
+var label londonHighLabel = na
+var label londonLowLabel = na
+
+var int sweepPdlChartBar = na
+var int sweepPdlComp1Bar = na
+var int sweepPdlComp2Bar = na
+var int sweepPdhChartBar = na
+var int sweepPdhComp1Bar = na
+var int sweepPdhComp2Bar = na
+var int sweepAsiaLowChartBar = na
+var int sweepAsiaLowComp1Bar = na
+var int sweepAsiaLowComp2Bar = na
+var int sweepAsiaHighChartBar = na
+var int sweepAsiaHighComp1Bar = na
+var int sweepAsiaHighComp2Bar = na
+var int sweepLondonLowChartBar = na
+var int sweepLondonLowComp1Bar = na
+var int sweepLondonLowComp2Bar = na
+var int sweepLondonHighChartBar = na
+var int sweepLondonHighComp1Bar = na
+var int sweepLondonHighComp2Bar = na
+
+var bool sweepPdlProcessed = false
+var bool sweepPdhProcessed = false
+var bool sweepAsiaLowProcessed = false
+var bool sweepAsiaHighProcessed = false
+var bool sweepLondonLowProcessed = false
+var bool sweepLondonHighProcessed = false
+
+//==============================================================================
+// D. HELPERS
+//==============================================================================
+
+deleteLine(line id) =>
+    if not na(id)
+        line.delete(id)
+
+deleteLabel(label id) =>
+    if not na(id)
+        label.delete(id)
+
+deleteBox(box id) =>
+    if not na(id)
+        box.delete(id)
+
+createLocalLevelLine(int anchorBar, float price, color lineColor, int lineWidth) =>
+    int leftBar = math.max(0, anchorBar - 1)
+    int rightBar = anchorBar + 2
+    line.new(leftBar, price, rightBar, price, xloc=xloc.bar_index, extend=extend.none, color=lineColor, width=lineWidth)
+
+updateActiveLevelLine(line existingLine, bool shouldShow, float levelPrice, int startBar, color levelColor) =>
+    line outLine = existingLine
+    if not shouldShow or na(levelPrice) or na(startBar)
+        deleteLine(outLine)
+        outLine := na
+    else
+        int leftBar = math.max(0, startBar)
+        int rightBar = bar_index + 1
+        if na(outLine)
+            outLine := line.new(leftBar, levelPrice, rightBar, levelPrice, xloc=xloc.bar_index, extend=extend.none, color=levelColor, width=1)
+        else
+            line.set_xy1(outLine, leftBar, levelPrice)
+            line.set_xy2(outLine, rightBar, levelPrice)
+            line.set_color(outLine, levelColor)
+            line.set_width(outLine, 1)
+    outLine
+
+updateActiveLevelLabel(label existingLabel, bool shouldShow, float levelPrice, string levelName, color levelColor) =>
+    label outLabel = existingLabel
+    if not shouldShow or na(levelPrice)
+        deleteLabel(outLabel)
+        outLabel := na
+    else
+        int rightBar = bar_index + 1
+        color labelColor = color.new(levelColor, 15)
+        if na(outLabel)
+            outLabel := label.new(rightBar, levelPrice, levelName, xloc=xloc.bar_index, style=label.style_label_left, color=labelColor, textcolor=color.white, size=size.tiny)
+        else
+            label.set_x(outLabel, rightBar)
+            label.set_y(outLabel, levelPrice)
+            label.set_text(outLabel, levelName)
+            label.set_style(outLabel, label.style_label_left)
+            label.set_color(outLabel, labelColor)
+            label.set_textcolor(outLabel, color.white)
+            label.set_size(outLabel, size=size.tiny)
+    outLabel
+
+trimPivots(array<Pivot> pivots, int maxKeep) =>
+    while array.size(pivots) > maxKeep
+        array.pop(pivots)
+
+addConfirmedPivot(array<Pivot> pivots, float pivotPrice, int pivotIndex, float minMove, int maxKeep) =>
+    if not na(pivotPrice)
+        bool allowPivot = true
+        if array.size(pivots) > 0
+            Pivot lastPivot = array.get(pivots, 0)
+            allowPivot := pivotIndex != lastPivot.index and math.abs(pivotPrice - lastPivot.price) >= minMove
+        if allowPivot
+            array.unshift(pivots, Pivot.new(pivotIndex, pivotPrice))
+            trimPivots(pivots, maxKeep)
+
+findClosestPivotPos(array<Pivot> pivots, int targetIndex, int tolerance, int minIndex, int maxIndex) =>
+    int bestPos = na
+    int bestDistance = 1000000
+    if array.size(pivots) > 0
+        for i = 0 to array.size(pivots) - 1
+            Pivot p = array.get(pivots, i)
+            if p.index >= minIndex and p.index <= maxIndex
+                int distance = math.abs(p.index - targetIndex)
+                if distance <= tolerance and distance < bestDistance
+                    bestDistance := distance
+                    bestPos := i
+    bestPos
+
+smtExistsForPivot(bool bullish, int chartIndex) =>
+    bool exists = false
+    if array.size(smtStates) > 0
+        for i = 0 to array.size(smtStates) - 1
+            SMTState smt = array.get(smtStates, i)
+            if smt.bullish == bullish and smt.pivotIndex == chartIndex
+                exists := true
+                break
+    exists
+
+getChartLowAnchor(int targetIndex) =>
+    bool ready = false
+    int currentIndex = na
+    float currentPrice = na
+    int prevIndex = na
+    float prevPrice = na
+    bool madeLowerLow = false
+    int currentPos = findClosestPivotPos(chartLowPivots, targetIndex, maxPivotMatchingBars, 0, bar_index)
+    if not na(currentPos) and currentPos + 1 < array.size(chartLowPivots)
+        Pivot currentPivot = array.get(chartLowPivots, currentPos)
+        Pivot prevPivot = array.get(chartLowPivots, currentPos + 1)
+        ready := true
+        currentIndex := currentPivot.index
+        currentPrice := currentPivot.price
+        prevIndex := prevPivot.index
+        prevPrice := prevPivot.price
+        madeLowerLow := currentPivot.price < prevPivot.price
+    [ready, currentIndex, currentPrice, prevIndex, prevPrice, madeLowerLow]
+
+getChartHighAnchor(int targetIndex) =>
+    bool ready = false
+    int currentIndex = na
+    float currentPrice = na
+    int prevIndex = na
+    float prevPrice = na
+    bool madeHigherHigh = false
+    int currentPos = findClosestPivotPos(chartHighPivots, targetIndex, maxPivotMatchingBars, 0, bar_index)
+    if not na(currentPos) and currentPos + 1 < array.size(chartHighPivots)
+        Pivot currentPivot = array.get(chartHighPivots, currentPos)
+        Pivot prevPivot = array.get(chartHighPivots, currentPos + 1)
+        ready := true
+        currentIndex := currentPivot.index
+        currentPrice := currentPivot.price
+        prevIndex := prevPivot.index
+        prevPrice := prevPivot.price
+        madeHigherHigh := currentPivot.price > prevPivot.price
+    [ready, currentIndex, currentPrice, prevIndex, prevPrice, madeHigherHigh]
+
+evalBullishPairDivergence(array<Pivot> compPivots, int chartPrevIndex, int chartCurrentIndex, bool chartMadeLowerLow) =>
+    bool resolved = false
+    bool diverged = false
+    int currentPos = findClosestPivotPos(compPivots, chartCurrentIndex, maxPivotMatchingBars, 0, bar_index)
+    int prevMaxIndex = not na(currentPos) ? array.get(compPivots, currentPos).index - 1 : bar_index
+    int prevPos = findClosestPivotPos(compPivots, chartPrevIndex, maxPivotMatchingBars, 0, prevMaxIndex)
+    if not na(prevPos)
+        resolved := true
+        Pivot prevComp = array.get(compPivots, prevPos)
+        bool compMadeLowerLow = false
+        if not na(currentPos)
+            Pivot currentComp = array.get(compPivots, currentPos)
+            compMadeLowerLow := currentComp.price < prevComp.price
+        diverged := (chartMadeLowerLow != compMadeLowerLow) and (chartMadeLowerLow or compMadeLowerLow)
+    [resolved, diverged]
+
+evalBearishPairDivergence(array<Pivot> compPivots, int chartPrevIndex, int chartCurrentIndex, bool chartMadeHigherHigh) =>
+    bool resolved = false
+    bool diverged = false
+    int currentPos = findClosestPivotPos(compPivots, chartCurrentIndex, maxPivotMatchingBars, 0, bar_index)
+    int prevMaxIndex = not na(currentPos) ? array.get(compPivots, currentPos).index - 1 : bar_index
+    int prevPos = findClosestPivotPos(compPivots, chartPrevIndex, maxPivotMatchingBars, 0, prevMaxIndex)
+    if not na(prevPos)
+        resolved := true
+        Pivot prevComp = array.get(compPivots, prevPos)
+        bool compMadeHigherHigh = false
+        if not na(currentPos)
+            Pivot currentComp = array.get(compPivots, currentPos)
+            compMadeHigherHigh := currentComp.price > prevComp.price
+        diverged := (chartMadeHigherHigh != compMadeHigherHigh) and (chartMadeHigherHigh or compMadeHigherHigh)
+    [resolved, diverged]
+
+getIfvgInvalidation(bool bullish, float zoneTop, float zoneBottom) =>
+    bullish ? zoneBottom : zoneTop
+
+getStopPrice(bool bullish, float smtSwingPrice, float zoneTop, float zoneBottom) =>
+    float zoneInvalidation = getIfvgInvalidation(bullish, zoneTop, zoneBottom)
+    float result = na
+    if invalidationSource == "SMT Swing"
+        result := smtSwingPrice
+    else if invalidationSource == "iFVG Zone"
+        result := zoneInvalidation
+    else
+        result := bullish ? math.min(smtSwingPrice, zoneInvalidation) : math.max(smtSwingPrice, zoneInvalidation)
+    result
+
+getSweepReferencePrice(bool bullish, string keyLevelName) =>
+    float referencePrice = bullish ? low : high
+    if bullish
+        if keyLevelName == "PDL" and not na(activePdlLevel)
+            referencePrice := activePdlLevel
+        else if keyLevelName == "Asia Low" and not na(activeAsiaLowLevel)
+            referencePrice := activeAsiaLowLevel
+        else if keyLevelName == "London Low" and not na(activeLondonLowLevel)
+            referencePrice := activeLondonLowLevel
+    else
+        if keyLevelName == "PDH" and not na(activePdhLevel)
+            referencePrice := activePdhLevel
+        else if keyLevelName == "Asia High" and not na(activeAsiaHighLevel)
+            referencePrice := activeAsiaHighLevel
+        else if keyLevelName == "London High" and not na(activeLondonHighLevel)
+            referencePrice := activeLondonHighLevel
+    referencePrice
+
+matchesHighKeyLevel(float pivotPrice, float levelPrice, float tolerancePrice, float sweepPrice) =>
+    if na(levelPrice)
+        false
+    else
+        bool touchOk = math.abs(pivotPrice - levelPrice) <= tolerancePrice
+        bool sweepOk = pivotPrice >= levelPrice + sweepPrice
+        requireSweepBeyondLevel ? sweepOk : (allowSimpleTouch ? (touchOk or sweepOk) : touchOk)
+
+matchesLowKeyLevel(float pivotPrice, float levelPrice, float tolerancePrice, float sweepPrice) =>
+    if na(levelPrice)
+        false
+    else
+        bool touchOk = math.abs(pivotPrice - levelPrice) <= tolerancePrice
+        bool sweepOk = pivotPrice <= levelPrice - sweepPrice
+        requireSweepBeyondLevel ? sweepOk : (allowSimpleTouch ? (touchOk or sweepOk) : touchOk)
+
+getBearishKeyLevelMatch(float pivotPrice, float tolerancePrice, float sweepPrice) =>
+    bool pdhRaw = matchesHighKeyLevel(pivotPrice, activePdhLevel, tolerancePrice, sweepPrice)
+    bool asiaRaw = matchesHighKeyLevel(pivotPrice, activeAsiaHighLevel, tolerancePrice, sweepPrice)
+    bool londonRaw = matchesHighKeyLevel(pivotPrice, activeLondonHighLevel, tolerancePrice, sweepPrice)
+    bool useAllHighs = keyLevelMatchMode == "Any high for bearish / any low for bullish"
+    bool strictMode = keyLevelMatchMode == "Strict exact selected side only"
+    bool pdhActive = useAllHighs or usePdhPdlFilter
+    bool asiaActive = useAllHighs or useAsiaFilter
+    bool londonActive = useAllHighs or useLondonFilter
+    bool selectedMatch = (pdhActive and pdhRaw) or (asiaActive and asiaRaw) or (londonActive and londonRaw)
+    bool offSelectionMatch = strictMode and ((not pdhActive and pdhRaw) or (not asiaActive and asiaRaw) or (not londonActive and londonRaw))
+    string matchName = pdhActive and pdhRaw ? "PDH" : asiaActive and asiaRaw ? "Asia High" : londonActive and londonRaw ? "London High" : ""
+    [selectedMatch and not offSelectionMatch, matchName]
+
+getBullishKeyLevelMatch(float pivotPrice, float tolerancePrice, float sweepPrice) =>
+    bool pdlRaw = matchesLowKeyLevel(pivotPrice, activePdlLevel, tolerancePrice, sweepPrice)
+    bool asiaRaw = matchesLowKeyLevel(pivotPrice, activeAsiaLowLevel, tolerancePrice, sweepPrice)
+    bool londonRaw = matchesLowKeyLevel(pivotPrice, activeLondonLowLevel, tolerancePrice, sweepPrice)
+    bool useAllLows = keyLevelMatchMode == "Any high for bearish / any low for bullish"
+    bool strictMode = keyLevelMatchMode == "Strict exact selected side only"
+    bool pdlActive = useAllLows or usePdhPdlFilter
+    bool asiaActive = useAllLows or useAsiaFilter
+    bool londonActive = useAllLows or useLondonFilter
+    bool selectedMatch = (pdlActive and pdlRaw) or (asiaActive and asiaRaw) or (londonActive and londonRaw)
+    bool offSelectionMatch = strictMode and ((not pdlActive and pdlRaw) or (not asiaActive and asiaRaw) or (not londonActive and londonRaw))
+    string matchName = pdlActive and pdlRaw ? "PDL" : asiaActive and asiaRaw ? "Asia Low" : londonActive and londonRaw ? "London Low" : ""
+    [selectedMatch and not offSelectionMatch, matchName]
+
+buildSmtState(int smtId, bool bullish, int currentIndex, float currentPrice, int prevIndex, float prevPrice, string keyLevelName) =>
+    line smtLine = na
+    label smtLabel = na
+    label keyLevelLabel = na
+    color smtColor = bullish ? colorBull : colorBear
+    if showSmtMarkers
+        smtLine := line.new(prevIndex, prevPrice, currentIndex, currentPrice, xloc=xloc.bar_index, extend=extend.none, color=color.new(smtColor, 35), style=line.style_dotted, width=1)
+        smtLabel := label.new(currentIndex, currentPrice, bullish ? "Bull SMT" : "Bear SMT", xloc=xloc.bar_index, style=bullish ? label.style_label_up : label.style_label_down, textcolor=smtColor, color=transparentBg, size=size.tiny)
+    if showKeyLevelSmtLabels and str.length(keyLevelName) > 0
+        keyLevelLabel := label.new(currentIndex, currentPrice, keyLevelName + " SMT", xloc=xloc.bar_index, style=bullish ? label.style_label_up : label.style_label_down, textcolor=smtColor, color=color.new(smtColor, 86), size=size.tiny)
+    SMTState.new(smtId, bullish, currentIndex, currentPrice, keyLevelName, bar_index, bar_index + smtActiveLifeBars, smtLine, smtLabel, keyLevelLabel)
+
+buildSweepSmtState(int smtId, bool bullish, string keyLevelName) =>
+    int currentIndex = bar_index
+    float currentPrice = getSweepReferencePrice(bullish, keyLevelName)
+    label smtLabel = na
+    label keyLevelLabel = na
+    color smtColor = bullish ? colorBull : colorBear
+    if showSmtMarkers
+        smtLabel := label.new(currentIndex, currentPrice, bullish ? "Bull SMT" : "Bear SMT", xloc=xloc.bar_index, style=bullish ? label.style_label_up : label.style_label_down, textcolor=smtColor, color=transparentBg, size=size.tiny)
+    if showKeyLevelSmtLabels and str.length(keyLevelName) > 0
+        keyLevelLabel := label.new(currentIndex, currentPrice, keyLevelName + " SMT", xloc=xloc.bar_index, style=bullish ? label.style_label_up : label.style_label_down, textcolor=smtColor, color=color.new(smtColor, 86), size=size.tiny)
+    SMTState.new(smtId, bullish, currentIndex, currentPrice, keyLevelName, bar_index, bar_index + smtActiveLifeBars, na, smtLabel, keyLevelLabel)
+
+getEarliestSweepBar(int bar1, int bar2, int bar3) =>
+    int earliest = na
+    if not na(bar1)
+        earliest := bar1
+    if not na(bar2)
+        earliest := na(earliest) ? bar2 : math.min(earliest, bar2)
+    if not na(bar3)
+        earliest := na(earliest) ? bar3 : math.min(earliest, bar3)
+    earliest
+
+evaluateSweepDivergence(int bar1, int bar2, int bar3) =>
+    bool ready = false
+    bool valid = false
+    int anchorBar = getEarliestSweepBar(bar1, bar2, bar3)
+    if not na(anchorBar)
+        ready := bar_index >= anchorBar + maxPivotMatchingBars
+        if ready
+            bool confirm1 = not na(bar1) and bar1 <= anchorBar + maxPivotMatchingBars
+            bool confirm2 = not na(bar2) and bar2 <= anchorBar + maxPivotMatchingBars
+            bool confirm3 = not na(bar3) and bar3 <= anchorBar + maxPivotMatchingBars
+            int failCount = (confirm1 ? 0 : 1) + (confirm2 ? 0 : 1) + (confirm3 ? 0 : 1)
+            valid := smtConfirmationMode == "Either symbol divergence" ? failCount >= 1 : failCount >= 2
+    [ready, valid, anchorBar]
+
+smtCreatedThisBar(bool bullish) =>
+    bool exists = false
+    if array.size(smtStates) > 0
+        SMTState latest = array.get(smtStates, 0)
+        exists := latest.bullish == bullish and latest.activeBar == bar_index
+    exists
+
+findEligibleSmtPos(bool bullish, int referenceBar) =>
+    int pos = na
+    if array.size(smtStates) > 0
+        for i = 0 to array.size(smtStates) - 1
+            SMTState smt = array.get(smtStates, i)
+            bool directionOk = smt.bullish == bullish
+            bool activeOk = referenceBar <= smt.expiryBar
+            bool distanceOk = referenceBar - smt.activeBar >= 0 and referenceBar - smt.activeBar <= maxBarsBetweenSmtAndIfvg
+            bool orderOk = not requireSmtBeforeIfvg or smt.activeBar <= referenceBar
+            if directionOk and activeOk and distanceOk and orderOk
+                pos := i
+                break
+    pos
+
+findEligibleIfvgPos(bool bullish, int referenceBar) =>
+    int pos = na
+    if array.size(activeIfvgs) > 0
+        for i = 0 to array.size(activeIfvgs) - 1
+            IFVGState ifvg = array.get(activeIfvgs, i)
+            bool directionOk = ifvg.bullish == bullish
+            bool usable = not ifvg.matched and referenceBar <= ifvg.expiryBar
+            bool distanceOk = referenceBar - ifvg.inversionBar >= 0 and referenceBar - ifvg.inversionBar <= maxBarsBetweenSmtAndIfvg
+            if directionOk and usable and distanceOk
+                pos := i
+                break
+    pos
+
+findNewestSmtCreatedThisBarPos(bool bullish) =>
+    int pos = na
+    if array.size(smtStates) > 0
+        for i = 0 to array.size(smtStates) - 1
+            SMTState smt = array.get(smtStates, i)
+            if smt.bullish == bullish and smt.activeBar == bar_index
+                pos := i
+                break
+    pos
+
+trimSmts(int maxKeep) =>
+    while array.size(smtStates) > maxKeep
+        SMTState stale = array.pop(smtStates)
+        deleteLine(stale.guideLine)
+        deleteLabel(stale.markerLabel)
+        deleteLabel(stale.keyLevelLabel)
+
+trimFvgs(int maxKeep) =>
+    while array.size(activeFvgs) > maxKeep
+        FVGState stale = array.pop(activeFvgs)
+        deleteBox(stale.zoneBox)
+
+trimIfvgs(int maxKeep) =>
+    while array.size(activeIfvgs) > maxKeep
+        IFVGState stale = array.pop(activeIfvgs)
+        deleteBox(stale.zoneBox)
+
+trimSetups(int maxKeep) =>
+    while array.size(setupStates) > maxKeep
+        SetupState stale = array.pop(setupStates)
+        deleteLabel(stale.triggerArrow)
+        deleteLine(stale.entryLine)
+        deleteLine(stale.stopLine)
+
+//==============================================================================
+// E. LIMITS / EVENT FLAGS
+//==============================================================================
+
+minSwingMove = minSwingSizeTicks * syminfo.mintick
+fvgMinSize = math.max(minFvgTicks * syminfo.mintick, minFvgAtrUnits * chartAtr)
+keyLevelTolerancePrice = keyLevelToleranceTicks * syminfo.mintick
+minimumSweepPrice = minimumSweepTicks * syminfo.mintick
+
+maxStoredPivots = 20
+maxSmtKeep = latestSetupOnly ? 1 : 6
+maxFvgKeep = latestSetupOnly ? 1 : 6
+maxIfvgKeep = latestSetupOnly ? 1 : 6
+maxSetupKeep = latestSetupOnly ? 1 : 4
+
+bool bullishSmtDetected = false
+bool bearishSmtDetected = false
+bool bullishIfvgFormed = false
+bool bearishIfvgFormed = false
+bool bullishTriggerConfirmed = false
+bool bearishTriggerConfirmed = false
+bool bullishRetraceTouched = false
+bool bearishRetraceTouched = false
+
+bool allowPivotSmt = smtMode == "Pivot Divergence" or smtMode == "Either"
+bool allowSweepSmt = smtMode == "Key-Level Sweep Divergence" or smtMode == "Either"
+
+//==============================================================================
+// F. CURRENT LEVEL STATE
+//==============================================================================
+
+if newTradingDay
+    deleteLine(pdhLine)
+    deleteLabel(pdhLabel)
+    deleteLine(pdlLine)
+    deleteLabel(pdlLabel)
+    deleteLine(asiaHighLine)
+    deleteLabel(asiaHighLabel)
+    deleteLine(asiaLowLine)
+    deleteLabel(asiaLowLabel)
+    deleteLine(londonHighLine)
+    deleteLabel(londonHighLabel)
+    deleteLine(londonLowLine)
+    deleteLabel(londonLowLabel)
+
+    pdhLine := na
+    pdhLabel := na
+    pdlLine := na
+    pdlLabel := na
+    asiaHighLine := na
+    asiaHighLabel := na
+    asiaLowLine := na
+    asiaLowLabel := na
+    londonHighLine := na
+    londonHighLabel := na
+    londonLowLine := na
+    londonLowLabel := na
+
+    activePdhLevel := prevDayHigh
+    activePdlLevel := prevDayLow
+    activeAsiaHighLevel := na
+    activeAsiaLowLevel := na
+    activeLondonHighLevel := na
+    activeLondonLowLevel := na
+    comp1ActiveAsiaHighLevel := na
+    comp1ActiveAsiaLowLevel := na
+    comp2ActiveAsiaHighLevel := na
+    comp2ActiveAsiaLowLevel := na
+    comp1ActiveLondonHighLevel := na
+    comp1ActiveLondonLowLevel := na
+    comp2ActiveLondonHighLevel := na
+    comp2ActiveLondonLowLevel := na
+
+    pdhStartBar := bar_index
+    pdlStartBar := bar_index
+    asiaStartBar := na
+    londonStartBar := na
+
+    sweepPdlChartBar := na
+    sweepPdlComp1Bar := na
+    sweepPdlComp2Bar := na
+    sweepPdhChartBar := na
+    sweepPdhComp1Bar := na
+    sweepPdhComp2Bar := na
+    sweepPdlProcessed := false
+    sweepPdhProcessed := false
+
+if asiaSessionStart
+    deleteLine(asiaHighLine)
+    deleteLabel(asiaHighLabel)
+    deleteLine(asiaLowLine)
+    deleteLabel(asiaLowLabel)
+    asiaHighLine := na
+    asiaHighLabel := na
+    asiaLowLine := na
+    asiaLowLabel := na
+    activeAsiaHighLevel := high
+    activeAsiaLowLevel := low
+    comp1ActiveAsiaHighLevel := comp1High
+    comp1ActiveAsiaLowLevel := comp1Low
+    comp2ActiveAsiaHighLevel := comp2High
+    comp2ActiveAsiaLowLevel := comp2Low
+    asiaStartBar := bar_index
+    sweepAsiaLowChartBar := na
+    sweepAsiaLowComp1Bar := na
+    sweepAsiaLowComp2Bar := na
+    sweepAsiaHighChartBar := na
+    sweepAsiaHighComp1Bar := na
+    sweepAsiaHighComp2Bar := na
+    sweepAsiaLowProcessed := false
+    sweepAsiaHighProcessed := false
+
+if inAsia
+    activeAsiaHighLevel := na(activeAsiaHighLevel) ? high : math.max(activeAsiaHighLevel, high)
+    activeAsiaLowLevel := na(activeAsiaLowLevel) ? low : math.min(activeAsiaLowLevel, low)
+    comp1ActiveAsiaHighLevel := na(comp1ActiveAsiaHighLevel) ? comp1High : math.max(comp1ActiveAsiaHighLevel, comp1High)
+    comp1ActiveAsiaLowLevel := na(comp1ActiveAsiaLowLevel) ? comp1Low : math.min(comp1ActiveAsiaLowLevel, comp1Low)
+    comp2ActiveAsiaHighLevel := na(comp2ActiveAsiaHighLevel) ? comp2High : math.max(comp2ActiveAsiaHighLevel, comp2High)
+    comp2ActiveAsiaLowLevel := na(comp2ActiveAsiaLowLevel) ? comp2Low : math.min(comp2ActiveAsiaLowLevel, comp2Low)
+
+if londonSessionStart
+    deleteLine(londonHighLine)
+    deleteLabel(londonHighLabel)
+    deleteLine(londonLowLine)
+    deleteLabel(londonLowLabel)
+    londonHighLine := na
+    londonHighLabel := na
+    londonLowLine := na
+    londonLowLabel := na
+    activeLondonHighLevel := high
+    activeLondonLowLevel := low
+    comp1ActiveLondonHighLevel := comp1High
+    comp1ActiveLondonLowLevel := comp1Low
+    comp2ActiveLondonHighLevel := comp2High
+    comp2ActiveLondonLowLevel := comp2Low
+    londonStartBar := bar_index
+    sweepLondonLowChartBar := na
+    sweepLondonLowComp1Bar := na
+    sweepLondonLowComp2Bar := na
+    sweepLondonHighChartBar := na
+    sweepLondonHighComp1Bar := na
+    sweepLondonHighComp2Bar := na
+    sweepLondonLowProcessed := false
+    sweepLondonHighProcessed := false
+
+if inLondon
+    activeLondonHighLevel := na(activeLondonHighLevel) ? high : math.max(activeLondonHighLevel, high)
+    activeLondonLowLevel := na(activeLondonLowLevel) ? low : math.min(activeLondonLowLevel, low)
+    comp1ActiveLondonHighLevel := na(comp1ActiveLondonHighLevel) ? comp1High : math.max(comp1ActiveLondonHighLevel, comp1High)
+    comp1ActiveLondonLowLevel := na(comp1ActiveLondonLowLevel) ? comp1Low : math.min(comp1ActiveLondonLowLevel, comp1Low)
+    comp2ActiveLondonHighLevel := na(comp2ActiveLondonHighLevel) ? comp2High : math.max(comp2ActiveLondonHighLevel, comp2High)
+    comp2ActiveLondonLowLevel := na(comp2ActiveLondonLowLevel) ? comp2Low : math.min(comp2ActiveLondonLowLevel, comp2Low)
+
+if na(sweepPdlChartBar) and not na(activePdlLevel) and low <= activePdlLevel
+    sweepPdlChartBar := bar_index
+if na(sweepPdlComp1Bar) and not na(comp1PrevDayLow) and comp1Low <= comp1PrevDayLow
+    sweepPdlComp1Bar := bar_index
+if na(sweepPdlComp2Bar) and not na(comp2PrevDayLow) and comp2Low <= comp2PrevDayLow
+    sweepPdlComp2Bar := bar_index
+
+if na(sweepPdhChartBar) and not na(activePdhLevel) and high >= activePdhLevel
+    sweepPdhChartBar := bar_index
+if na(sweepPdhComp1Bar) and not na(comp1PrevDayHigh) and comp1High >= comp1PrevDayHigh
+    sweepPdhComp1Bar := bar_index
+if na(sweepPdhComp2Bar) and not na(comp2PrevDayHigh) and comp2High >= comp2PrevDayHigh
+    sweepPdhComp2Bar := bar_index
+
+if not inAsia
+    if na(sweepAsiaLowChartBar) and not na(activeAsiaLowLevel) and low <= activeAsiaLowLevel
+        sweepAsiaLowChartBar := bar_index
+    if na(sweepAsiaLowComp1Bar) and not na(comp1ActiveAsiaLowLevel) and comp1Low <= comp1ActiveAsiaLowLevel
+        sweepAsiaLowComp1Bar := bar_index
+    if na(sweepAsiaLowComp2Bar) and not na(comp2ActiveAsiaLowLevel) and comp2Low <= comp2ActiveAsiaLowLevel
+        sweepAsiaLowComp2Bar := bar_index
+    if na(sweepAsiaHighChartBar) and not na(activeAsiaHighLevel) and high >= activeAsiaHighLevel
+        sweepAsiaHighChartBar := bar_index
+    if na(sweepAsiaHighComp1Bar) and not na(comp1ActiveAsiaHighLevel) and comp1High >= comp1ActiveAsiaHighLevel
+        sweepAsiaHighComp1Bar := bar_index
+    if na(sweepAsiaHighComp2Bar) and not na(comp2ActiveAsiaHighLevel) and comp2High >= comp2ActiveAsiaHighLevel
+        sweepAsiaHighComp2Bar := bar_index
+
+if not inLondon
+    if na(sweepLondonLowChartBar) and not na(activeLondonLowLevel) and low <= activeLondonLowLevel
+        sweepLondonLowChartBar := bar_index
+    if na(sweepLondonLowComp1Bar) and not na(comp1ActiveLondonLowLevel) and comp1Low <= comp1ActiveLondonLowLevel
+        sweepLondonLowComp1Bar := bar_index
+    if na(sweepLondonLowComp2Bar) and not na(comp2ActiveLondonLowLevel) and comp2Low <= comp2ActiveLondonLowLevel
+        sweepLondonLowComp2Bar := bar_index
+    if na(sweepLondonHighChartBar) and not na(activeLondonHighLevel) and high >= activeLondonHighLevel
+        sweepLondonHighChartBar := bar_index
+    if na(sweepLondonHighComp1Bar) and not na(comp1ActiveLondonHighLevel) and comp1High >= comp1ActiveLondonHighLevel
+        sweepLondonHighComp1Bar := bar_index
+    if na(sweepLondonHighComp2Bar) and not na(comp2ActiveLondonHighLevel) and comp2High >= comp2ActiveLondonHighLevel
+        sweepLondonHighComp2Bar := bar_index
+
+if removeMitigatedLevels
+    if not na(activePdhLevel) and high >= activePdhLevel
+        activePdhLevel := na
+        deleteLine(pdhLine)
+        deleteLabel(pdhLabel)
+        pdhLine := na
+        pdhLabel := na
+    if not na(activePdlLevel) and low <= activePdlLevel
+        activePdlLevel := na
+        deleteLine(pdlLine)
+        deleteLabel(pdlLabel)
+        pdlLine := na
+        pdlLabel := na
+    if not inAsia and not na(activeAsiaHighLevel) and high >= activeAsiaHighLevel
+        activeAsiaHighLevel := na
+        deleteLine(asiaHighLine)
+        deleteLabel(asiaHighLabel)
+        asiaHighLine := na
+        asiaHighLabel := na
+    if not inAsia and not na(activeAsiaLowLevel) and low <= activeAsiaLowLevel
+        activeAsiaLowLevel := na
+        deleteLine(asiaLowLine)
+        deleteLabel(asiaLowLabel)
+        asiaLowLine := na
+        asiaLowLabel := na
+    if not inLondon and not na(activeLondonHighLevel) and high >= activeLondonHighLevel
+        activeLondonHighLevel := na
+        deleteLine(londonHighLine)
+        deleteLabel(londonHighLabel)
+        londonHighLine := na
+        londonHighLabel := na
+    if not inLondon and not na(activeLondonLowLevel) and low <= activeLondonLowLevel
+        activeLondonLowLevel := na
+        deleteLine(londonLowLine)
+        deleteLabel(londonLowLabel)
+        londonLowLine := na
+        londonLowLabel := na
+
+pdhLine := updateActiveLevelLine(pdhLine, showPDH, activePdhLevel, pdhStartBar, pdhColor)
+pdhLabel := updateActiveLevelLabel(pdhLabel, showPDH and not na(activePdhLevel) and not na(pdhStartBar), activePdhLevel, "PDH", pdhColor)
+pdlLine := updateActiveLevelLine(pdlLine, showPDL, activePdlLevel, pdlStartBar, pdlColor)
+pdlLabel := updateActiveLevelLabel(pdlLabel, showPDL and not na(activePdlLevel) and not na(pdlStartBar), activePdlLevel, "PDL", pdlColor)
+asiaHighLine := updateActiveLevelLine(asiaHighLine, showAsiaHigh, activeAsiaHighLevel, asiaStartBar, asiaHighColor)
+asiaHighLabel := updateActiveLevelLabel(asiaHighLabel, showAsiaHigh and not na(activeAsiaHighLevel) and not na(asiaStartBar), activeAsiaHighLevel, "Asia High", asiaHighColor)
+asiaLowLine := updateActiveLevelLine(asiaLowLine, showAsiaLow, activeAsiaLowLevel, asiaStartBar, asiaLowColor)
+asiaLowLabel := updateActiveLevelLabel(asiaLowLabel, showAsiaLow and not na(activeAsiaLowLevel) and not na(asiaStartBar), activeAsiaLowLevel, "Asia Low", asiaLowColor)
+londonHighLine := updateActiveLevelLine(londonHighLine, showLondonHigh, activeLondonHighLevel, londonStartBar, londonHighColor)
+londonHighLabel := updateActiveLevelLabel(londonHighLabel, showLondonHigh and not na(activeLondonHighLevel) and not na(londonStartBar), activeLondonHighLevel, "London High", londonHighColor)
+londonLowLine := updateActiveLevelLine(londonLowLine, showLondonLow, activeLondonLowLevel, londonStartBar, londonLowColor)
+londonLowLabel := updateActiveLevelLabel(londonLowLabel, showLondonLow and not na(activeLondonLowLevel) and not na(londonStartBar), activeLondonLowLevel, "London Low", londonLowColor)
+
+//==============================================================================
+// G. PIVOTS
+//==============================================================================
+
+chartPivotHigh = ta.pivothigh(high, pivotLeftBars, pivotRightBars)
+chartPivotLow = ta.pivotlow(low, pivotLeftBars, pivotRightBars)
+comp1PivotHigh = ta.pivothigh(comp1High, pivotLeftBars, pivotRightBars)
+comp1PivotLow = ta.pivotlow(comp1Low, pivotLeftBars, pivotRightBars)
+comp2PivotHigh = ta.pivothigh(comp2High, pivotLeftBars, pivotRightBars)
+comp2PivotLow = ta.pivotlow(comp2Low, pivotLeftBars, pivotRightBars)
+
+bool newChartHighPivot = false
+bool newChartLowPivot = false
+bool newComp1HighPivot = false
+bool newComp1LowPivot = false
+bool newComp2HighPivot = false
+bool newComp2LowPivot = false
+
+if barstate.isconfirmed and not na(chartPivotHigh)
+    addConfirmedPivot(chartHighPivots, chartPivotHigh, bar_index[pivotRightBars], minSwingMove, maxStoredPivots)
+    newChartHighPivot := true
+
+if barstate.isconfirmed and not na(chartPivotLow)
+    addConfirmedPivot(chartLowPivots, chartPivotLow, bar_index[pivotRightBars], minSwingMove, maxStoredPivots)
+    newChartLowPivot := true
+
+if barstate.isconfirmed and not na(comp1PivotHigh)
+    addConfirmedPivot(comp1HighPivots, comp1PivotHigh, bar_index[pivotRightBars], minSwingMove, maxStoredPivots)
+    newComp1HighPivot := true
+
+if barstate.isconfirmed and not na(comp1PivotLow)
+    addConfirmedPivot(comp1LowPivots, comp1PivotLow, bar_index[pivotRightBars], minSwingMove, maxStoredPivots)
+    newComp1LowPivot := true
+
+if barstate.isconfirmed and not na(comp2PivotHigh)
+    addConfirmedPivot(comp2HighPivots, comp2PivotHigh, bar_index[pivotRightBars], minSwingMove, maxStoredPivots)
+    newComp2HighPivot := true
+
+if barstate.isconfirmed and not na(comp2PivotLow)
+    addConfirmedPivot(comp2LowPivots, comp2PivotLow, bar_index[pivotRightBars], minSwingMove, maxStoredPivots)
+    newComp2LowPivot := true
+
+//==============================================================================
+// H. SMT DETECTOR
+//==============================================================================
+
+if allowPivotSmt and barstate.isconfirmed and (newChartLowPivot or newComp1LowPivot or newComp2LowPivot)
+    int bullTarget1 = newChartLowPivot ? bar_index[pivotRightBars] : na
+    int bullTarget2 = newComp1LowPivot ? bar_index[pivotRightBars] : na
+    int bullTarget3 = newComp2LowPivot ? bar_index[pivotRightBars] : na
+
+    if not na(bullTarget1)
+        [chartReady1, chartCurrentIndex1, chartCurrentPrice1, chartPrevIndex1, chartPrevPrice1, chartMadeLowerLow1] = getChartLowAnchor(bullTarget1)
+        if chartReady1 and not smtExistsForPivot(true, chartCurrentIndex1)
+            [resolved11, diverged11] = evalBullishPairDivergence(comp1LowPivots, chartPrevIndex1, chartCurrentIndex1, chartMadeLowerLow1)
+            [resolved12, diverged12] = evalBullishPairDivergence(comp2LowPivots, chartPrevIndex1, chartCurrentIndex1, chartMadeLowerLow1)
+            bool divergenceValid1 = smtConfirmationMode == "Either symbol divergence" ? ((resolved11 and diverged11) or (resolved12 and diverged12)) : (resolved11 and diverged11 and resolved12 and diverged12)
+            [keyLevelMatched1, keyLevelName1] = getBullishKeyLevelMatch(chartCurrentPrice1, keyLevelTolerancePrice, minimumSweepPrice)
+            bool smtAccepted1 = divergenceValid1 and (not useKeyLevelFilter or not requireSmtAtSelectedKeyLevel or keyLevelMatched1)
+            if smtAccepted1
+                nextSmtId += 1
+                array.unshift(smtStates, buildSmtState(nextSmtId, true, chartCurrentIndex1, chartCurrentPrice1, chartPrevIndex1, chartPrevPrice1, keyLevelMatched1 ? keyLevelName1 : ""))
+                trimSmts(maxSmtKeep)
+                bullishSmtDetected := true
+
+    if not na(bullTarget2) and (na(bullTarget1) or bullTarget2 != bullTarget1)
+        [chartReady2, chartCurrentIndex2, chartCurrentPrice2, chartPrevIndex2, chartPrevPrice2, chartMadeLowerLow2] = getChartLowAnchor(bullTarget2)
+        if chartReady2 and not smtExistsForPivot(true, chartCurrentIndex2)
+            [resolved21, diverged21] = evalBullishPairDivergence(comp1LowPivots, chartPrevIndex2, chartCurrentIndex2, chartMadeLowerLow2)
+            [resolved22, diverged22] = evalBullishPairDivergence(comp2LowPivots, chartPrevIndex2, chartCurrentIndex2, chartMadeLowerLow2)
+            bool divergenceValid2 = smtConfirmationMode == "Either symbol divergence" ? ((resolved21 and diverged21) or (resolved22 and diverged22)) : (resolved21 and diverged21 and resolved22 and diverged22)
+            [keyLevelMatched2, keyLevelName2] = getBullishKeyLevelMatch(chartCurrentPrice2, keyLevelTolerancePrice, minimumSweepPrice)
+            bool smtAccepted2 = divergenceValid2 and (not useKeyLevelFilter or not requireSmtAtSelectedKeyLevel or keyLevelMatched2)
+            if smtAccepted2
+                nextSmtId += 1
+                array.unshift(smtStates, buildSmtState(nextSmtId, true, chartCurrentIndex2, chartCurrentPrice2, chartPrevIndex2, chartPrevPrice2, keyLevelMatched2 ? keyLevelName2 : ""))
+                trimSmts(maxSmtKeep)
+                bullishSmtDetected := true
+
+    if not na(bullTarget3) and (na(bullTarget1) or bullTarget3 != bullTarget1) and (na(bullTarget2) or bullTarget3 != bullTarget2)
+        [chartReady3, chartCurrentIndex3, chartCurrentPrice3, chartPrevIndex3, chartPrevPrice3, chartMadeLowerLow3] = getChartLowAnchor(bullTarget3)
+        if chartReady3 and not smtExistsForPivot(true, chartCurrentIndex3)
+            [resolved31, diverged31] = evalBullishPairDivergence(comp1LowPivots, chartPrevIndex3, chartCurrentIndex3, chartMadeLowerLow3)
+            [resolved32, diverged32] = evalBullishPairDivergence(comp2LowPivots, chartPrevIndex3, chartCurrentIndex3, chartMadeLowerLow3)
+            bool divergenceValid3 = smtConfirmationMode == "Either symbol divergence" ? ((resolved31 and diverged31) or (resolved32 and diverged32)) : (resolved31 and diverged31 and resolved32 and diverged32)
+            [keyLevelMatched3, keyLevelName3] = getBullishKeyLevelMatch(chartCurrentPrice3, keyLevelTolerancePrice, minimumSweepPrice)
+            bool smtAccepted3 = divergenceValid3 and (not useKeyLevelFilter or not requireSmtAtSelectedKeyLevel or keyLevelMatched3)
+            if smtAccepted3
+                nextSmtId += 1
+                array.unshift(smtStates, buildSmtState(nextSmtId, true, chartCurrentIndex3, chartCurrentPrice3, chartPrevIndex3, chartPrevPrice3, keyLevelMatched3 ? keyLevelName3 : ""))
+                trimSmts(maxSmtKeep)
+                bullishSmtDetected := true
+
+if allowPivotSmt and barstate.isconfirmed and (newChartHighPivot or newComp1HighPivot or newComp2HighPivot)
+    int bearTarget1 = newChartHighPivot ? bar_index[pivotRightBars] : na
+    int bearTarget2 = newComp1HighPivot ? bar_index[pivotRightBars] : na
+    int bearTarget3 = newComp2HighPivot ? bar_index[pivotRightBars] : na
+
+    if not na(bearTarget1)
+        [chartReady4, chartCurrentIndex4, chartCurrentPrice4, chartPrevIndex4, chartPrevPrice4, chartMadeHigherHigh4] = getChartHighAnchor(bearTarget1)
+        if chartReady4 and not smtExistsForPivot(false, chartCurrentIndex4)
+            [resolved41, diverged41] = evalBearishPairDivergence(comp1HighPivots, chartPrevIndex4, chartCurrentIndex4, chartMadeHigherHigh4)
+            [resolved42, diverged42] = evalBearishPairDivergence(comp2HighPivots, chartPrevIndex4, chartCurrentIndex4, chartMadeHigherHigh4)
+            bool divergenceValid4 = smtConfirmationMode == "Either symbol divergence" ? ((resolved41 and diverged41) or (resolved42 and diverged42)) : (resolved41 and diverged41 and resolved42 and diverged42)
+            [keyLevelMatched4, keyLevelName4] = getBearishKeyLevelMatch(chartCurrentPrice4, keyLevelTolerancePrice, minimumSweepPrice)
+            bool smtAccepted4 = divergenceValid4 and (not useKeyLevelFilter or not requireSmtAtSelectedKeyLevel or keyLevelMatched4)
+            if smtAccepted4
+                nextSmtId += 1
+                array.unshift(smtStates, buildSmtState(nextSmtId, false, chartCurrentIndex4, chartCurrentPrice4, chartPrevIndex4, chartPrevPrice4, keyLevelMatched4 ? keyLevelName4 : ""))
+                trimSmts(maxSmtKeep)
+                bearishSmtDetected := true
+
+    if not na(bearTarget2) and (na(bearTarget1) or bearTarget2 != bearTarget1)
+        [chartReady5, chartCurrentIndex5, chartCurrentPrice5, chartPrevIndex5, chartPrevPrice5, chartMadeHigherHigh5] = getChartHighAnchor(bearTarget2)
+        if chartReady5 and not smtExistsForPivot(false, chartCurrentIndex5)
+            [resolved51, diverged51] = evalBearishPairDivergence(comp1HighPivots, chartPrevIndex5, chartCurrentIndex5, chartMadeHigherHigh5)
+            [resolved52, diverged52] = evalBearishPairDivergence(comp2HighPivots, chartPrevIndex5, chartCurrentIndex5, chartMadeHigherHigh5)
+            bool divergenceValid5 = smtConfirmationMode == "Either symbol divergence" ? ((resolved51 and diverged51) or (resolved52 and diverged52)) : (resolved51 and diverged51 and resolved52 and diverged52)
+            [keyLevelMatched5, keyLevelName5] = getBearishKeyLevelMatch(chartCurrentPrice5, keyLevelTolerancePrice, minimumSweepPrice)
+            bool smtAccepted5 = divergenceValid5 and (not useKeyLevelFilter or not requireSmtAtSelectedKeyLevel or keyLevelMatched5)
+            if smtAccepted5
+                nextSmtId += 1
+                array.unshift(smtStates, buildSmtState(nextSmtId, false, chartCurrentIndex5, chartCurrentPrice5, chartPrevIndex5, chartPrevPrice5, keyLevelMatched5 ? keyLevelName5 : ""))
+                trimSmts(maxSmtKeep)
+                bearishSmtDetected := true
+
+    if not na(bearTarget3) and (na(bearTarget1) or bearTarget3 != bearTarget1) and (na(bearTarget2) or bearTarget3 != bearTarget2)
+        [chartReady6, chartCurrentIndex6, chartCurrentPrice6, chartPrevIndex6, chartPrevPrice6, chartMadeHigherHigh6] = getChartHighAnchor(bearTarget3)
+        if chartReady6 and not smtExistsForPivot(false, chartCurrentIndex6)
+            [resolved61, diverged61] = evalBearishPairDivergence(comp1HighPivots, chartPrevIndex6, chartCurrentIndex6, chartMadeHigherHigh6)
+            [resolved62, diverged62] = evalBearishPairDivergence(comp2HighPivots, chartPrevIndex6, chartCurrentIndex6, chartMadeHigherHigh6)
+            bool divergenceValid6 = smtConfirmationMode == "Either symbol divergence" ? ((resolved61 and diverged61) or (resolved62 and diverged62)) : (resolved61 and diverged61 and resolved62 and diverged62)
+            [keyLevelMatched6, keyLevelName6] = getBearishKeyLevelMatch(chartCurrentPrice6, keyLevelTolerancePrice, minimumSweepPrice)
+            bool smtAccepted6 = divergenceValid6 and (not useKeyLevelFilter or not requireSmtAtSelectedKeyLevel or keyLevelMatched6)
+            if smtAccepted6
+                nextSmtId += 1
+                array.unshift(smtStates, buildSmtState(nextSmtId, false, chartCurrentIndex6, chartCurrentPrice6, chartPrevIndex6, chartPrevPrice6, keyLevelMatched6 ? keyLevelName6 : ""))
+                trimSmts(maxSmtKeep)
+                bearishSmtDetected := true
+
+if allowSweepSmt and barstate.isconfirmed
+    bool useAllSweepLevels = keyLevelMatchMode == "Any high for bearish / any low for bullish"
+    bool useDailySweepLevels = useAllSweepLevels or usePdhPdlFilter
+    bool useAsiaSweepLevels = useAllSweepLevels or useAsiaFilter
+    bool useLondonSweepLevels = useAllSweepLevels or useLondonFilter
+
+    if useDailySweepLevels and not sweepPdlProcessed
+        [readyPdlSweep, validPdlSweep, anchorPdlSweep] = evaluateSweepDivergence(sweepPdlChartBar, sweepPdlComp1Bar, sweepPdlComp2Bar)
+        if readyPdlSweep
+            sweepPdlProcessed := true
+            if validPdlSweep and not smtCreatedThisBar(true)
+                nextSmtId += 1
+                array.unshift(smtStates, buildSweepSmtState(nextSmtId, true, "PDL"))
+                trimSmts(maxSmtKeep)
+                bullishSmtDetected := true
+
+    if useAsiaSweepLevels and not sweepAsiaLowProcessed
+        [readyAsiaLowSweep, validAsiaLowSweep, anchorAsiaLowSweep] = evaluateSweepDivergence(sweepAsiaLowChartBar, sweepAsiaLowComp1Bar, sweepAsiaLowComp2Bar)
+        if readyAsiaLowSweep
+            sweepAsiaLowProcessed := true
+            if validAsiaLowSweep and not smtCreatedThisBar(true)
+                nextSmtId += 1
+                array.unshift(smtStates, buildSweepSmtState(nextSmtId, true, "Asia Low"))
+                trimSmts(maxSmtKeep)
+                bullishSmtDetected := true
+
+    if useLondonSweepLevels and not sweepLondonLowProcessed
+        [readyLondonLowSweep, validLondonLowSweep, anchorLondonLowSweep] = evaluateSweepDivergence(sweepLondonLowChartBar, sweepLondonLowComp1Bar, sweepLondonLowComp2Bar)
+        if readyLondonLowSweep
+            sweepLondonLowProcessed := true
+            if validLondonLowSweep and not smtCreatedThisBar(true)
+                nextSmtId += 1
+                array.unshift(smtStates, buildSweepSmtState(nextSmtId, true, "London Low"))
+                trimSmts(maxSmtKeep)
+                bullishSmtDetected := true
+
+    if useDailySweepLevels and not sweepPdhProcessed
+        [readyPdhSweep, validPdhSweep, anchorPdhSweep] = evaluateSweepDivergence(sweepPdhChartBar, sweepPdhComp1Bar, sweepPdhComp2Bar)
+        if readyPdhSweep
+            sweepPdhProcessed := true
+            if validPdhSweep and not smtCreatedThisBar(false)
+                nextSmtId += 1
+                array.unshift(smtStates, buildSweepSmtState(nextSmtId, false, "PDH"))
+                trimSmts(maxSmtKeep)
+                bearishSmtDetected := true
+
+    if useAsiaSweepLevels and not sweepAsiaHighProcessed
+        [readyAsiaHighSweep, validAsiaHighSweep, anchorAsiaHighSweep] = evaluateSweepDivergence(sweepAsiaHighChartBar, sweepAsiaHighComp1Bar, sweepAsiaHighComp2Bar)
+        if readyAsiaHighSweep
+            sweepAsiaHighProcessed := true
+            if validAsiaHighSweep and not smtCreatedThisBar(false)
+                nextSmtId += 1
+                array.unshift(smtStates, buildSweepSmtState(nextSmtId, false, "Asia High"))
+                trimSmts(maxSmtKeep)
+                bearishSmtDetected := true
+
+    if useLondonSweepLevels and not sweepLondonHighProcessed
+        [readyLondonHighSweep, validLondonHighSweep, anchorLondonHighSweep] = evaluateSweepDivergence(sweepLondonHighChartBar, sweepLondonHighComp1Bar, sweepLondonHighComp2Bar)
+        if readyLondonHighSweep
+            sweepLondonHighProcessed := true
+            if validLondonHighSweep and not smtCreatedThisBar(false)
+                nextSmtId += 1
+                array.unshift(smtStates, buildSweepSmtState(nextSmtId, false, "London High"))
+                trimSmts(maxSmtKeep)
+                bearishSmtDetected := true
+
+if barstate.isconfirmed and array.size(smtStates) > 0
+    int i = array.size(smtStates) - 1
+    while i >= 0
+        SMTState smt = array.get(smtStates, i)
+        if bar_index > smt.expiryBar
+            deleteLine(smt.guideLine)
+            deleteLabel(smt.markerLabel)
+            deleteLabel(smt.keyLevelLabel)
+            array.remove(smtStates, i)
+        i -= 1
+
+//==============================================================================
+// I. FVG / iFVG
+//==============================================================================
+
+bullGapSize = low - high[2]
+bearGapSize = low[2] - high
+
+bool newBullishFvg = barstate.isconfirmed and high[2] < low and bullGapSize >= fvgMinSize
+bool newBearishFvg = barstate.isconfirmed and low[2] > high and bearGapSize >= fvgMinSize
+
+if newBullishFvg
+    nextFvgId += 1
+    box fvgBox = na
+    if showFvgBoxes
+        fvgBox := box.new(bar_index - 2, low, bar_index, high[2], xloc=xloc.bar_index, border_color=color.new(bullishFvgColor, 0), bgcolor=bullishFvgColor)
+    array.unshift(activeFvgs, FVGState.new(nextFvgId, true, low, high[2], bar_index, bar_index - 2, bar_index + maxFvgAgeBars, fvgBox))
+    trimFvgs(maxFvgKeep)
+
+if newBearishFvg
+    nextFvgId += 1
+    box fvgBox = na
+    if showFvgBoxes
+        fvgBox := box.new(bar_index - 2, low[2], bar_index, high, xloc=xloc.bar_index, border_color=color.new(bearishFvgColor, 0), bgcolor=bearishFvgColor)
+    array.unshift(activeFvgs, FVGState.new(nextFvgId, false, low[2], high, bar_index, bar_index - 2, bar_index + maxFvgAgeBars, fvgBox))
+    trimFvgs(maxFvgKeep)
+
+if barstate.isconfirmed and array.size(activeFvgs) > 0
+    int i = array.size(activeFvgs) - 1
+    while i >= 0
+        FVGState fvg = array.get(activeFvgs, i)
+        bool expired = bar_index > fvg.expiryBar
+        bool invertToBearish = fvg.bullish and close < fvg.bottom
+        bool invertToBullish = not fvg.bullish and close > fvg.top
+
+        if expired
+            deleteBox(fvg.zoneBox)
+            array.remove(activeFvgs, i)
+        else
+            if not na(fvg.zoneBox)
+                box.set_right(fvg.zoneBox, bar_index)
+
+            if invertToBearish or invertToBullish
+                bool ifvgBullish = invertToBullish
+                nextIfvgId += 1
+                box ifvgBox = na
+                if showIfvgBoxes
+                    color ifvgColor = ifvgBullish ? bullishIfvgColor : bearishIfvgColor
+                    ifvgBox := box.new(fvg.leftBar, fvg.top, bar_index, fvg.bottom, xloc=xloc.bar_index, border_color=color.new(ifvgColor, 0), bgcolor=ifvgColor)
+                IFVGState newIfvg = IFVGState.new(nextIfvgId, ifvgBullish, fvg.top, fvg.bottom, bar_index, fvg.leftBar, bar_index + maxFvgAgeBars, false, ifvgBox)
+                array.unshift(activeIfvgs, newIfvg)
+                trimIfvgs(maxIfvgKeep)
+
+                if ifvgBullish
+                    bullishIfvgFormed := true
+                else
+                    bearishIfvgFormed := true
+
+                deleteBox(fvg.zoneBox)
+                array.remove(activeFvgs, i)
+
+                int smtPos = findEligibleSmtPos(ifvgBullish, bar_index)
+                if not na(smtPos)
+                    SMTState smt = array.get(smtStates, smtPos)
+                    IFVGState ifvg = array.get(activeIfvgs, 0)
+                    nextSetupId += 1
+                    label triggerArrow = na
+                    if showTriggerArrows
+                        triggerArrow := label.new(bar_index, ifvgBullish ? low : high, "", xloc=xloc.bar_index, style=ifvgBullish ? label.style_arrowup : label.style_arrowdown, color=ifvgBullish ? colorBull : colorBear, textcolor=ifvgBullish ? colorBull : colorBear, size=size.small)
+                    array.unshift(setupStates, SetupState.new(nextSetupId, ifvgBullish, smt.id, ifvg.id, smt.swingPrice, ifvg.top, ifvg.bottom, bar_index, math.min(bar_index + retraceWindowBars, ifvg.expiryBar), entryMode == "Retrace", false, na, na, na, triggerArrow, na, na))
+                    ifvg.matched := true
+                    array.set(activeIfvgs, 0, ifvg)
+                    trimSetups(maxSetupKeep)
+                    bullishTriggerConfirmed := ifvgBullish ? true : bullishTriggerConfirmed
+                    bearishTriggerConfirmed := ifvgBullish ? bearishTriggerConfirmed : true
+            else
+                array.set(activeFvgs, i, fvg)
+        i -= 1
+
+if barstate.isconfirmed and array.size(activeIfvgs) > 0
+    int i = array.size(activeIfvgs) - 1
+    while i >= 0
+        IFVGState ifvg = array.get(activeIfvgs, i)
+        if bar_index > ifvg.expiryBar
+            deleteBox(ifvg.zoneBox)
+            array.remove(activeIfvgs, i)
+        else
+            if not na(ifvg.zoneBox)
+                box.set_right(ifvg.zoneBox, bar_index)
+            array.set(activeIfvgs, i, ifvg)
+        i -= 1
+
+//==============================================================================
+// J. SMT -> iFVG WHEN iFVG FORMS FIRST
+//==============================================================================
+
+if barstate.isconfirmed and not requireSmtBeforeIfvg and array.size(activeIfvgs) > 0
+    int newestBullishSmtPos = findNewestSmtCreatedThisBarPos(true)
+    if not na(newestBullishSmtPos)
+        int ifvgPos = findEligibleIfvgPos(true, bar_index)
+        if not na(ifvgPos)
+            SMTState smt = array.get(smtStates, newestBullishSmtPos)
+            IFVGState ifvg = array.get(activeIfvgs, ifvgPos)
+            if not ifvg.matched
+                nextSetupId += 1
+                label triggerArrow = na
+                if showTriggerArrows
+                    triggerArrow := label.new(bar_index, low, "", xloc=xloc.bar_index, style=label.style_arrowup, color=colorBull, textcolor=colorBull, size=size.small)
+                array.unshift(setupStates, SetupState.new(nextSetupId, true, smt.id, ifvg.id, smt.swingPrice, ifvg.top, ifvg.bottom, bar_index, math.min(bar_index + retraceWindowBars, ifvg.expiryBar), entryMode == "Retrace", false, na, na, na, triggerArrow, na, na))
+                ifvg.matched := true
+                array.set(activeIfvgs, ifvgPos, ifvg)
+                trimSetups(maxSetupKeep)
+                bullishTriggerConfirmed := true
+
+    int newestBearishSmtPos = findNewestSmtCreatedThisBarPos(false)
+    if not na(newestBearishSmtPos)
+        int ifvgPos = findEligibleIfvgPos(false, bar_index)
+        if not na(ifvgPos)
+            SMTState smt = array.get(smtStates, newestBearishSmtPos)
+            IFVGState ifvg = array.get(activeIfvgs, ifvgPos)
+            if not ifvg.matched
+                nextSetupId += 1
+                label triggerArrow = na
+                if showTriggerArrows
+                    triggerArrow := label.new(bar_index, high, "", xloc=xloc.bar_index, style=label.style_arrowdown, color=colorBear, textcolor=colorBear, size=size.small)
+                array.unshift(setupStates, SetupState.new(nextSetupId, false, smt.id, ifvg.id, smt.swingPrice, ifvg.top, ifvg.bottom, bar_index, math.min(bar_index + retraceWindowBars, ifvg.expiryBar), entryMode == "Retrace", false, na, na, na, triggerArrow, na, na))
+                ifvg.matched := true
+                array.set(activeIfvgs, ifvgPos, ifvg)
+                trimSetups(maxSetupKeep)
+                bearishTriggerConfirmed := true
+
+//==============================================================================
+// K. ENTRY / STOP
+//==============================================================================
+
+if barstate.isconfirmed and array.size(setupStates) > 0
+    for i = 0 to array.size(setupStates) - 1
+        SetupState setup = array.get(setupStates, i)
+
+        if entryMode == "Inversion Close" and not setup.entryTriggered and setup.confirmBar == bar_index
+            float stopPrice = getStopPrice(setup.bullish, setup.smtSwingPrice, setup.zoneTop, setup.zoneBottom)
+            bool riskValid = setup.bullish ? stopPrice < close : stopPrice > close
+            setup.entryTriggered := true
+            setup.waitingForEntry := false
+            setup.entryPrice := close
+            setup.entryBar := bar_index
+            setup.stopPrice := stopPrice
+            if showEntryStop and riskValid
+                color levelColor = setup.bullish ? colorBull : colorBear
+                setup.entryLine := createLocalLevelLine(bar_index, close, color.new(levelColor, 0), 2)
+                setup.stopLine := createLocalLevelLine(bar_index, stopPrice, color.new(colorBear, 10), 1)
+            array.set(setupStates, i, setup)
+
+        else if entryMode == "Retrace" and setup.waitingForEntry and not setup.entryTriggered
+            bool expired = bar_index > setup.retraceExpiryBar
+            bool revisitAllowed = bar_index > setup.confirmBar
+            bool zoneTouched = revisitAllowed and high >= setup.zoneBottom and low <= setup.zoneTop
+            if expired
+                setup.waitingForEntry := false
+                array.set(setupStates, i, setup)
+            else if zoneTouched
+                float retraceEntryPrice = setup.bullish ? setup.zoneTop : setup.zoneBottom
+                float stopPrice = getStopPrice(setup.bullish, setup.smtSwingPrice, setup.zoneTop, setup.zoneBottom)
+                bool riskValid = setup.bullish ? stopPrice < retraceEntryPrice : stopPrice > retraceEntryPrice
+                setup.entryTriggered := true
+                setup.waitingForEntry := false
+                setup.entryPrice := retraceEntryPrice
+                setup.entryBar := bar_index
+                setup.stopPrice := stopPrice
+                if showEntryStop and riskValid
+                    color levelColor = setup.bullish ? colorBull : colorBear
+                    setup.entryLine := createLocalLevelLine(bar_index, retraceEntryPrice, color.new(levelColor, 0), 2)
+                    setup.stopLine := createLocalLevelLine(bar_index, stopPrice, color.new(colorBear, 10), 1)
+                array.set(setupStates, i, setup)
+                if setup.bullish
+                    bullishRetraceTouched := true
+                else
+                    bearishRetraceTouched := true
+
+//==============================================================================
+// L. ALERTS
+//==============================================================================
+
+alertcondition(bullishSmtDetected, "Bullish SMT Detected", "Bullish SMT detected on confirmed pivots.")
+alertcondition(bearishSmtDetected, "Bearish SMT Detected", "Bearish SMT detected on confirmed pivots.")
+alertcondition(bullishIfvgFormed, "Bullish iFVG Formed", "Bullish iFVG formed from same-timeframe close-based inversion.")
+alertcondition(bearishIfvgFormed, "Bearish iFVG Formed", "Bearish iFVG formed from same-timeframe close-based inversion.")
+alertcondition(bullishTriggerConfirmed, "Bullish SMT + iFVG Trigger Confirmed", "Bullish SMT + iFVG trigger confirmed.")
+alertcondition(bearishTriggerConfirmed, "Bearish SMT + iFVG Trigger Confirmed", "Bearish SMT + iFVG trigger confirmed.")
+alertcondition(bullishRetraceTouched, "Bullish Retrace Entry Touched", "Bullish retrace entry touched the iFVG zone.")
+alertcondition(bearishRetraceTouched, "Bearish Retrace Entry Touched", "Bearish retrace entry touched the iFVG zone.")

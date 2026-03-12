@@ -1,0 +1,149 @@
+// This Pine Script code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=6
+indicator("SMT Reverse Engineered Skeleton [EWC]", shorttitle="SMTskel", overlay=true, max_lines_count=300, max_labels_count=300)
+
+// v1 scope:
+// - confirmed pivot SMT only
+// - recent pivot scan
+// - time-tolerance pivot matching
+// - one SMT per pivot suppression
+//
+// Explicitly not implemented yet:
+// - intrabar preview / intrabar alerts
+// - delete irrelevant
+// - auto pair mapping
+// - session filters
+// - iFVG integration
+
+type Pivot
+    int index
+    float price
+    bool isHigh
+
+grp_core = "Core"
+comparisonSymbol = input.symbol("CME_MINI:NQ1!", "Comparison Symbol", group=grp_core)
+depth = input.string("Medium", "Depth", options=["Small", "Medium", "Large"], group=grp_core)
+scanPivots = input.int(12, "Scan Last X Pivots", minval=2, maxval=50, group=grp_core)
+pivotTolerance = input.int(2, "Pivot Time Tolerance (Bars)", minval=0, maxval=10, group=grp_core)
+onePerPivot = input.bool(true, "One SMT Per Pivot", group=grp_core)
+maxShown = input.int(30, "Max SMTs Shown", minval=1, maxval=100, group=grp_core)
+
+grp_vis = "Visuals"
+showBearish = input.bool(true, "Show Bearish SMT", group=grp_vis)
+showBullish = input.bool(true, "Show Bullish SMT", group=grp_vis)
+showLabels = input.bool(true, "Show Labels", group=grp_vis)
+
+pivotLen = depth == "Small" ? 2 : depth == "Medium" ? 3 : 5
+
+var chartHighs = array.new<Pivot>()
+var chartLows = array.new<Pivot>()
+var compHighs = array.new<Pivot>()
+var compLows = array.new<Pivot>()
+
+var seenBearKeys = array.new<string>()
+var seenBullKeys = array.new<string>()
+var drawnLines = array.new<line>()
+var drawnLabels = array.new<label>()
+
+method updatePivots(array<Pivot> pivots, float price, bool isHigh, int len, int maxSize) =>
+    if not na(price)
+        array.unshift(pivots, Pivot.new(bar_index[len], price, isHigh))
+        if array.size(pivots) > maxSize
+            array.pop(pivots)
+
+findMatchingPivot(array<Pivot> pivots, int targetIndex, int tolerance) =>
+    Pivot result = na
+    int bestDistance = 1000000
+    if array.size(pivots) > 0
+        for i = 0 to array.size(pivots) - 1
+            Pivot p = array.get(pivots, i)
+            int distance = math.abs(p.index - targetIndex)
+            if distance <= tolerance and distance < bestDistance
+                bestDistance := distance
+                result := p
+    result
+
+arrayHasKey(array<string> keys, string key) =>
+    bool exists = false
+    if array.size(keys) > 0
+        for i = 0 to array.size(keys) - 1
+            if array.get(keys, i) == key
+                exists := true
+                break
+    exists
+
+method pushLine(array<line> ids, line id, int maxItems) =>
+    array.unshift(ids, id)
+    if array.size(ids) > maxItems
+        line.delete(array.pop(ids))
+
+method pushLabel(array<label> ids, label id, int maxItems) =>
+    array.unshift(ids, id)
+    if array.size(ids) > maxItems
+        label.delete(array.pop(ids))
+
+makeKey(bool isBearish, int pivotIndex) =>
+    (isBearish ? "B-" : "U-") + str.tostring(pivotIndex)
+
+get_ohlc() =>
+    [open, high, low, close]
+
+[compOpen, compHigh, compLow, compClose] = request.security(comparisonSymbol, timeframe.period, get_ohlc())
+
+chartPH = ta.pivothigh(pivotLen, pivotLen)
+chartPL = ta.pivotlow(pivotLen, pivotLen)
+compPH = ta.pivothigh(compHigh, pivotLen, pivotLen)
+compPL = ta.pivotlow(compLow, pivotLen, pivotLen)
+
+chartHighs.updatePivots(chartPH, true, pivotLen, 60)
+chartLows.updatePivots(chartPL, false, pivotLen, 60)
+compHighs.updatePivots(compPH, true, pivotLen, 60)
+compLows.updatePivots(compPL, false, pivotLen, 60)
+
+bool newBearSignal = false
+bool newBullSignal = false
+
+if showBearish and array.size(chartHighs) >= 2 and array.size(compHighs) >= 2
+    int highScanLimit = math.min(scanPivots, array.size(chartHighs) - 1)
+    for i = 0 to highScanLimit - 1
+        Pivot c2 = array.get(chartHighs, i)
+        Pivot c1 = array.get(chartHighs, i + 1)
+        Pivot s2 = findMatchingPivot(compHighs, c2.index, pivotTolerance)
+        Pivot s1 = findMatchingPivot(compHighs, c1.index, pivotTolerance)
+        if not na(s2) and not na(s1)
+            bool bearishSmt = (c2.price > c1.price and s2.price < s1.price) or (c2.price < c1.price and s2.price > s1.price)
+            string key = makeKey(true, c2.index)
+            bool allowPrint = bearishSmt and (not onePerPivot or not arrayHasKey(seenBearKeys, key))
+            if allowPrint
+                array.unshift(seenBearKeys, key)
+                line diag = line.new(c1.index, c1.price, c2.index, c2.price, color=#f23645, width=1)
+                drawnLines.pushLine(diag, maxShown)
+                if showLabels
+                    label lbl = label.new(c2.index, c2.price, "Bear SMT", color=color.new(color.black, 100), textcolor=#f23645, style=label.style_label_down, size=size.tiny)
+                    drawnLabels.pushLabel(lbl, maxShown)
+                newBearSignal := true
+                break
+
+if showBullish and array.size(chartLows) >= 2 and array.size(compLows) >= 2
+    int lowScanLimit = math.min(scanPivots, array.size(chartLows) - 1)
+    for i = 0 to lowScanLimit - 1
+        Pivot c2 = array.get(chartLows, i)
+        Pivot c1 = array.get(chartLows, i + 1)
+        Pivot s2 = findMatchingPivot(compLows, c2.index, pivotTolerance)
+        Pivot s1 = findMatchingPivot(compLows, c1.index, pivotTolerance)
+        if not na(s2) and not na(s1)
+            bool bullishSmt = (c2.price < c1.price and s2.price > s1.price) or (c2.price > c1.price and s2.price < s1.price)
+            string key = makeKey(false, c2.index)
+            bool allowPrint = bullishSmt and (not onePerPivot or not arrayHasKey(seenBullKeys, key))
+            if allowPrint
+                array.unshift(seenBullKeys, key)
+                line diag = line.new(c1.index, c1.price, c2.index, c2.price, color=#089981, width=1)
+                drawnLines.pushLine(diag, maxShown)
+                if showLabels
+                    label lbl = label.new(c2.index, c2.price, "Bull SMT", color=color.new(color.black, 100), textcolor=#089981, style=label.style_label_up, size=size.tiny)
+                    drawnLabels.pushLabel(lbl, maxShown)
+                newBullSignal := true
+                break
+
+alertcondition(newBearSignal, "Bearish SMT", "Bearish SMT detected.")
+alertcondition(newBullSignal, "Bullish SMT", "Bullish SMT detected.")

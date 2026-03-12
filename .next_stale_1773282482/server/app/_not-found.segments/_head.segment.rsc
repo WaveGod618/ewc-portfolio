@@ -1,0 +1,5 @@
+1:"$Sreact.fragment"
+2:I[97367,["/_next/static/chunks/b5e5b242cf81e674.js","/_next/static/chunks/a2dfb6fc5208ab9b.js","/_next/static/chunks/0dcb1c4cdf781a76.js"],"ViewportBoundary"]
+3:I[97367,["/_next/static/chunks/b5e5b242cf81e674.js","/_next/static/chunks/a2dfb6fc5208ab9b.js","/_next/static/chunks/0dcb1c4cdf781a76.js"],"MetadataBoundary"]
+4:"$Sreact.suspense"
+0:{"buildId":"cfwDBq9rNrJPuP_2KJVbY","rsc":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L2",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$L3",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"EWC Model Portfolio"}],["$","meta","1",{"name":"description","content":"Hypothetical performance based on EWC posted trade signals. Public-facing model portfolio dashboard."}]]}]}]}],null]}],"loading":null,"isPartial":false}

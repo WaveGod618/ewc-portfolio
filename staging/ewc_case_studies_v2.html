@@ -1,0 +1,1546 @@
+<style>
+  body.page-id-1647 header,
+  body.page-id-1647 footer,
+  body.page-id-1647 .page-header {
+    display: none !important;
+  }
+
+  body.page-id-1647 #content.site-main {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+  }
+
+  .ewc-cases-v2 {
+    --ewc-bg: #06080d;
+    --ewc-surface: rgba(255, 255, 255, 0.05);
+    --ewc-surface-strong: rgba(255, 255, 255, 0.08);
+    --ewc-border: rgba(255, 255, 255, 0.12);
+    --ewc-text: #f5f7fb;
+    --ewc-muted: #9da8bc;
+    --ewc-soft: #dde5f4;
+    --ewc-accent: #8ab6ff;
+    --ewc-accent-2: #6bf1d3;
+    background:
+      radial-gradient(circle at top left, rgba(68, 98, 255, 0.2), transparent 28%),
+      radial-gradient(circle at top right, rgba(59, 191, 255, 0.16), transparent 26%),
+      linear-gradient(180deg, #070a10 0%, #05070b 100%);
+    color: var(--ewc-text);
+    width: 100vw;
+    margin: 0 0 0 calc(50% - 50vw);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ewc-cases-v2,
+  .ewc-cases-v2 * {
+    box-sizing: border-box;
+  }
+
+  .ewc-cases-v2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ewc-shell-nav {
+    width: min(1240px, calc(100% - 56px));
+    margin: 0 auto;
+  }
+
+  .ewc-topbar {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    right: 0;
+    z-index: 30;
+  }
+
+  .ewc-nav-island {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 18px 14px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 15, 26, 0.84);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(22px);
+    font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @keyframes ewcBrandPulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.88;
+      box-shadow: 0 0 18px rgba(124, 240, 211, 0.2);
+    }
+    50% {
+      transform: scale(1.08);
+      opacity: 1;
+      box-shadow: 0 0 26px rgba(124, 240, 211, 0.32);
+    }
+  }
+
+  .ewc-nav-panel {
+    display: grid;
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ewc-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 64px;
+    color: var(--ewc-soft);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .ewc-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+  }
+
+  .ewc-brand-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  @media (max-width: 860px) {
+    .ewc-brand {
+      gap: 12px;
+      min-height: 52px;
+    }
+
+    .ewc-brand-mark {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+    }
+  }
+
+  .ewc-nav-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    justify-self: center;
+    min-width: 0;
+  }
+
+  .ewc-nav-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    color: var(--ewc-muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  .ewc-nav-links a:hover,
+  .ewc-nav-links a[aria-current="page"] {
+    color: var(--ewc-text);
+  }
+
+  .ewc-nav-cta {
+    flex: 0 0 auto;
+    align-self: center;
+  }
+
+  .ewc-nav-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex: 0 0 auto;
+    justify-self: end;
+  }
+
+  .ewc-nav-overlay,
+  .ewc-nav-close {
+    display: none;
+  }
+
+  .ewc-button-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .ewc-button-small:hover {
+    transform: translateY(-1px);
+  }
+
+  .ewc-button-primary {
+    background: linear-gradient(135deg, #7086a7 0%, #4d637f 100%);
+    border-color: rgba(198, 221, 255, 0.18);
+    color: #f8fbff;
+    box-shadow: 0 14px 28px rgba(69, 89, 118, 0.28);
+  }
+
+  .ewc-cases-button-primary.ewc-cases-button-accent {
+    background: linear-gradient(135deg, #77e8d2 0%, #4fcab5 100%);
+    border-color: rgba(107, 241, 211, 0.24);
+    color: #07121d;
+    box-shadow: 0 16px 30px rgba(56, 140, 126, 0.24);
+  }
+
+  .ewc-cases-button-primary.ewc-cases-button-accent:hover {
+    background: linear-gradient(135deg, #84eed9 0%, #5ad5c0 100%);
+  }
+
+  .ewc-nav-island .ewc-nav-cta.ewc-button-primary {
+    background: linear-gradient(180deg, #ffffff 0%, #e7eef7 100%);
+    border-color: rgba(255, 255, 255, 0.74);
+    color: #08111d;
+    box-shadow: 0 18px 34px rgba(4, 8, 14, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    transition: transform 220ms ease, background 240ms ease, border-color 240ms ease, color 240ms ease, box-shadow 240ms ease;
+  }
+
+  .ewc-nav-island .ewc-nav-cta.ewc-button-primary:hover {
+    background: linear-gradient(135deg, #77e8d2 0%, #4fcab5 100%);
+    border-color: rgba(107, 241, 211, 0.3);
+    color: #f8fbff;
+    box-shadow: 0 18px 34px rgba(56, 140, 126, 0.28);
+  }
+
+  .ewc-nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    color: var(--ewc-text);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+
+  .ewc-nav-toggle:hover {
+    transform: translateY(-1px);
+  }
+
+  .ewc-nav-toggle:focus,
+  .ewc-nav-toggle:focus-visible {
+    outline: none;
+    border-color: rgba(198, 221, 255, 0.26);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 0 3px rgba(118, 140, 175, 0.18);
+  }
+
+  .ewc-nav-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:first-child {
+    transform: translateY(3.5px) rotate(45deg);
+  }
+
+  .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:last-child {
+    transform: translateY(-3.5px) rotate(-45deg);
+  }
+
+  .ewc-nav-island.ewc-nav-open .ewc-nav-toggle {
+    background: rgba(118, 140, 175, 0.18);
+    border-color: rgba(198, 221, 255, 0.24);
+  }
+
+  .ewc-cases-shell {
+    width: min(1200px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+
+  .ewc-cases-section {
+    padding: 88px 0;
+  }
+
+  .ewc-cases-hero {
+    padding: 152px 0 72px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    gap: 28px;
+    align-items: end;
+  }
+
+  .ewc-cases-eyebrow,
+  .ewc-cases-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ewc-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ewc-cases-eyebrow {
+    border-color: rgba(107, 241, 211, 0.22);
+    background: rgba(107, 241, 211, 0.08);
+    color: #cff8ef;
+  }
+
+  .ewc-cases-hero h1,
+  .ewc-cases-section h2,
+  .ewc-cases-card h3 {
+    margin: 0;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    color: var(--ewc-text);
+  }
+
+  .ewc-cases-hero h1 {
+    margin-top: 24px;
+    font-size: clamp(46px, 7vw, 82px);
+    max-width: 10ch;
+  }
+
+  .ewc-cases-lead,
+  .ewc-cases-section p,
+  .ewc-cases-card p {
+    margin: 0;
+    color: var(--ewc-muted);
+    line-height: 1.7;
+  }
+
+  .ewc-cases-lead {
+    margin-top: 24px;
+    max-width: 60ch;
+    font-size: 19px;
+  }
+
+  .ewc-cases-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+  }
+
+  .ewc-cases-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 15px;
+    font-weight: 700;
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .ewc-cases-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .ewc-cases-button-primary {
+    background: linear-gradient(135deg, #7086a7 0%, #4d637f 100%);
+    border-color: rgba(198, 221, 255, 0.18);
+    color: #f8fbff;
+    box-shadow: 0 14px 28px rgba(69, 89, 118, 0.28);
+  }
+
+  .ewc-cases-button-secondary {
+    background: linear-gradient(180deg, rgba(29, 39, 58, 0.96) 0%, rgba(16, 23, 36, 0.96) 100%);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #f5f7fb;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .ewc-cases-proof {
+    display: grid;
+    gap: 16px;
+  }
+
+  .ewc-cases-proof-card,
+  .ewc-cases-card,
+  .ewc-cases-cta {
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px);
+  }
+
+  .ewc-cases-proof-card {
+    padding: 26px 24px;
+  }
+
+  .ewc-cases-proof-card strong {
+    display: block;
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: -0.05em;
+    color: var(--ewc-text);
+  }
+
+  .ewc-cases-proof-card span {
+    display: block;
+    margin-top: 10px;
+    color: var(--ewc-muted);
+    line-height: 1.5;
+  }
+
+  .ewc-cases-section-head {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+
+  .ewc-cases-section-head h2 {
+    font-size: clamp(34px, 5vw, 56px);
+    max-width: 12ch;
+  }
+
+  .ewc-cases-grid {
+    display: grid;
+    gap: 22px;
+  }
+
+  .ewc-cases-card {
+    padding: 28px;
+  }
+
+  .ewc-cases-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .ewc-cases-card h3 {
+    font-size: clamp(28px, 3vw, 40px);
+    max-width: 16ch;
+  }
+
+  .ewc-cases-card-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+    gap: 24px;
+    margin-top: 22px;
+  }
+
+  .ewc-cases-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 14px;
+  }
+
+  .ewc-cases-list li {
+    color: var(--ewc-soft);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .ewc-cases-list span {
+    color: var(--ewc-muted);
+  }
+
+  .ewc-cases-summary {
+    padding: 20px 22px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ewc-cases-summary strong {
+    display: block;
+    color: var(--ewc-text);
+    font-size: 16px;
+  }
+
+  .ewc-cases-summary p {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .ewc-cases-images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .ewc-cases-image-card {
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ewc-cases-image-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: zoom-in;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .ewc-cases-image-card:hover img {
+    transform: scale(1.01);
+  }
+
+  .ewc-cases-image-card span {
+    display: block;
+    padding: 14px 16px 16px;
+    color: var(--ewc-soft);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ewc-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 140;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background: rgba(4, 8, 14, 0.84);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .ewc-lightbox.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ewc-lightbox-dialog {
+    position: relative;
+    width: min(1280px, 100%);
+    max-height: calc(100vh - 56px);
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(9, 14, 22, 0.96);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.48);
+  }
+
+  .ewc-lightbox-image-wrap {
+    overflow: auto;
+    border-radius: 18px;
+    background: #0b111a;
+  }
+
+  .ewc-lightbox-image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ewc-lightbox-caption {
+    margin: 0;
+    color: var(--ewc-soft);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .ewc-lightbox-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--ewc-text);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .ewc-cases-cta {
+    padding: 30px;
+    display: grid;
+    gap: 16px;
+    margin-top: 26px;
+  }
+
+  .ewc-cases-cta h2 {
+    font-size: clamp(30px, 4vw, 44px);
+  }
+
+  .ewc-site-footer-wrap {
+    padding: 0 0 40px;
+  }
+
+  .ewc-site-footer {
+    padding: 28px 30px 22px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px);
+  }
+
+  .ewc-site-footer-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .ewc-site-footer-brand {
+    display: grid;
+    gap: 8px;
+  }
+
+  .ewc-site-footer-brand strong {
+    color: var(--ewc-text);
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+
+  .ewc-site-footer-brand a {
+    color: var(--ewc-muted);
+    font-size: 14px;
+  }
+
+  .ewc-site-footer-brand a:hover {
+    color: var(--ewc-soft);
+  }
+
+  .ewc-site-footer-socials {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .ewc-site-footer-social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ewc-soft);
+  }
+
+  .ewc-site-footer-social:hover {
+    color: var(--ewc-text);
+    border-color: rgba(198, 221, 255, 0.18);
+  }
+
+  .ewc-site-footer-social svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  .ewc-site-footer-copy {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ewc-muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 920px) {
+    .ewc-shell-nav {
+      width: min(100%, calc(100% - 28px));
+    }
+
+    .ewc-topbar {
+      top: 18px;
+    }
+
+    .ewc-nav-island {
+      position: relative;
+      z-index: 80;
+      gap: 14px;
+      padding: 12px 14px 12px 16px;
+      border-radius: 28px;
+    }
+
+    .ewc-brand {
+      min-width: 0;
+      justify-content: flex-start;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .ewc-nav-toggle {
+      display: inline-flex;
+      margin-left: auto;
+      position: relative;
+      z-index: 82;
+    }
+
+    .ewc-nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(5, 8, 13, 0.56);
+      backdrop-filter: blur(4px);
+    }
+
+    .ewc-nav-panel {
+      display: none;
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 82px);
+      right: calc(env(safe-area-inset-right, 0px) + 14px);
+      left: auto;
+      z-index: 81;
+      width: min(240px, 58vw);
+      min-width: 214px;
+      max-width: calc(100vw - 28px);
+      padding: 12px 14px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(9, 18, 31, 0.08);
+      background: rgba(248, 251, 255, 0.98);
+      box-shadow: 0 26px 56px rgba(3, 8, 16, 0.28);
+      backdrop-filter: blur(20px);
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-overlay {
+      display: block;
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      justify-items: stretch;
+    }
+
+    .ewc-nav-panel-head {
+      order: 1;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .ewc-nav-links {
+      order: 2;
+      width: 100%;
+      display: grid;
+      justify-items: start;
+      gap: 1px;
+      justify-self: stretch;
+    }
+
+    .ewc-nav-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 0;
+      padding: 6px 0;
+      border-radius: 0;
+      background: transparent;
+      border: 0;
+      text-align: left;
+      color: #0f1a2a;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: none;
+    }
+
+    .ewc-nav-links a:hover,
+    .ewc-nav-links a[aria-current="page"] {
+      color: #07111d;
+    }
+
+    .ewc-nav-cta {
+      min-height: 40px;
+      margin-top: 0;
+      padding: 0 14px;
+      font-size: 13px;
+    }
+
+    .ewc-nav-panel .ewc-nav-cta.ewc-button-primary {
+      display: inline-flex;
+      width: auto;
+      border-color: rgba(9, 18, 31, 0.12);
+      background: linear-gradient(180deg, #0f1a2a 0%, #091220 100%);
+      color: #f8fbff;
+      box-shadow: 0 10px 22px rgba(6, 12, 21, 0.14);
+    }
+
+    .ewc-nav-panel .ewc-nav-cta.ewc-button-primary:hover {
+      background: linear-gradient(135deg, #77e8d2 0%, #4fcab5 100%);
+      border-color: rgba(107, 241, 211, 0.28);
+      color: #08111d;
+      box-shadow: 0 12px 24px rgba(56, 140, 126, 0.18);
+    }
+
+    .ewc-nav-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: rgba(9, 18, 31, 0.06);
+      color: #0f1a2a;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 180ms ease, color 180ms ease;
+    }
+
+    .ewc-nav-close:hover {
+      background: rgba(9, 18, 31, 0.1);
+      color: #07111d;
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:first-child,
+    .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:last-child {
+      transform: none;
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .ewc-cases-hero,
+    .ewc-cases-card-copy,
+    .ewc-cases-images {
+      grid-template-columns: 1fr;
+    }
+
+    .ewc-cases-section {
+      padding: 72px 0;
+    }
+
+    .ewc-cases-hero {
+      padding-top: 132px;
+    }
+
+    .ewc-site-footer-main {
+      flex-direction: column;
+    }
+
+    .ewc-site-footer-socials {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ewc-cases-shell {
+      width: min(100%, calc(100% - 24px));
+    }
+
+    .ewc-cases-card,
+    .ewc-cases-cta,
+    .ewc-cases-proof-card {
+      padding: 24px 20px;
+    }
+
+    .ewc-site-footer {
+      padding: 24px 20px 20px;
+    }
+  }
+</style>
+
+<div class="ewc-cases-v2">
+  <section class="ewc-topbar">
+    <div class="ewc-shell-nav">
+      <div class="ewc-nav-island">
+        <a class="ewc-brand" href="/">
+          <span class="ewc-brand-mark" aria-hidden="true">
+            <img src="http://test.elliottwaveclub.com/wp-content/uploads/2026/03/Copy-of-Copy-of-Elliott-Wave-14.png" alt="" />
+          </span>
+          <span>Elliott Wave Club</span>
+        </a>
+        <button class="ewc-nav-toggle" type="button" aria-expanded="false" aria-controls="ewc-cases-mobile-nav" aria-label="Toggle navigation">
+          <span></span>
+          <span></span>
+        </button>
+        <div class="ewc-nav-panel" id="ewc-cases-mobile-nav">
+          <div class="ewc-nav-links">
+            <a href="/previous-projections/" aria-current="page">Case Studies</a>
+            <a href="/#inside">Membership</a>
+            <a href="/#process">Process</a>
+            <a href="/#pricing">Pricing</a>
+            <a href="/#faq">FAQ</a>
+          </div>
+          <div class="ewc-nav-panel-head">
+            <a class="ewc-button-small ewc-button-primary ewc-nav-cta" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+            <button class="ewc-nav-close" type="button" aria-label="Close navigation">&times;</button>
+          </div>
+        </div>
+        <button class="ewc-nav-overlay" type="button" aria-label="Close navigation"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-cases-shell ewc-cases-hero">
+    <div>
+      <span class="ewc-cases-eyebrow">Elliott Wave Club Case Studies</span>
+      <h1>Before and after charts that show the process in resolved markets.</h1>
+      <p class="ewc-cases-lead">
+        These are not vague notes. Each case study shows the setup before the move, the
+        invalidation logic, the expected path, and the chart after the market resolved.
+      </p>
+      <div class="ewc-cases-actions">
+        <a class="ewc-cases-button ewc-cases-button-primary ewc-cases-button-accent" href="https://whop.com/checkout/1x5V3IH7AxpTASVp17-j4oY-pbEJ-1zcl-59BtejJjOvV0/" target="_blank" rel="noopener noreferrer">Start Free</a>
+        <a class="ewc-cases-button ewc-cases-button-secondary" href="https://test.elliottwaveclub.com/#pricing">Explore Elite</a>
+      </div>
+    </div>
+    <div class="ewc-cases-proof">
+      <div class="ewc-cases-proof-card">
+        <strong>13</strong>
+        <span>Curated examples pulled into a cleaner case-study format.</span>
+      </div>
+      <div class="ewc-cases-proof-card">
+        <strong>Before / After</strong>
+        <span>Each setup keeps the original chart context and the resolved outcome.</span>
+      </div>
+      <div class="ewc-cases-proof-card">
+        <strong>SPX, NQ, ES, SMH</strong>
+        <span>Multi-market examples that show how the framework translates across instruments.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-cases-shell ewc-cases-section">
+    <div class="ewc-cases-section-head">
+      <h2>How to read these.</h2>
+      <p>
+        Focus on the structure, not just the result. The useful part is seeing how the thesis,
+        invalidation, and target were framed before the move resolved.
+      </p>
+    </div>
+    <div class="ewc-cases-grid">
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">August 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">WXY Bottom</span>
+        </div>
+        <h3>Projected the August low as the completion of a higher-degree correction.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>A completed WXY correction into the common retracement and extension confluence zone would set up the next impulsive leg higher.</span></li>
+            <li><strong>Invalidation:</strong> <span>A decisive break through the projected support zone would weaken the bullish continuation count.</span></li>
+            <li><strong>Target:</strong> <span>Transition from Wave [W4] completion into a multi-month [W5] advance.</span></li>
+            <li><strong>Result:</strong> <span>The August low held and price rallied roughly 1,000 points from the projected turn area.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>The setup shows how multi-timeframe confluence was used to turn a volatile correction into a structured long thesis.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/htf-wxt-bottom-call-h4-1024x550.webp" alt="SPX WXY bottom setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/htf-wxt-bottom-call-h4.png-1024x550.webp" alt="SPX WXY bottom setup after the move resolved" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">October 2024</span>
+          <span class="ewc-cases-pill">NQ</span>
+          <span class="ewc-cases-pill">Impulse Down + WXY Up</span>
+        </div>
+        <h3>Used a bearish corrective bounce to frame the next downside leg.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>An impulse decline followed by a WXY corrective bounce would resolve lower once the bounce finished.</span></li>
+            <li><strong>Invalidation:</strong> <span>A structural break above the corrective zone would weaken the downside continuation call.</span></li>
+            <li><strong>Target:</strong> <span>Push into the measured downside extensions once the correction completed.</span></li>
+            <li><strong>Result:</strong> <span>The corrective bounce failed where expected and the lower target zone was reached.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>This is a good example of the framework handling both impulse structure and the trap of a countertrend bounce.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/nq-5-wave-down-WXY-up-1024x550.webp" alt="NQ bearish corrective bounce setup before resolution" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/nq-5-wave-down-WXY-up.png-2-1024x550.webp" alt="NQ bearish corrective bounce setup after resolution" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">January 2024</span>
+          <span class="ewc-cases-pill">ES</span>
+          <span class="ewc-cases-pill">0 / B Trendline</span>
+        </div>
+        <h3>Turned a trendline break into a clean measured-move setup.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>A valid 0 / B trendline break would confirm the corrective structure and support a push into the common retracement zone.</span></li>
+            <li><strong>Invalidation:</strong> <span>Failure to maintain the break would weaken the measured-move target.</span></li>
+            <li><strong>Target:</strong> <span>Move into the 50 to 61.8 percent retracement area with wave-equality confluence.</span></li>
+            <li><strong>Result:</strong> <span>Price respected the trendline logic and advanced into the projected zone.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>The setup shows how a simple execution trigger can sit on top of a broader Elliott Wave structure.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/276-1024x552.png" alt="ES 0/B trendline setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/277-1024x552.png" alt="ES 0/B trendline setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">December 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">2 / 4 Trendline</span>
+        </div>
+        <h3>Used a trendline confirmation to validate continuation into the next leg.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>Maintaining the 2 / 4 trendline structure would keep the impulse intact and support higher continuation.</span></li>
+            <li><strong>Invalidation:</strong> <span>A failed trendline structure would signal the count needed to be reconsidered.</span></li>
+            <li><strong>Target:</strong> <span>Continuation into the next projected leg once the structure confirmed.</span></li>
+            <li><strong>Result:</strong> <span>The trendline signal held and the market followed through in the expected direction.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>This is an execution-focused example where the pattern confirmation mattered as much as the label.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/274-1024x552.png" alt="SPX 2/4 trendline setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/275-1024x552.png" alt="SPX 2/4 trendline setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">August 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">4th/5th Wave Into WXY</span>
+        </div>
+        <h3>Forecasted a 450-point W4 decline and 1,000-point W5 rally with precision.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>In July 2024, SPX completed a [W3] top. The projection called for a 450-point 3-wave decline for [W4], followed by a 1,000-point rally in [W5].</span></li>
+            <li><strong>Invalidation:</strong> <span>Failure of the [W4] zone to hold would have invalidated the bullish continuation structure.</span></li>
+            <li><strong>Target:</strong> <span>[W4] completion followed by a terminal [W5] rally.</span></li>
+            <li><strong>Result:</strong> <span>The August low marked the exact bottom of [W4] before launching into the final leg. Structure, levels, timing, and targets all aligned.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Shows the power of combining higher-degree wave analysis with Fibonacci symmetry for multi-month projections.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/249-1024x550.webp" alt="SPX 4th and 5th wave into WXY setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/250-1024x550.png" alt="SPX 4th and 5th wave into WXY setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">July 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">5 Wave Down To ABC</span>
+        </div>
+        <h3>Used a 5-wave decline to project the corrective rally and continuation lower.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>SPX completed a 5-wave decline, then rallied to the 50% retracement forming a 2nd or B-wave. The 50% level offered A=C equality confluence.</span></li>
+            <li><strong>Invalidation:</strong> <span>A break above the corrective zone would weaken the measured-move target.</span></li>
+            <li><strong>Target:</strong> <span>Continuation lower toward the measured move equal to the initial 5-wave decline.</span></li>
+            <li><strong>Result:</strong> <span>The measured-move target was successfully reached.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Demonstrates how impulse completions set up high-probability corrective targets.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/impulse-down-ac-then-ac-1-1024x550.png" alt="SPX 5-wave decline into ABC setup before resolution" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/impulse-down-ac-then-ac-2-1-1024x550.png" alt="SPX 5-wave decline into ABC setup after resolution" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">January 2024</span>
+          <span class="ewc-cases-pill">SMH</span>
+          <span class="ewc-cases-pill">W4/W5</span>
+        </div>
+        <h3>Projected a 5th wave extension target after a clean 4th wave retracement.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>SMH retraced 30-38.2% of the fractal 3rd wave with a 3-wave structure for a potential 4th. With the 1st wave extended, the 5th should be shorter than the 3rd, targeting the 50-61.8% extensions.</span></li>
+            <li><strong>Invalidation:</strong> <span>A break below the W4 zone would invalidate the impulsive count.</span></li>
+            <li><strong>Target:</strong> <span>50-61.8% extensions for the fractal 5th wave.</span></li>
+            <li><strong>Result:</strong> <span>Price rallied immediately and precisely into the projected target zone.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Clean example of using wave proportionality to set 5th wave targets.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/306-1024x552.png" alt="SMH W4 and W5 setup before the rally" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/307-1024x552.png" alt="SMH W4 and W5 setup after the rally" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">May 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">WXY</span>
+        </div>
+        <h3>Confirmed a bearish WXY structure for a 60-90 point projected decline.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>A 3-wave move down was followed by a bearish WXY correction to the 61.8-78.6% retracements. After retracing 50% of the internal X-Wave, the WXY was confirmed.</span></li>
+            <li><strong>Invalidation:</strong> <span>A break above the corrective structure would negate the bearish WXY.</span></li>
+            <li><strong>Target:</strong> <span>Measured targets projected a 60-90 point decline with a cross of the prior low.</span></li>
+            <li><strong>Result:</strong> <span>Price reached both the projected zone and lower support precisely as forecasted.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Shows how internal wave confirmation (the X-wave retracement) adds confidence to the directional thesis.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/403-1024x552.png" alt="SPX bearish WXY setup before resolution" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/404-1024x552.png" alt="SPX bearish WXY setup after resolution" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">May 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">Triangle Continuation</span>
+        </div>
+        <h3>Identified a triangle continuation pattern for a 60-point rally into extensions.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>SPX was forming a triangle within a higher-degree wave, offering a bullish bias. Price traced an A-B-C-D-E triangle validated by holding the A-wave low.</span></li>
+            <li><strong>Invalidation:</strong> <span>A break of the A-wave low would invalidate the triangle structure.</span></li>
+            <li><strong>Target:</strong> <span>Rally into the 61.8% extension of the prior impulse wave.</span></li>
+            <li><strong>Result:</strong> <span>Price rallied 60 points directly into the target zone. The triangle was later re-labeled as a W4 (not W3), which would have raised upside targets further.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Even with a minor labeling adjustment, the framework still produced a clean, tradeable outcome.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/399-1024x552.png" alt="SPX triangle continuation setup before the rally" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/400-1024x552.png" alt="SPX triangle continuation setup after the rally" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">August 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">3-Wave Corrective</span>
+        </div>
+        <h3>Projected rejection from a confluence zone to confirm the completion of the corrective rally.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>Rejection expected from the 50-61.8% retracement zone, aligned with 90-100% A-wave extensions, supporting Wave C completion. Target was the lower boundary of the corrective parallel channel.</span></li>
+            <li><strong>Invalidation:</strong> <span>A sustained break above the retracement zone would invalidate the bearish thesis.</span></li>
+            <li><strong>Target:</strong> <span>Move toward the lower channel boundary, aligned with the 50-61.8% retracements of the broader corrective rally.</span></li>
+            <li><strong>Result:</strong> <span>The move played out exactly as projected.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Demonstrates multi-layer confluence (Fibonacci, extensions, and channel boundaries) for higher-conviction setups.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/390-1024x552.png" alt="SPX 3-wave corrective rejection setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/391-1024x552.png" alt="SPX 3-wave corrective rejection setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">October 2024</span>
+          <span class="ewc-cases-pill">NQ</span>
+          <span class="ewc-cases-pill">Impulse Down To Corrective Rally</span>
+        </div>
+        <h3>Used a 5-wave impulse decline to frame a corrective long opportunity.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>The initial 5-wave move down signaled a corrective rally toward the prior W4 extreme, forming a 2nd or B-wave. A long opportunity was highlighted into the 4th wave zone aligned with 30-50% retracements.</span></li>
+            <li><strong>Invalidation:</strong> <span>A failure to rally past the initial retracement zone would suggest immediate continuation lower.</span></li>
+            <li><strong>Target:</strong> <span>Rally into the prior W4 zone and common retracement levels.</span></li>
+            <li><strong>Result:</strong> <span>Price rallied sharply into the expected resistance area.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Shows how bearish impulses still produce tradeable corrective rallies when framed properly.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/385-1024x552.png" alt="NQ impulse down into corrective rally setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/384-1024x552.png" alt="NQ impulse down into corrective rally setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">August 2024</span>
+          <span class="ewc-cases-pill">SPX</span>
+          <span class="ewc-cases-pill">5-Wave Down Into WXY</span>
+        </div>
+        <h3>Mapped a 5-wave decline into a WXY corrective structure with a 3rd wave extension.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>SPX produced a clean 5-wave down followed by a WXY corrective pattern.</span></li>
+            <li><strong>Invalidation:</strong> <span>Structural overlap would invalidate the impulsive count.</span></li>
+            <li><strong>Target:</strong> <span>Completion of the WXY corrective structure within projected extension zones.</span></li>
+            <li><strong>Result:</strong> <span>The corrective structure resolved as projected.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Demonstrates reading both the impulse and the corrective sequence together.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/spx-5-wave-down-wxy-up-3rd-ext-1-1024x550.png" alt="SPX 5-wave down into WXY setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/spx-5-wave-down-wxy-up-3rd-ext-1.png-2-1-1024x550.png" alt="SPX 5-wave down into WXY setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ewc-cases-card">
+        <div class="ewc-cases-card-meta">
+          <span class="ewc-cases-pill">October 2024</span>
+          <span class="ewc-cases-pill">NQ</span>
+          <span class="ewc-cases-pill">W4 Completion Into W5 Rally</span>
+        </div>
+        <h3>Defined the W4 support zone and projected the W5 rally to 6,150+.</h3>
+        <div class="ewc-cases-card-copy">
+          <ul class="ewc-cases-list">
+            <li><strong>Thesis:</strong> <span>Price would complete a correction into the [W4] support zone (5,300-5,070) and respect the 0.382 retracement without violating invalidation, then begin [W5].</span></li>
+            <li><strong>Invalidation:</strong> <span>A break below the [W4] support zone would invalidate the impulsive sequence.</span></li>
+            <li><strong>Target:</strong> <span>Primary upside target of 6,150 (61.8% extension of Waves 1 + 3).</span></li>
+            <li><strong>Result:</strong> <span>[W4] completed within the target zone. [W5] rally reached and slightly exceeded the 6,150+ extension. Impulse structure intact from the 2022 low.</span></li>
+          </ul>
+          <div class="ewc-cases-summary">
+            <strong>Why it matters</strong>
+            <p>Highlights how a properly defined W4 correction provides high-conviction setups for terminal 5th wave rallies.</p>
+          </div>
+        </div>
+        <div class="ewc-cases-images">
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/4th5b-wave-wxy-down-1024x550.webp" alt="NQ W4 completion into W5 rally setup before the move" />
+            <span>Before</span>
+          </div>
+          <div class="ewc-cases-image-card">
+            <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/07/4th5b-wave-wxy-down.png-1024x550.webp" alt="NQ W4 completion into W5 rally setup after the move" />
+            <span>After</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="ewc-cases-cta">
+      <span class="ewc-cases-eyebrow">Next Step</span>
+      <h2>See the framework before the move, then join the process live.</h2>
+      <p>
+        The case studies show how the work is structured. The membership is where that same
+        process gets applied to current market conditions, daily plans, and live trade setups.
+      </p>
+      <div class="ewc-cases-actions">
+        <a class="ewc-cases-button ewc-cases-button-primary" href="https://test.elliottwaveclub.com/#pricing">Compare Free vs Elite</a>
+        <a class="ewc-cases-button ewc-cases-button-secondary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-cases-shell ewc-site-footer-wrap">
+    <div class="ewc-site-footer">
+      <div class="ewc-site-footer-main">
+        <div class="ewc-site-footer-brand">
+          <strong>Elliott Wave Club</strong>
+          <a href="mailto:support@elliottwaveclub.com">support@elliottwaveclub.com</a>
+        </div>
+        <div class="ewc-site-footer-socials">
+          <a class="ewc-site-footer-social" href="https://www.twitter.com/triggertrades/" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on X">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </a>
+          <a class="ewc-site-footer-social" href="https://www.tiktok.com/@triggertrades" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on TikTok">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4V13.2A3.2 3.2 0 1 1 10.8 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 4C14.9 6.1 16.8 7.4 19 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </a>
+          <a class="ewc-site-footer-social" href="https://www.youtube.com/channel/UCOfLITbjjNjcIVaV9pBZuCA" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on YouTube">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="11" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M10 9.5L15 12L10 14.5V9.5Z" fill="currentColor"/></svg>
+          </a>
+          <a class="ewc-site-footer-social" href="https://www.instagram.com/triggertrades/" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on Instagram">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4.5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6.8" r="1" fill="currentColor"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ewc-site-footer-copy">© 2026 Elliott Wave Club. Educational research only. Not financial advice.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function () {
+    var island = document.querySelector(".ewc-nav-island");
+    var toggle = island ? island.querySelector(".ewc-nav-toggle") : null;
+    var panel = island ? island.querySelector(".ewc-nav-panel") : null;
+    var closeButton = island ? island.querySelector(".ewc-nav-close") : null;
+    var overlay = island ? island.querySelector(".ewc-nav-overlay") : null;
+
+    if (!island || !toggle || !panel || !closeButton || !overlay) {
+      return;
+    }
+
+    function closeNav() {
+      island.classList.remove("ewc-nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleNav() {
+      var isOpen = island.classList.toggle("ewc-nav-open");
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    toggle.addEventListener("click", function (event) {
+      event.stopPropagation();
+      toggleNav();
+    });
+
+    closeButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      closeNav();
+    });
+
+    overlay.addEventListener("click", closeNav);
+
+    panel.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", closeNav);
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!island.contains(event.target)) {
+        closeNav();
+      }
+    });
+
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 920) {
+        closeNav();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeNav();
+      }
+    });
+  })();
+
+  (function () {
+    var images = Array.from(document.querySelectorAll(".ewc-cases-image-card img"));
+
+    if (!images.length) {
+      return;
+    }
+
+    var lightbox = document.createElement("div");
+    lightbox.className = "ewc-lightbox";
+    lightbox.innerHTML = [
+      '<div class="ewc-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Expanded case study chart">',
+      '<button class="ewc-lightbox-close" type="button" aria-label="Close enlarged chart">&times;</button>',
+      '<div class="ewc-lightbox-image-wrap"><img class="ewc-lightbox-image" alt="" /></div>',
+      '<p class="ewc-lightbox-caption"></p>',
+      "</div>"
+    ].join("");
+    document.body.appendChild(lightbox);
+
+    var dialog = lightbox.querySelector(".ewc-lightbox-dialog");
+    var lightboxImage = lightbox.querySelector(".ewc-lightbox-image");
+    var caption = lightbox.querySelector(".ewc-lightbox-caption");
+    var closeButton = lightbox.querySelector(".ewc-lightbox-close");
+
+    function closeLightbox() {
+      lightbox.classList.remove("is-open");
+      document.body.style.overflow = "";
+    }
+
+    function openLightbox(image) {
+      lightboxImage.src = image.currentSrc || image.src;
+      lightboxImage.alt = image.alt || "";
+      caption.textContent = image.alt || "";
+      lightbox.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+    }
+
+    images.forEach(function (image) {
+      image.setAttribute("tabindex", "0");
+      image.setAttribute("role", "button");
+      image.setAttribute("aria-label", (image.alt || "Case study chart") + ". Open enlarged view");
+
+      image.addEventListener("click", function () {
+        openLightbox(image);
+      });
+
+      image.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openLightbox(image);
+        }
+      });
+    });
+
+    closeButton.addEventListener("click", closeLightbox);
+
+    lightbox.addEventListener("click", function (event) {
+      if (!dialog.contains(event.target)) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && lightbox.classList.contains("is-open")) {
+        closeLightbox();
+      }
+    });
+  })();
+</script>

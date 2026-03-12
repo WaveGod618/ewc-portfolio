@@ -1,0 +1,323 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=6
+// SMT -> iFVG Model | Elliott Wave Club Research
+indicator("iFVG Ultimate + SMT [EWC]", shorttitle="iFVG+SMT", overlay=true, max_lines_count=500, max_boxes_count=500, max_labels_count=500)
+
+// --- Constants & Colors ---
+COLOR_GREEN = #089981
+COLOR_RED = #f23645
+COLOR_BG_GREEN = color.new(#089981, 80)
+COLOR_BG_RED = color.new(#f23645, 80)
+
+// --- Types ---
+type Pivot
+    int index
+    float price
+    bool isHigh
+
+type SMT
+    Pivot p1
+    Pivot p2
+    string pair
+    bool isBearish
+    line diagonalLine
+    label lbl
+
+type FVG
+    int start_index
+    float top
+    float bottom
+    bool isBullish
+    bool isInverted = false
+    int linkedSmtIndex = na
+    string linkedSmtPair = ""
+    box displayBox
+
+// --- Inputs ---
+grp_smt = "SMT Settings"
+pivotLookback = input.int(2, "Pivot Lookback", minval=1, group=grp_smt, tooltip="Lower numbers confirm pivots faster so they can feed the iFVG trigger sooner.")
+maxPivots = input.int(25, "Compare Last X Pivot Points", minval=2, group=grp_smt)
+maxSmtsShown = input.int(10, "Maximum SMTs Shown", minval=1, group=grp_smt)
+show2Candle = input.bool(true, "Show 2-Candle SMT", group=grp_smt)
+smtMemory = input.int(30, "Max Bars Between SMT & iFVG", minval=5, group=grp_smt)
+pivotSyncWindow = input.int(3, "Pivot Pairing Tolerance (Bars)", minval=0, maxval=10, group=grp_smt, tooltip="Allows SMT pivots across correlated symbols to align within a few bars instead of requiring an exact index match.")
+
+grp_sym = "Symbol Pairs"
+nqSymbol = input.symbol("CME_MINI:NQ1!", "NQ Symbol", group=grp_sym)
+ymSymbol = input.symbol("CBOT_MINI:YM1!", "YM Symbol", group=grp_sym)
+useNQ = input.bool(true, "ES/NQ Pair", group=grp_sym)
+useYM = input.bool(true, "ES/YM Pair", group=grp_sym)
+
+grp_ifvg = "iFVG Settings"
+showPendingFvgs = input.bool(false, "Show Pending FVGs", group=grp_ifvg)
+pendingLifespan = input.int(25, "Pending FVG Lifespan", minval=5, group=grp_ifvg)
+minGapTicks = input.int(4, "Minimum Gap Size (Ticks)", minval=1, group=grp_ifvg)
+bullIfvgColor = input.color(color.new(color.blue, 70), "Bullish iFVG Color", group=grp_ifvg)
+bearIfvgColor = input.color(color.new(color.red, 70), "Bearish iFVG Color", group=grp_ifvg)
+
+grp_rr = "Risk / Reward Visuals"
+showRR = input.bool(true, "Show Risk/Reward Boxes", group=grp_rr)
+rrRatio = input.float(2.0, "Target R:R", step=0.5, group=grp_rr)
+
+// --- Global Arrays & Persistent Variables ---
+var chartHighs = array.new<Pivot>()
+var chartLows = array.new<Pivot>()
+var nqHighs = array.new<Pivot>()
+var nqLows = array.new<Pivot>()
+var ymHighs = array.new<Pivot>()
+var ymLows = array.new<Pivot>()
+
+var activeSmts = array.new<SMT>()
+var pendingFvgs = array.new<FVG>()
+var activeIfvgs = array.new<FVG>()
+
+var string currentGrade = "-"
+var color gradeColor = color.gray
+var bool checkLiqSweep = false
+var bool checkVolume = false
+var bool checkSMT = false
+var string currentBias = "Neutral"
+
+// --- Functions ---
+method updatePivots(array<Pivot> pivots, float price, bool isHigh, int maxSize) =>
+    if not na(price)
+        array.unshift(pivots, Pivot.new(bar_index[pivotLookback], price, isHigh))
+        if array.size(pivots) > maxSize
+            array.pop(pivots)
+
+get_ohl() =>
+    [high, low, close]
+
+findPivotMatch(array<Pivot> pivots, int targetIndex, int minIndex, int maxIndex, int tolerance) =>
+    int matchIndex = na
+    int bestDistance = 1000000
+    if array.size(pivots) > 0
+        for i = 0 to array.size(pivots) - 1
+            Pivot p = array.get(pivots, i)
+            if p.index >= minIndex and p.index <= maxIndex
+                int distance = math.abs(p.index - targetIndex)
+                if distance <= tolerance and distance < bestDistance
+                    bestDistance := distance
+                    matchIndex := i
+    matchIndex
+
+smtAlreadyTracked(int pivotIndex, string pairName, bool isBearish) =>
+    bool exists = false
+    if array.size(activeSmts) > 0
+        for i = 0 to array.size(activeSmts) - 1
+            SMT s = array.get(activeSmts, i)
+            if s.p2.index == pivotIndex and s.pair == pairName and s.isBearish == isBearish
+                exists := true
+                break
+    exists
+
+detect_smt(array<Pivot> cPivots, array<Pivot> sPivots, string pairName) =>
+    SMT result = na
+    if array.size(cPivots) >= 2 and array.size(sPivots) >= 2
+        Pivot c2 = array.get(cPivots, 0)
+        Pivot c1 = array.get(cPivots, 1)
+
+        int s2Idx = findPivotMatch(sPivots, c2.index, c1.index + 1, bar_index, pivotSyncWindow)
+        if not na(s2Idx)
+            Pivot s2 = array.get(sPivots, s2Idx)
+            int s1Idx = findPivotMatch(sPivots, c1.index, 0, s2.index - 1, pivotSyncWindow)
+            if not na(s1Idx)
+                Pivot s1 = array.get(sPivots, s1Idx)
+                bool isBearish = c1.isHigh
+                bool chartMadeBreak = c2.price != c1.price and s2.price != s1.price
+                bool symMadeOpposingBreak = isBearish ? ((c2.price > c1.price and s2.price < s1.price) or (c2.price < c1.price and s2.price > s1.price)) : ((c2.price < c1.price and s2.price > s1.price) or (c2.price > c1.price and s2.price < s1.price))
+                bool spacingOk = show2Candle or (c2.index - c1.index > 1)
+
+                if chartMadeBreak and symMadeOpposingBreak and spacingOk and not smtAlreadyTracked(c2.index, pairName, isBearish)
+                    color lblCol = isBearish ? COLOR_RED : COLOR_GREEN
+                    string txt = str.format("{0} {1}", isBearish ? "▼ SMT" : "▲ SMT", pairName)
+                    line diag = line.new(c1.index, c1.price, c2.index, c2.price, color=lblCol, width=1)
+                    label lbl = label.new(c2.index, c2.price, txt, color=na, textcolor=lblCol, style=isBearish ? label.style_label_down : label.style_label_up, size=size.small)
+                    result := SMT.new(c1, c2, pairName, isBearish, diag, lbl)
+    result
+
+trimSmts(int maxSize) =>
+    while array.size(activeSmts) > maxSize
+        SMT stale = array.pop(activeSmts)
+        line.delete(stale.diagonalLine)
+        label.delete(stale.lbl)
+
+findRecentSmt(bool wantBearish, int referenceIndex, int maxBars) =>
+    SMT found = na
+    if array.size(activeSmts) > 0
+        for i = 0 to array.size(activeSmts) - 1
+            SMT s = array.get(activeSmts, i)
+            int age = referenceIndex - s.p2.index
+            if s.isBearish == wantBearish and age >= 0 and age <= maxBars
+                found := s
+                break
+    found
+
+drawRrBoxes(bool isBullish, float entry, float stopPrice, float targetPrice) =>
+    float riskTop = math.max(entry, stopPrice)
+    float riskBottom = math.min(entry, stopPrice)
+    float rewardTop = math.max(entry, targetPrice)
+    float rewardBottom = math.min(entry, targetPrice)
+    box.new(bar_index, riskTop, bar_index + 10, riskBottom, border_color=na, bgcolor=COLOR_BG_RED)
+    box.new(bar_index, rewardTop, bar_index + 10, rewardBottom, border_color=na, bgcolor=COLOR_BG_GREEN)
+
+handleNewSmt(SMT smt) =>
+    if not na(smt)
+        array.unshift(activeSmts, smt)
+        trimSmts(maxSmtsShown)
+
+// --- Core Logic ---
+[nqH, nqL, nqC] = request.security(nqSymbol, timeframe.period, get_ohl())
+[ymH, ymL, ymC] = request.security(ymSymbol, timeframe.period, get_ohl())
+volSma = ta.sma(volume, 20)
+
+ph = ta.pivothigh(pivotLookback, pivotLookback)
+pl = ta.pivotlow(pivotLookback, pivotLookback)
+chartHighs.updatePivots(ph, true, maxPivots)
+chartLows.updatePivots(pl, false, maxPivots)
+
+nqPH = ta.pivothigh(nqH, pivotLookback, pivotLookback)
+nqPL = ta.pivotlow(nqL, pivotLookback, pivotLookback)
+nqHighs.updatePivots(nqPH, true, maxPivots)
+nqLows.updatePivots(nqPL, false, maxPivots)
+
+ymPH = ta.pivothigh(ymH, pivotLookback, pivotLookback)
+ymPL = ta.pivotlow(ymL, pivotLookback, pivotLookback)
+ymHighs.updatePivots(ymPH, true, maxPivots)
+ymLows.updatePivots(ymPL, false, maxPivots)
+
+if not na(ph)
+    if useNQ
+        handleNewSmt(detect_smt(chartHighs, nqHighs, "ES/NQ"))
+    if useYM
+        handleNewSmt(detect_smt(chartHighs, ymHighs, "ES/YM"))
+
+if not na(pl)
+    if useNQ
+        handleNewSmt(detect_smt(chartLows, nqLows, "ES/NQ"))
+    if useYM
+        handleNewSmt(detect_smt(chartLows, ymLows, "ES/YM"))
+
+float bullGapTicks = (low - high[2]) / syminfo.mintick
+float bearGapTicks = (low[2] - high) / syminfo.mintick
+
+bool isBullishFvg = high[2] < low and bullGapTicks >= minGapTicks
+bool isBearishFvg = low[2] > high and bearGapTicks >= minGapTicks
+
+if isBullishFvg
+    SMT linkedSmt = findRecentSmt(true, bar_index, smtMemory)
+    int linkedIndex = not na(linkedSmt) ? linkedSmt.p2.index : na
+    string linkedPair = not na(linkedSmt) ? linkedSmt.pair : ""
+    box b = box.new(bar_index[2], low, bar_index, high[2], border_color=na, bgcolor=showPendingFvgs ? color.new(color.gray, 90) : na)
+    array.unshift(pendingFvgs, FVG.new(bar_index, low, high[2], true, false, linkedIndex, linkedPair, b))
+
+if isBearishFvg
+    SMT linkedSmt = findRecentSmt(false, bar_index, smtMemory)
+    int linkedIndex = not na(linkedSmt) ? linkedSmt.p2.index : na
+    string linkedPair = not na(linkedSmt) ? linkedSmt.pair : ""
+    box b = box.new(bar_index[2], low[2], bar_index, high, border_color=na, bgcolor=showPendingFvgs ? color.new(color.gray, 90) : na)
+    array.unshift(pendingFvgs, FVG.new(bar_index, low[2], high, false, false, linkedIndex, linkedPair, b))
+
+bool recentLiqSweepUp = false
+bool recentLiqSweepDn = false
+
+if array.size(chartHighs) > 0 and high > array.get(chartHighs, 0).price
+    recentLiqSweepUp := true
+if array.size(chartLows) > 0 and low < array.get(chartLows, 0).price
+    recentLiqSweepDn := true
+
+if array.size(pendingFvgs) > 0
+    int pendingIdx = array.size(pendingFvgs) - 1
+    while pendingIdx >= 0
+        FVG f = array.get(pendingFvgs, pendingIdx)
+        bool expired = bar_index - f.start_index > pendingLifespan
+        bool inverted = false
+        bool hasLinkedSmt = not na(f.linkedSmtIndex) and bar_index - f.linkedSmtIndex <= smtMemory
+
+        if barstate.isconfirmed
+            if f.isBullish
+                inverted := close < f.bottom
+            else
+                inverted := close > f.top
+
+        if inverted
+            if hasLinkedSmt
+                f.isInverted := true
+                f.isBullish := not f.isBullish
+
+                if f.isBullish
+                    label.new(bar_index, close, "DD+", color=na, textcolor=color.blue, style=label.style_label_left, size=size.small)
+                else
+                    label.new(bar_index, close, "DD-", color=na, textcolor=color.red, style=label.style_label_left, size=size.small)
+
+                box.set_bgcolor(f.displayBox, f.isBullish ? bullIfvgColor : bearIfvgColor)
+                box.set_right(f.displayBox, bar_index + 5)
+
+                currentBias := f.isBullish ? "Bullish" : "Bearish"
+                checkLiqSweep := f.isBullish ? recentLiqSweepDn : recentLiqSweepUp
+                checkVolume := volume > volSma
+                checkSMT := true
+
+                int score = (checkLiqSweep ? 1 : 0) + (checkVolume ? 1 : 0) + 1
+                if score == 3
+                    currentGrade := "A+"
+                    gradeColor := color.lime
+                else if score == 2
+                    currentGrade := "B"
+                    gradeColor := color.yellow
+                else
+                    currentGrade := "C"
+                    gradeColor := color.orange
+
+                if showRR
+                    if f.isBullish
+                        float stopPrice = math.min(low[1], f.bottom - ((f.top - f.bottom) * 0.5))
+                        float targetPrice = close + ((close - stopPrice) * rrRatio)
+                        drawRrBoxes(true, close, stopPrice, targetPrice)
+                    else
+                        float stopPrice = math.max(high[1], f.top + ((f.top - f.bottom) * 0.5))
+                        float targetPrice = close - ((stopPrice - close) * rrRatio)
+                        drawRrBoxes(false, close, stopPrice, targetPrice)
+
+                array.unshift(activeIfvgs, f)
+                array.remove(pendingFvgs, pendingIdx)
+            else
+                box.delete(f.displayBox)
+                array.remove(pendingFvgs, pendingIdx)
+        else if expired
+            box.delete(f.displayBox)
+            array.remove(pendingFvgs, pendingIdx)
+        else
+            box.set_right(f.displayBox, bar_index)
+
+        pendingIdx := pendingIdx - 1
+
+if array.size(activeIfvgs) > 0
+    int activeIdx = array.size(activeIfvgs) - 1
+    while activeIdx >= 0
+        FVG f = array.get(activeIfvgs, activeIdx)
+        box.set_right(f.displayBox, bar_index)
+        if bar_index - f.start_index > 100
+            array.remove(activeIfvgs, activeIdx)
+        activeIdx := activeIdx - 1
+
+var tb = table.new(position.bottom_right, 2, 6, bgcolor=color.new(#1e222d, 0), border_color=color.gray, border_width=1)
+
+if barstate.islast
+    table.cell(tb, 0, 0, "Bias", text_color=color.gray, text_size=size.small, text_halign=text.align_right)
+    table.cell(tb, 1, 0, currentBias, text_color=currentBias == "Bullish" ? color.green : currentBias == "Bearish" ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    table.cell(tb, 0, 1, "Setup Grade", text_color=color.gray, text_size=size.small, text_halign=text.align_right)
+    table.cell(tb, 1, 1, currentGrade, text_color=gradeColor, text_size=size.small, text_halign=text.align_center)
+
+    table.cell(tb, 0, 2, "Checklist", text_color=color.white, text_size=size.small, bgcolor=color.new(#2a2e39, 0), text_halign=text.align_center)
+    table.cell(tb, 1, 2, "Status", text_color=color.white, text_size=size.small, bgcolor=color.new(#2a2e39, 0), text_halign=text.align_center)
+
+    table.cell(tb, 0, 3, "Liquidity Sweep", text_color=color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(tb, 1, 3, checkLiqSweep ? "✓" : "✗", text_color=color.white, text_size=size.small, bgcolor=checkLiqSweep ? color.new(color.green, 30) : color.new(color.red, 30))
+
+    table.cell(tb, 0, 4, "Volume", text_color=color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(tb, 1, 4, checkVolume ? "✓" : "✗", text_color=color.white, text_size=size.small, bgcolor=checkVolume ? color.new(color.green, 30) : color.new(color.red, 30))
+
+    table.cell(tb, 0, 5, "SMT w/ ES", text_color=color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(tb, 1, 5, checkSMT ? "✓" : "✗", text_color=color.white, text_size=size.small, bgcolor=checkSMT ? color.new(color.green, 30) : color.new(color.red, 30))

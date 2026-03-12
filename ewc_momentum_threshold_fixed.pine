@@ -1,0 +1,442 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0
+// https://mozilla.org/MPL/2.0/
+// © Elliott Wave Club (EWC) — @triggertrades
+
+//@version=6
+indicator("EWC Momentum Threshold", overlay=true, max_lines_count=50, max_labels_count=50, max_boxes_count=10)
+
+// ─────────────────────────────────────────────
+// INPUTS
+// ─────────────────────────────────────────────
+
+pivotLen = input.int(10, "Pivot Length", minval=3, maxval=50, tooltip="Bars left/right to confirm a swing pivot.\nHigher = more significant swings, fewer signals.")
+
+ratioChoice      = input.string("0.55", "MT Ratio", options=["0.50", "0.55", "0.618", "Custom"], group="MT Settings")
+customRatio      = input.float(0.55, "Custom Ratio", minval=0.01, maxval=0.99, step=0.01, group="MT Settings")
+invalidateOnWick = input.bool(false, "Strict Invalidation (wick-based)", group="MT Settings", tooltip="When enabled, any wick beyond the active range invalidates the MT.\nWhen disabled (default), only a close beyond the range invalidates.")
+
+showFibLabels = input.bool(true, "Show 0 / 1 Labels", group="Display")
+showMTLabel   = input.bool(true, "Show MT Label", group="Display")
+showSwingDots = input.bool(true, "Show Swing Markers", group="Display")
+showBothMT    = input.bool(true, "Show Both 0.50 & 0.55", group="Display")
+showTable     = input.bool(true, "Show Status Table", group="Display")
+extendBars    = input.int(25, "Extend Lines Forward", minval=5, maxval=100, group="Display")
+
+mtColor      = input.color(color.new(#FFD700, 0), "MT Line Color", group="Colors")
+mtCrossColor = input.color(color.new(#FF4444, 0), "MT Crossed Color", group="Colors")
+fibColor     = input.color(color.new(#888888, 40), "Fib 0/1 Color", group="Colors")
+mtLineWidth  = input.int(2, "MT Line Width", minval=1, maxval=5, group="Style")
+
+// ─────────────────────────────────────────────
+// RATIO
+// ─────────────────────────────────────────────
+
+fibLevel = switch ratioChoice
+    "0.50"  => 0.50
+    "0.55"  => 0.55
+    "0.618" => 0.618
+    => customRatio
+
+// ─────────────────────────────────────────────
+// PIVOT DETECTION
+// ─────────────────────────────────────────────
+
+pivHi = ta.pivothigh(high, pivotLen, pivotLen)
+pivLo = ta.pivotlow(low, pivotLen, pivotLen)
+
+// ─────────────────────────────────────────────
+// STATE VARIABLES
+// ─────────────────────────────────────────────
+
+var float originPrice  = na
+var int   originBar    = na
+var bool  originIsHigh = false
+var float point0Price  = na
+var int   point0Bar    = na
+var bool  isLocked     = false
+var bool  rangeActive  = false
+
+// Track the temporary opposite extreme for the current unlocked leg.
+// This resets only when a brand-new unlocked leg starts, not on every
+// trailing origin update.
+var float runHi    = na
+var int   runHiBar = na
+var float runLo    = na
+var int   runLoBar = na
+
+bool resetTrailTracker = false
+bool resetTrailIsHigh  = false
+int  resetTrailBar     = na
+
+// ─────────────────────────────────────────────
+// STATE MACHINE — PIVOT HIGH CONFIRMED
+// ─────────────────────────────────────────────
+
+if not na(pivHi)
+    float ph = pivHi
+    int   pb = bar_index - pivotLen
+
+    if not rangeActive
+        originPrice        := ph
+        originBar          := pb
+        originIsHigh       := true
+        point0Price        := na
+        point0Bar          := na
+        isLocked           := false
+        rangeActive        := true
+        resetTrailTracker  := true
+        resetTrailIsHigh   := true
+        resetTrailBar      := pb
+
+    else if rangeActive and not originIsHigh and not isLocked
+        point0Price  := originPrice
+        point0Bar    := originBar
+        originPrice  := ph
+        originBar    := pb
+        originIsHigh := true
+        isLocked     := true
+
+    else if rangeActive and originIsHigh and not isLocked
+        if ph > originPrice
+            originPrice := ph
+            originBar   := pb
+
+    else if rangeActive and not originIsHigh and isLocked
+        point0Price  := originPrice
+        point0Bar    := originBar
+        originPrice  := ph
+        originBar    := pb
+        originIsHigh := true
+        isLocked     := true
+
+    else if rangeActive and originIsHigh and isLocked
+        if ph > originPrice
+            originPrice        := ph
+            originBar          := pb
+            point0Price        := na
+            point0Bar          := na
+            isLocked           := false
+            resetTrailTracker  := true
+            resetTrailIsHigh   := true
+            resetTrailBar      := pb
+
+// ─────────────────────────────────────────────
+// STATE MACHINE — PIVOT LOW CONFIRMED
+// ─────────────────────────────────────────────
+
+if not na(pivLo)
+    float pl = pivLo
+    int   pb = bar_index - pivotLen
+
+    if not rangeActive
+        originPrice        := pl
+        originBar          := pb
+        originIsHigh       := false
+        point0Price        := na
+        point0Bar          := na
+        isLocked           := false
+        rangeActive        := true
+        resetTrailTracker  := true
+        resetTrailIsHigh   := false
+        resetTrailBar      := pb
+
+    else if rangeActive and originIsHigh and not isLocked
+        point0Price  := originPrice
+        point0Bar    := originBar
+        originPrice  := pl
+        originBar    := pb
+        originIsHigh := false
+        isLocked     := true
+
+    else if rangeActive and not originIsHigh and not isLocked
+        if pl < originPrice
+            originPrice := pl
+            originBar   := pb
+
+    else if rangeActive and originIsHigh and isLocked
+        point0Price  := originPrice
+        point0Bar    := originBar
+        originPrice  := pl
+        originBar    := pb
+        originIsHigh := false
+        isLocked     := true
+
+    else if rangeActive and not originIsHigh and isLocked
+        if pl < originPrice
+            originPrice        := pl
+            originBar          := pb
+            point0Price        := na
+            point0Bar          := na
+            isLocked           := false
+            resetTrailTracker  := true
+            resetTrailIsHigh   := false
+            resetTrailBar      := pb
+
+// ─────────────────────────────────────────────
+// TRAILING (before lock-in)
+// ─────────────────────────────────────────────
+
+if rangeActive and originIsHigh and not isLocked and high > originPrice
+    originPrice := high
+    originBar   := bar_index
+
+if rangeActive and not originIsHigh and not isLocked and low < originPrice
+    originPrice := low
+    originBar   := bar_index
+
+// ─────────────────────────────────────────────
+// RUNNING OPPOSITE EXTREME TRACKER
+// ─────────────────────────────────────────────
+
+if not rangeActive
+    runHi    := na
+    runHiBar := na
+    runLo    := na
+    runLoBar := na
+else if resetTrailTracker
+    int seedLen = math.max(1, bar_index - resetTrailBar + 1)
+    if resetTrailIsHigh
+        runLo    := ta.lowest(low, seedLen)
+        runLoBar := bar_index - ta.lowestbars(low, seedLen)
+        runHi    := na
+        runHiBar := na
+    else
+        runHi    := ta.highest(high, seedLen)
+        runHiBar := bar_index - ta.highestbars(high, seedLen)
+        runLo    := na
+        runLoBar := na
+else if not isLocked
+    if originIsHigh
+        if na(runLo) or low < runLo
+            runLo    := low
+            runLoBar := bar_index
+    else
+        if na(runHi) or high > runHi
+            runHi    := high
+            runHiBar := bar_index
+
+// ─────────────────────────────────────────────
+// EFFECTIVE VALUES
+// ─────────────────────────────────────────────
+
+float eff1Price = originPrice
+int   eff1Bar   = originBar
+float eff0Price = na
+int   eff0Bar   = na
+
+if isLocked
+    eff0Price := point0Price
+    eff0Bar   := point0Bar
+else if rangeActive
+    if originIsHigh
+        eff0Price := runLo
+        eff0Bar   := runLoBar
+    else
+        eff0Price := runHi
+        eff0Bar   := runHiBar
+
+// ─────────────────────────────────────────────
+// MT CALCULATION
+// ─────────────────────────────────────────────
+
+float mtPrice = na
+float mt50    = na
+float mt55    = na
+float mt618   = na
+
+validMT = rangeActive and not na(eff0Price) and not na(eff1Price) and eff0Price != eff1Price
+
+if validMT
+    if originIsHigh
+        mtPrice := eff1Price - (eff1Price - eff0Price) * fibLevel
+        mt50    := eff1Price - (eff1Price - eff0Price) * 0.50
+        mt55    := eff1Price - (eff1Price - eff0Price) * 0.55
+        mt618   := eff1Price - (eff1Price - eff0Price) * 0.618
+    else
+        mtPrice := eff1Price + (eff0Price - eff1Price) * fibLevel
+        mt50    := eff1Price + (eff0Price - eff1Price) * 0.50
+        mt55    := eff1Price + (eff0Price - eff1Price) * 0.55
+        mt618   := eff1Price + (eff0Price - eff1Price) * 0.618
+
+// ─────────────────────────────────────────────
+// RANGE INVALIDATION
+// ─────────────────────────────────────────────
+
+if rangeActive and isLocked and validMT
+    float rangeHi = math.max(eff0Price, eff1Price)
+    float rangeLo = math.min(eff0Price, eff1Price)
+    bool breakHi  = invalidateOnWick ? high > rangeHi : close > rangeHi
+    bool breakLo  = invalidateOnWick ? low < rangeLo : close < rangeLo
+
+    if breakHi or breakLo
+        rangeActive := false
+        isLocked    := false
+        originPrice := na
+        originBar   := na
+        originIsHigh := false
+        point0Price := na
+        point0Bar   := na
+        runHi       := na
+        runHiBar    := na
+        runLo       := na
+        runLoBar    := na
+
+// ─────────────────────────────────────────────
+// MOMENTUM STATUS
+// ─────────────────────────────────────────────
+
+var bool momentumIntact = false
+var bool mtCrossed      = false
+
+if validMT and rangeActive and not na(mtPrice)
+    if originIsHigh
+        momentumIntact := close > mtPrice
+        mtCrossed      := close < mtPrice
+    else
+        momentumIntact := close < mtPrice
+        mtCrossed      := close > mtPrice
+else
+    momentumIntact := false
+    mtCrossed      := false
+
+_mtSafe = nz(mtPrice, close)
+_rawCrossAbove = ta.crossover(close, _mtSafe)
+_rawCrossBelow = ta.crossunder(close, _mtSafe)
+simpleCrossAbove = validMT and rangeActive and not na(mtPrice) and _rawCrossAbove
+simpleCrossBelow = validMT and rangeActive and not na(mtPrice) and _rawCrossBelow
+
+// ─────────────────────────────────────────────
+// DRAWING
+// ─────────────────────────────────────────────
+
+var line  mtLine   = na
+var line  fib0Line = na
+var line  fib1Line = na
+var line  altLine  = na
+var label mtLbl    = na
+var label altLbl   = na
+var label fib0Lbl  = na
+var label fib1Lbl  = na
+var label hiDot    = na
+var label loDot    = na
+
+line.delete(mtLine)
+line.delete(fib0Line)
+line.delete(fib1Line)
+line.delete(altLine)
+label.delete(mtLbl)
+label.delete(altLbl)
+label.delete(fib0Lbl)
+label.delete(fib1Lbl)
+label.delete(hiDot)
+label.delete(loDot)
+
+if barstate.islast and validMT and rangeActive and not na(mtPrice)
+    int sBar = math.min(nz(eff0Bar, bar_index), nz(eff1Bar, bar_index))
+    int eBar = bar_index + extendBars
+
+    color lineCol = mtCrossed ? mtCrossColor : mtColor
+    int lineWidth = isLocked ? mtLineWidth : math.max(1, mtLineWidth - 1)
+
+    mtLine := line.new(sBar, mtPrice, eBar, mtPrice, color=lineCol, width=lineWidth, style=isLocked ? line.style_solid : line.style_dashed)
+
+    if showMTLabel
+        string lockStr = isLocked ? "" : " (trailing)"
+        string mtText = mtCrossed ? "MT Crossed = Wave Complete" : (str.tostring(fibLevel) + " (" + str.tostring(mtPrice, format.mintick) + ") · MT" + lockStr)
+        color lCol = mtCrossed ? mtCrossColor : mtColor
+        mtLbl := label.new(eBar, mtPrice, mtText, style=label.style_label_left, color=color.new(lCol, mtCrossed ? 0 : 80), textcolor=mtCrossed ? color.white : lCol, size=mtCrossed ? size.normal : size.small)
+
+    if showBothMT and ratioChoice != "Custom" and ratioChoice != "0.618"
+        float altPrice = na
+        string altText = ""
+        if ratioChoice == "0.55"
+            altPrice := mt50
+            altText  := "0.5 (" + str.tostring(mt50, format.mintick) + ") · MT"
+        else if ratioChoice == "0.50"
+            altPrice := mt55
+            altText  := "0.55 (" + str.tostring(mt55, format.mintick) + ") · MT"
+
+        if not na(altPrice)
+            altLine := line.new(sBar, altPrice, eBar, altPrice, color=color.new(mtColor, 60), width=1, style=line.style_dotted)
+            if showMTLabel
+                altLbl := label.new(eBar, altPrice, altText, style=label.style_label_left, color=color.new(#888888, 70), textcolor=color.new(mtColor, 50), size=size.tiny)
+
+    fib0Line := line.new(sBar, eff0Price, eBar, eff0Price, color=fibColor, width=1, style=line.style_dotted)
+    fib1Line := line.new(sBar, eff1Price, eBar, eff1Price, color=fibColor, width=1, style=line.style_dotted)
+
+    if showFibLabels
+        fib0Lbl := label.new(eBar, eff0Price, "0 (" + str.tostring(eff0Price, format.mintick) + ")", style=label.style_label_left, color=color.new(fibColor, 70), textcolor=color.new(color.white, 40), size=size.tiny)
+        fib1Lbl := label.new(eBar, eff1Price, "1 (" + str.tostring(eff1Price, format.mintick) + ")", style=label.style_label_left, color=color.new(fibColor, 70), textcolor=color.new(color.white, 40), size=size.tiny)
+
+    if showSwingDots
+        float hiP = math.max(eff0Price, eff1Price)
+        float loP = math.min(eff0Price, eff1Price)
+        int hiB = hiP == eff1Price ? nz(eff1Bar, bar_index) : nz(eff0Bar, bar_index)
+        int loB = loP == eff1Price ? nz(eff1Bar, bar_index) : nz(eff0Bar, bar_index)
+        hiDot := label.new(hiB, hiP, "", style=label.style_circle, color=color.new(#BBBB00, 40), size=size.small)
+        loDot := label.new(loB, loP, "", style=label.style_circle, color=color.new(#BBBB00, 40), size=size.small)
+
+// ─────────────────────────────────────────────
+// SIGNAL MARKERS
+// ─────────────────────────────────────────────
+
+plotshape(simpleCrossAbove, "Cross Above MT", shape.diamond, location.belowbar, color.new(#00CC88, 20), size=size.tiny)
+plotshape(simpleCrossBelow, "Cross Below MT", shape.diamond, location.abovebar, color.new(#FF4444, 20), size=size.tiny)
+
+// ─────────────────────────────────────────────
+// TABLES
+// ─────────────────────────────────────────────
+
+var table mtTable   = na
+var table warnTable = na
+
+if barstate.islast
+    if not na(mtTable)
+        table.delete(mtTable)
+    if not na(warnTable)
+        table.delete(warnTable)
+
+    if showTable and validMT and rangeActive and not na(mtPrice)
+        mtTable := table.new(position.top_right, 2, 8, bgcolor=color.new(#0a0e17, 5), border_width=1, border_color=color.new(#FFD700, 40), frame_width=2, frame_color=color.new(#FFD700, 20))
+
+        table.cell(mtTable, 0, 0, "EWC", text_color=mtColor, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 0, "Momentum Threshold", text_color=mtColor, text_size=size.small, text_halign=text.align_right)
+
+        table.cell(mtTable, 0, 1, "Ratio", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 1, str.tostring(fibLevel), text_color=color.white, text_size=size.small, text_halign=text.align_right)
+
+        table.cell(mtTable, 0, 2, "Origin (1)", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 2, str.tostring(eff1Price, format.mintick) + (originIsHigh ? " ▲" : " ▼"), text_color=color.white, text_size=size.small, text_halign=text.align_right)
+
+        table.cell(mtTable, 0, 3, "Point 0", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 3, str.tostring(eff0Price, format.mintick), text_color=color.white, text_size=size.small, text_halign=text.align_right)
+
+        table.cell(mtTable, 0, 4, "MT Level", text_color=mtColor, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 4, str.tostring(mtPrice, format.mintick), text_color=mtColor, text_size=size.small, text_halign=text.align_right)
+
+        table.cell(mtTable, 0, 5, "State", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 5, isLocked ? "Locked ✓" : "Trailing...", text_color=isLocked ? color.new(#00CC88, 0) : color.new(#FFD700, 0), text_size=size.small, text_halign=text.align_right)
+
+        string trendText = originIsHigh ? "▲ Bullish" : "▼ Bearish"
+        color trendColor = originIsHigh ? color.new(#00CC88, 0) : color.new(#FF4444, 0)
+        table.cell(mtTable, 0, 6, "Trend", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 6, trendText, text_color=trendColor, text_size=size.small, text_halign=text.align_right)
+
+        string statusText = mtCrossed ? "CROSSED — Wave Complete" : (momentumIntact ? "Momentum Intact" : "Momentum Broken")
+        color statusColor = mtCrossed ? mtCrossColor : (momentumIntact ? color.new(#00CC88, 0) : color.new(#FF4444, 0))
+        table.cell(mtTable, 0, 7, "Status", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+        table.cell(mtTable, 1, 7, statusText, text_color=statusColor, text_size=size.small, text_halign=text.align_right)
+
+    else
+        warnTable := table.new(position.top_right, 1, 2, bgcolor=color.new(#0a0e17, 5), border_width=1, border_color=color.new(#FF4444, 40), frame_width=2, frame_color=color.new(#FF4444, 20))
+        table.cell(warnTable, 0, 0, "No MT Found", text_color=color.new(#FF4444, 0), text_size=size.small, text_halign=text.align_center)
+        table.cell(warnTable, 0, 1, "Try lowering Pivot Length", text_color=color.gray, text_size=size.tiny, text_halign=text.align_center)
+
+// ─────────────────────────────────────────────
+// ALERTS
+// ─────────────────────────────────────────────
+
+alertcondition(simpleCrossAbove, "Price Crossed Above MT", "EWC: Price crossed above Momentum Threshold")
+alertcondition(simpleCrossBelow, "Price Crossed Below MT", "EWC: Price crossed below Momentum Threshold")
+
+plot(0, display=display.none)

@@ -1,0 +1,112 @@
+{
+  "id": 192,
+  "date": "2020-11-29T20:49:13",
+  "date_gmt": "2020-11-29T20:49:13",
+  "guid": {
+    "rendered": "http://wavewizards.net/?post_type=elementor_library&#038;p=192",
+    "raw": "http://wavewizards.net/?post_type=elementor_library&#038;p=192"
+  },
+  "modified": "2022-08-06T18:06:06",
+  "modified_gmt": "2022-08-06T18:06:06",
+  "password": "",
+  "slug": "elementor-footer-192",
+  "status": "publish",
+  "type": "elementor_library",
+  "link": "https://elliottwaveclub.com/?elementor_library=elementor-footer-192",
+  "title": {
+    "raw": "Elementor Footer #192",
+    "rendered": "Elementor Footer #192"
+  },
+  "author": 1,
+  "featured_media": 0,
+  "template": "",
+  "meta": {
+    "_elementor_edit_mode": "builder",
+    "_elementor_template_type": "footer",
+    "_elementor_data": "[{\"id\":\"33524d3c\",\"elType\":\"section\",\"settings\":{\"content_width\":{\"unit\":\"px\",\"size\":900},\"structure\":\"30\",\"background_background\":\"classic\",\"shape_divider_top\":\"waves\",\"shape_divider_top_width\":{\"unit\":\"%\",\"size\":300},\"padding\":{\"unit\":\"px\",\"top\":\"90\",\"right\":\"0\",\"bottom\":\"90\",\"left\":\"0\",\"isLinked\":false},\"shape_divider_top_height_mobile\":{\"unit\":\"px\",\"size\":500},\"padding_tablet\":{\"unit\":\"px\",\"top\":\"60\",\"right\":\"20\",\"bottom\":\"60\",\"left\":\"20\",\"isLinked\":false},\"padding_mobile\":{\"unit\":\"px\",\"top\":\"50\",\"right\":\"20\",\"bottom\":\"50\",\"left\":\"20\",\"isLinked\":false},\"html_tag\":\"footer\",\"_timestamp_\":\"v1Q1I4K3BtR2RwQXRNMDYrUWxGb2pGQT09\",\"background_overlay_color_b_stop\":{\"unit\":\"%\",\"size\":73,\"sizes\":[]},\"background_overlay_gradient_angle\":{\"unit\":\"deg\",\"size\":270,\"sizes\":[]},\"background_overlay_opacity\":{\"unit\":\"px\",\"size\":0.0899999999999999966693309261245303787291049957275390625,\"sizes\":[]},\"shape_divider_top_width_mobile\":{\"unit\":\"%\",\"size\":300,\"sizes\":[]},\"shape_divider_top_height\":{\"unit\":\"px\",\"size\":390,\"sizes\":[]},\"shape_divider_bottom_width\":{\"unit\":\"%\",\"size\":225,\"sizes\":[]},\"shape_divider_bottom_height\":{\"unit\":\"px\",\"size\":21,\"sizes\":[]},\"__globals__\":{\"background_overlay_color\":\"\",\"background_overlay_color_b\":\"\",\"background_color\":\"\",\"shape_divider_bottom_color\":\"globals\\/colors?id=685ef0c\",\"shape_divider_top_color\":\"\"},\"marvy_firework_animation_color_multiples\":[{\"_id\":\"0c3140c\"},{\"color\":\"#fa26a0\",\"_id\":\"47494f1\"},{\"color\":\"#f8d210\",\"_id\":\"649b905\"},{\"color\":\"#2ff3e0\",\"_id\":\"4a97f6d\"}],\"background_color\":\"#000000\",\"background_overlay_color\":\"#000000\",\"background_overlay_color_b\":\"#1D1B1B\",\"shape_divider_top_color\":\"#000000\",\"shape_divider_bottom_color\":\"#02d1ae\"},\"elements\":[{\"id\":\"791573f8\",\"elType\":\"column\",\"settings\":{\"_column_size\":33,\"_inline_size\":null,\"_inline_size_mobile\":50},\"elements\":[{\"id\":\"a0c9a30\",\"elType\":\"widget\",\"settings\":{\"title\":\"Contact Us\",\"title_color\":\"#FFFFFF\",\"typography_typography\":\"custom\",\"typography_font_size\":{\"unit\":\"px\",\"size\":18},\"typography_font_weight\":\"600\",\"header_size\":\"h4\",\"typography_font_family\":\"Quicksand\"},\"elements\":[],\"widgetType\":\"heading\"},{\"id\":\"502a9be\",\"elType\":\"widget\",\"settings\":{\"icon_list\":[{\"text\":\"TriggerTradesOfficial@gmail.com\",\"selected_icon\":{\"value\":\"fas fa-comments\",\"library\":\"fa-solid\"},\"_id\":\"9db45eb\"}],\"icon_typography_typography\":\"custom\",\"icon_typography_font_family\":\"Quicksand\",\"icon_typography_font_size\":{\"unit\":\"px\",\"size\":16,\"sizes\":[]},\"icon_typography_font_weight\":\"300\",\"__globals__\":{\"text_color\":\"globals\\/colors?id=78f6104\"}},\"elements\":[],\"widgetType\":\"icon-list\"}],\"isInner\":false},{\"id\":\"765dff41\",\"elType\":\"column\",\"settings\":{\"_column_size\":33,\"_inline_size\":null,\"_inline_size_mobile\":50},\"elements\":[],\"isInner\":false},{\"id\":\"4877f940\",\"elType\":\"column\",\"settings\":{\"_column_size\":33,\"_inline_size\":null,\"_inline_size_mobile\":50,\"margin_mobile\":{\"unit\":\"px\",\"top\":\"40\",\"right\":\"0\",\"bottom\":\"0\",\"left\":\"0\",\"isLinked\":false}},\"elements\":[{\"id\":\"2b5eaece\",\"elType\":\"widget\",\"settings\":{\"title\":\"Our Team\",\"title_color\":\"#FFFFFF\",\"typography_typography\":\"custom\",\"typography_font_size\":{\"unit\":\"px\",\"size\":18},\"typography_font_weight\":\"600\",\"header_size\":\"h4\",\"align\":\"left\",\"typography_font_family\":\"Quicksand\"},\"elements\":[],\"widgetType\":\"heading\"},{\"id\":\"13e1d428\",\"elType\":\"widget\",\"settings\":{\"icon_list\":[{\"text\":\"Trigger Trades\",\"icon\":\"\",\"_id\":\"6b44671\"}],\"space_between\":{\"unit\":\"px\",\"size\":5},\"icon_size\":{\"unit\":\"px\",\"size\":0},\"text_color\":\"rgba(255,255,255,0.36)\",\"text_indent\":{\"unit\":\"px\",\"size\":0},\"icon_typography_typography\":\"custom\",\"icon_typography_font_size\":{\"unit\":\"px\",\"size\":15},\"icon_typography_font_weight\":\"300\",\"icon_typography_font_size_mobile\":{\"unit\":\"px\",\"size\":15},\"view\":\"inline\",\"icon_typography_font_family\":\"Quicksand\"},\"elements\":[],\"widgetType\":\"icon-list\"},{\"id\":\"ebf0b52\",\"elType\":\"widget\",\"settings\":{\"social_icon_list\":[{\"social_icon\":{\"value\":\"fab fa-twitter\",\"library\":\"fa-brands\"},\"_id\":\"309e931\",\"link\":{\"url\":\"https:\\/\\/www.twitter.com\\/triggertrades\\/\",\"is_external\":\"true\",\"nofollow\":\"\",\"custom_attributes\":\"\"}},{\"_id\":\"b571800\",\"social_icon\":{\"value\":\"fab fa-tiktok\",\"library\":\"fa-brands\"},\"link\":{\"url\":\"https:\\/\\/www.tiktok.com\\/@triggertrades\",\"is_external\":\"true\",\"nofollow\":\"\",\"custom_attributes\":\"\"}},{\"social_icon\":{\"value\":\"fab fa-youtube\",\"library\":\"fa-brands\"},\"_id\":\"7fabbc3\",\"link\":{\"url\":\"https:\\/\\/www.youtube.com\\/channel\\/UCOfLITbjjNjcIVaV9pBZuCA\",\"is_external\":\"true\",\"nofollow\":\"\",\"custom_attributes\":\"\"}},{\"_id\":\"f87f390\",\"social_icon\":{\"value\":\"fab fa-instagram\",\"library\":\"fa-brands\"},\"link\":{\"url\":\"https:\\/\\/www.instagram.com\\/triggertrades\\/\",\"is_external\":\"true\",\"nofollow\":\"\",\"custom_attributes\":\"\"}}],\"shape\":\"circle\",\"align\":\"left\",\"icon_color\":\"custom\",\"icon_size\":{\"unit\":\"px\",\"size\":17,\"sizes\":[]},\"_margin\":{\"unit\":\"px\",\"top\":\"-15\",\"right\":\"0\",\"bottom\":\"0\",\"left\":\"0\",\"isLinked\":false},\"__globals__\":{\"icon_primary_color\":\"globals\\/colors?id=f2127bc\"}},\"elements\":[],\"widgetType\":\"social-icons\"}],\"isInner\":false}],\"isInner\":false}]",
+    "_elementor_page_settings": null,
+    "_elementor_conditions": [
+      "include/general"
+    ]
+  },
+  "permalink_template": "https://elliottwaveclub.com/?elementor_library=elementor-footer-192",
+  "generated_slug": "elementor-footer-192",
+  "class_list": [
+    "post-192",
+    "elementor_library",
+    "type-elementor_library",
+    "status-publish",
+    "hentry"
+  ],
+  "_links": {
+    "self": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library/192",
+        "targetHints": {
+          "allow": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        }
+      }
+    ],
+    "collection": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library"
+      }
+    ],
+    "about": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/types/elementor_library"
+      }
+    ],
+    "author": [
+      {
+        "embeddable": true,
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/users/1"
+      }
+    ],
+    "version-history": [
+      {
+        "count": 47,
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library/192/revisions"
+      }
+    ],
+    "predecessor-version": [
+      {
+        "id": 1470,
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library/192/revisions/1470"
+      }
+    ],
+    "wp:attachment": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/media?parent=192"
+      }
+    ],
+    "wp:action-publish": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library/192"
+      }
+    ],
+    "wp:action-unfiltered-html": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library/192"
+      }
+    ],
+    "wp:action-assign-author": [
+      {
+        "href": "https://elliottwaveclub.com/wp-json/wp/v2/elementor_library/192"
+      }
+    ],
+    "curies": [
+      {
+        "name": "wp",
+        "href": "https://api.w.org/{rel}",
+        "templated": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+//@version=5
+indicator("Confirmed Swing Pivots", overlay=true)
+
+// This script marks only confirmed pivot highs/lows.
+// A pivot is plotted after `rightBars` candles have closed, so it does not repaint.
+
+leftBars = input.int(4, "Left Bars", minval=1, maxval=50)
+rightBars = input.int(4, "Right Bars", minval=1, maxval=50)
+minSwingSize = input.float(6.0, "Min Swing Size (pts)", minval=0.1, step=0.1)
+sensitivityMode = input.string("Balanced", "Pivot Sensitivity", options=["More Pivots", "Balanced", "Cleaner"])
+minBarsBetweenSameType = input.int(3, "Min Bars Between Same-Type Pivots", minval=1, maxval=50)
+
+// Confirmed pivots. These values only appear once the pivot is fully confirmed.
+rawPivotHigh = ta.pivothigh(high, leftBars, rightBars)
+rawPivotLow = ta.pivotlow(low, leftBars, rightBars)
+
+// Sensitivity adjusts how much filtering we apply without changing confirmation rules.
+float swingMultiplier = sensitivityMode == "More Pivots" ? 0.75 : sensitivityMode == "Cleaner" ? 1.25 : 1.0
+float sameTypeMultiplier = sensitivityMode == "More Pivots" ? 0.30 : sensitivityMode == "Cleaner" ? 0.55 : 0.40
+float effectiveMinSwing = minSwingSize * swingMultiplier
+float sameTypeMinMove = math.max(syminfo.mintick * 10, effectiveMinSwing * sameTypeMultiplier)
+
+// Track highs and lows separately so intermediate same-direction pivots
+// can still be kept when they represent meaningful turns.
+var float lastAcceptedHigh = na
+var int lastAcceptedHighBar = na
+var float lastAcceptedLow = na
+var int lastAcceptedLowBar = na
+
+float plottedPivotHigh = na
+float plottedPivotLow = na
+bool showPivotHigh = false
+bool showPivotLow = false
+
+// Accept a high when it is confirmed, far enough from the last accepted low,
+// and not just a tiny same-direction duplicate of the prior high.
+if not na(rawPivotHigh)
+    int pivotHighBar = bar_index - rightBars
+    bool firstHigh = na(lastAcceptedHigh)
+    bool enoughFromLastLow = na(lastAcceptedLow) or math.abs(rawPivotHigh - lastAcceptedLow) >= effectiveMinSwing
+    bool spacedFromPriorHigh = na(lastAcceptedHighBar) or pivotHighBar - lastAcceptedHighBar >= minBarsBetweenSameType
+    bool meaningfulVsPriorHigh = na(lastAcceptedHigh) or math.abs(rawPivotHigh - lastAcceptedHigh) >= sameTypeMinMove
+
+    if enoughFromLastLow and (firstHigh or spacedFromPriorHigh or meaningfulVsPriorHigh)
+        plottedPivotHigh := rawPivotHigh
+        showPivotHigh := true
+        lastAcceptedHigh := rawPivotHigh
+        lastAcceptedHighBar := pivotHighBar
+
+// Accept a low when it is confirmed, far enough from the last accepted high,
+// and not just a tiny same-direction duplicate of the prior low.
+if not na(rawPivotLow)
+    int pivotLowBar = bar_index - rightBars
+    bool firstLow = na(lastAcceptedLow)
+    bool enoughFromLastHigh = na(lastAcceptedHigh) or math.abs(rawPivotLow - lastAcceptedHigh) >= effectiveMinSwing
+    bool spacedFromPriorLow = na(lastAcceptedLowBar) or pivotLowBar - lastAcceptedLowBar >= minBarsBetweenSameType
+    bool meaningfulVsPriorLow = na(lastAcceptedLow) or math.abs(rawPivotLow - lastAcceptedLow) >= sameTypeMinMove
+
+    if enoughFromLastHigh and (firstLow or spacedFromPriorLow or meaningfulVsPriorLow)
+        plottedPivotLow := rawPivotLow
+        showPivotLow := true
+        lastAcceptedLow := rawPivotLow
+        lastAcceptedLowBar := pivotLowBar
+
+// Offset the markers back to the actual pivot bar.
+plotshape(
+     showPivotHigh,
+     title="Confirmed Pivot High",
+     style=shape.triangledown,
+     location=location.abovebar,
+     color=color.red,
+     size=size.small,
+     offset=-rightBars)
+
+plotshape(
+     showPivotLow,
+     title="Confirmed Pivot Low",
+     style=shape.triangleup,
+     location=location.belowbar,
+     color=color.teal,
+     size=size.small,
+     offset=-rightBars)

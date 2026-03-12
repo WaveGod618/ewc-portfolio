@@ -1,0 +1,2868 @@
+<style>
+  body.page-id-1968 .site-header,
+  body.page-id-1968 .page-header,
+  body.page-id-1968 footer.site-footer {
+    display: none !important;
+  }
+
+  body.page-id-1968 #content.site-main {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+  }
+
+  .ewc-home-v2 {
+    --ewc-bg: #05070b;
+    --ewc-surface: rgba(255, 255, 255, 0.06);
+    --ewc-surface-strong: rgba(255, 255, 255, 0.1);
+    --ewc-border: rgba(255, 255, 255, 0.12);
+    --ewc-text: #f5f7fb;
+    --ewc-muted: #a2adc0;
+    --ewc-soft: #d6dff0;
+    --ewc-accent: #8ab6ff;
+    --ewc-accent-2: #6bf1d3;
+    --ewc-shadow: 0 32px 80px rgba(0, 0, 0, 0.35);
+    background:
+      radial-gradient(circle at top left, rgba(30, 51, 71, 0.32), transparent 42%),
+      radial-gradient(circle at top right, rgba(30, 51, 71, 0.18), transparent 36%),
+      linear-gradient(180deg, #1e3347 0%, #121416 100%);
+    color: var(--ewc-text);
+    width: 100vw;
+    margin: 0 0 0 calc(50% - 50vw);
+    overflow: hidden;
+  }
+
+  .ewc-home-v2,
+  .ewc-home-v2 * {
+    box-sizing: border-box;
+  }
+
+  .ewc-home-v2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ewc-shell-nav {
+    width: min(1240px, calc(100% - 56px));
+    margin: 0 auto;
+  }
+
+  .ewc-shell {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+
+  .ewc-topbar {
+    padding-top: 24px;
+  }
+
+  .ewc-nav-island {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 18px 14px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 15, 26, 0.84);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(22px);
+    font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .ewc-nav-panel {
+    display: grid;
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ewc-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 64px;
+    color: var(--ewc-soft);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .ewc-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+  }
+
+  .ewc-brand-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  @media (max-width: 860px) {
+    .ewc-brand {
+      gap: 12px;
+      min-height: 52px;
+    }
+
+    .ewc-brand-mark {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+    }
+  }
+
+  .ewc-nav-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    justify-self: center;
+    min-width: 0;
+  }
+
+  .ewc-nav-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    color: var(--ewc-muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  .ewc-nav-links a:hover {
+    color: var(--ewc-text);
+  }
+
+  .ewc-nav-cta {
+    flex: 0 0 auto;
+    align-self: center;
+  }
+
+  .ewc-nav-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex: 0 0 auto;
+    justify-self: end;
+  }
+
+  .ewc-nav-overlay,
+  .ewc-nav-close {
+    display: none;
+  }
+
+  .ewc-nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    color: var(--ewc-text);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+
+  .ewc-nav-toggle:hover {
+    transform: translateY(-1px);
+  }
+
+  .ewc-nav-toggle:focus,
+  .ewc-nav-toggle:focus-visible {
+    outline: none;
+    border-color: rgba(198, 221, 255, 0.26);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 0 3px rgba(118, 140, 175, 0.18);
+  }
+
+  .ewc-nav-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:first-child {
+    transform: translateY(3.5px) rotate(45deg);
+  }
+
+  .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:last-child {
+    transform: translateY(-3.5px) rotate(-45deg);
+  }
+
+  .ewc-nav-island.ewc-nav-open .ewc-nav-toggle {
+    background: rgba(118, 140, 175, 0.18);
+    border-color: rgba(198, 221, 255, 0.24);
+  }
+
+  .ewc-button,
+  .ewc-button-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .ewc-button:hover,
+  .ewc-button-small:hover {
+    transform: translateY(-1px);
+  }
+
+  .ewc-button {
+    min-height: 52px;
+    padding: 0 24px;
+  }
+
+  .ewc-button-small {
+    min-height: 48px;
+    padding: 0 20px;
+    font-size: 14px;
+    font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1;
+  }
+
+  .ewc-button-primary {
+    background: linear-gradient(135deg, #7086a7 0%, #4d637f 100%);
+    border-color: rgba(198, 221, 255, 0.18);
+    color: #f8fbff;
+    box-shadow: 0 14px 28px rgba(69, 89, 118, 0.28);
+  }
+
+  .ewc-button-primary.ewc-button-accent {
+    background: linear-gradient(135deg, #77e8d2 0%, #4fcab5 100%);
+    border-color: rgba(107, 241, 211, 0.24);
+    color: #07121d;
+    box-shadow: 0 16px 30px rgba(56, 140, 126, 0.24);
+  }
+
+  .ewc-button-primary.ewc-button-accent:hover {
+    background: linear-gradient(135deg, #84eed9 0%, #5ad5c0 100%);
+  }
+
+  .ewc-nav-island .ewc-nav-cta.ewc-button-primary {
+    background: linear-gradient(180deg, #ffffff 0%, #e7eef7 100%);
+    border-color: rgba(255, 255, 255, 0.74);
+    color: #08111d;
+    box-shadow: 0 18px 34px rgba(4, 8, 14, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    transition: transform 220ms ease, background 240ms ease, border-color 240ms ease, color 240ms ease, box-shadow 240ms ease;
+  }
+
+  .ewc-nav-island .ewc-nav-cta.ewc-button-primary:hover {
+    background: linear-gradient(135deg, #77e8d2 0%, #4fcab5 100%);
+    border-color: rgba(107, 241, 211, 0.3);
+    color: #f8fbff;
+    box-shadow: 0 18px 34px rgba(56, 140, 126, 0.28);
+  }
+
+  .ewc-button-secondary {
+    background: linear-gradient(180deg, rgba(29, 39, 58, 0.96) 0%, rgba(16, 23, 36, 0.96) 100%);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #f5f7fb;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .ewc-section {
+    padding: 84px 0;
+  }
+
+  .ewc-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ewc-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  #process .ewc-eyebrow,
+  .ewc-credibility-copy .ewc-eyebrow,
+  .ewc-custom-analysis .ewc-eyebrow,
+  .ewc-final-cta .ewc-eyebrow {
+    border-color: rgba(107, 241, 211, 0.22);
+    background: rgba(107, 241, 211, 0.08);
+    color: #cff8ef;
+  }
+
+  .ewc-hero {
+    padding: 72px 0 72px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 36px;
+    align-items: center;
+  }
+
+  .ewc-hero h1,
+  .ewc-section h2,
+  .ewc-section h3 {
+    margin: 0;
+    color: var(--ewc-text);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  .ewc-hero h1 {
+    margin-top: 0;
+    font-size: clamp(46px, 7vw, 84px);
+    max-width: 14ch;
+  }
+
+  .ewc-hero .ewc-eyebrow {
+    border-color: rgba(107, 241, 211, 0.22);
+    background: rgba(107, 241, 211, 0.08);
+    color: #cff8ef;
+  }
+
+  .ewc-lead {
+    margin: 22px 0 0;
+    max-width: 60ch;
+    color: var(--ewc-muted);
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: 1.6;
+  }
+
+  .ewc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+  }
+
+  .ewc-proof-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .ewc-proof-pill,
+  .ewc-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ewc-soft);
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .ewc-proof-pill strong,
+  .ewc-stat strong,
+  .ewc-card strong,
+  .ewc-quote strong {
+    color: var(--ewc-text);
+  }
+
+  #proof .ewc-stat:nth-child(-n + 2) strong {
+    color: var(--ewc-accent-2);
+    text-shadow: 0 0 18px rgba(107, 241, 211, 0.18);
+  }
+
+  .ewc-hero-card,
+  .ewc-card,
+  .ewc-quote,
+  .ewc-price-card,
+  .ewc-disclaimer,
+  .ewc-final-cta {
+    position: relative;
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: var(--ewc-shadow);
+    backdrop-filter: blur(20px);
+  }
+
+  .ewc-hero-card {
+    padding: 18px;
+  }
+
+  .ewc-hero-media {
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #0d1320;
+  }
+
+  .ewc-hero-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ewc-credibility-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ewc-hero-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 18px 6px 8px;
+  }
+
+  .ewc-hero-meta span {
+    display: block;
+    font-size: 12px;
+    color: var(--ewc-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .ewc-hero-meta strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ewc-text);
+  }
+
+  .ewc-stats-grid,
+  .ewc-card-grid,
+  .ewc-proof-grid,
+  .ewc-quote-grid,
+  .ewc-pricing-grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .ewc-stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ewc-stat {
+    padding: 26px 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ewc-stat strong {
+    display: block;
+    font-size: clamp(28px, 4vw, 42px);
+    letter-spacing: -0.05em;
+  }
+
+  .ewc-stat span {
+    display: block;
+    margin-top: 10px;
+    color: var(--ewc-muted);
+    line-height: 1.5;
+  }
+
+  .ewc-section-head {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+
+  .ewc-section-head .ewc-eyebrow {
+    justify-self: start;
+    width: auto;
+    max-width: max-content;
+  }
+
+  .ewc-section-head h2 {
+    font-size: clamp(34px, 5vw, 58px);
+    max-width: 12ch;
+  }
+
+  .ewc-section-head p {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--ewc-muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .ewc-card-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  #inside .ewc-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    grid-auto-rows: 1fr;
+    gap: 20px;
+  }
+
+  .ewc-proof-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ewc-card,
+  .ewc-proof-card,
+  .ewc-quote {
+    padding: 26px 24px;
+  }
+
+  #inside .ewc-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    min-height: 100%;
+    padding: 30px 28px;
+    gap: 18px;
+    border-radius: 24px;
+  }
+
+  #inside .ewc-tier-card-elite {
+    border-color: rgba(138, 182, 255, 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+
+  #inside .ewc-card .ewc-eyebrow {
+    margin-bottom: 0;
+    min-height: 34px;
+    padding: 9px 12px;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+  }
+
+  .ewc-stats-grid .ewc-stat,
+  .ewc-card-grid .ewc-card,
+  .ewc-proof-grid .ewc-proof-card,
+  .ewc-quote-grid .ewc-quote,
+  .ewc-price-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    height: 100%;
+  }
+
+  .ewc-card h3,
+  .ewc-proof-card h3,
+  .ewc-price-card h3,
+  .ewc-quote h3 {
+    font-size: 22px;
+    line-height: 1.15;
+  }
+
+  #inside .ewc-card h3 {
+    width: 100%;
+    margin: 0;
+    min-height: 0;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .ewc-card p,
+  .ewc-proof-card p,
+  .ewc-price-card p,
+  .ewc-quote p {
+    margin: 14px 0 0;
+    color: var(--ewc-muted);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  #inside .ewc-card p {
+    width: 100%;
+    flex: 1 1 auto;
+    margin: 0;
+  }
+
+  #inside .ewc-tier-list,
+  #inside .ewc-tier-list-mobile {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  #inside .ewc-tier-list-mobile {
+    display: none;
+  }
+
+  #inside .ewc-tier-list li,
+  #inside .ewc-tier-list-mobile li {
+    position: relative;
+    padding-left: 32px;
+    color: var(--ewc-soft);
+    font-size: 15px;
+    line-height: 1.68;
+  }
+
+  #inside .ewc-tier-list li::before,
+  #inside .ewc-tier-list-mobile li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 0.12em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(245, 247, 251, 0.92);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .ewc-proof-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  #process .ewc-proof-grid .ewc-proof-card .ewc-pill {
+    padding: 0;
+    margin-bottom: 6px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ewc-accent-2);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    box-shadow: none;
+  }
+
+  .ewc-credibility {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 22px;
+    align-items: stretch;
+  }
+
+  .ewc-credibility-media {
+    overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ewc-credibility-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 34px 32px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .ewc-credibility-copy .ewc-eyebrow,
+  .ewc-final-cta .ewc-eyebrow {
+    width: fit-content;
+    max-width: max-content;
+    align-self: flex-start;
+  }
+
+  .ewc-credibility-copy .ewc-eyebrow {
+    margin-bottom: 20px;
+  }
+
+  .ewc-credibility-copy h2 {
+    font-size: clamp(34px, 4vw, 52px);
+    max-width: 11ch;
+  }
+
+  .ewc-credibility-copy p {
+    margin: 18px 0 0;
+    color: var(--ewc-muted);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  .ewc-credibility-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 26px;
+  }
+
+  .ewc-credibility-list div {
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ewc-soft);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .ewc-case-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .ewc-case-card-list,
+  .ewc-price-list {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  .ewc-case-card-list li,
+  .ewc-price-list li {
+    color: var(--ewc-soft);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  .ewc-case-card-list span,
+  .ewc-price-list span {
+    color: var(--ewc-muted);
+  }
+
+  .ewc-proof-cta {
+    margin-top: 24px;
+  }
+
+  .ewc-case-preview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ewc-inline-proof {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .ewc-inline-proof-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+
+  .ewc-inline-proof-grid-amzn {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .ewc-inline-proof-grid-amzn .ewc-inline-proof-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .ewc-inline-proof-grid-single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ewc-inline-proof-card {
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ewc-inline-proof-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    cursor: zoom-in;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .ewc-inline-proof-card:hover img {
+    transform: scale(1.01);
+  }
+
+  .ewc-inline-proof-card span {
+    display: block;
+    padding: 14px 16px 16px;
+    color: var(--ewc-soft);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ewc-inline-proof-caption {
+    margin: 0;
+    color: var(--ewc-muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .ewc-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 140;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background: rgba(4, 8, 14, 0.84);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .ewc-lightbox.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ewc-lightbox-dialog {
+    position: relative;
+    width: min(1180px, 100%);
+    max-height: calc(100vh - 56px);
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(9, 14, 22, 0.96);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.48);
+  }
+
+  .ewc-lightbox-image-wrap {
+    overflow: auto;
+    border-radius: 18px;
+    background: #0b111a;
+  }
+
+  .ewc-lightbox-image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ewc-lightbox-caption {
+    margin: 0;
+    color: var(--ewc-soft);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .ewc-lightbox-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--ewc-text);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  #pricing .ewc-pricing-grid {
+    grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
+    align-items: stretch;
+  }
+
+  #pricing .ewc-offer-card {
+    position: relative;
+    display: grid;
+    gap: 18px;
+    height: 100%;
+    padding: 30px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: var(--ewc-shadow);
+    backdrop-filter: blur(20px);
+  }
+
+  #pricing .ewc-offer-card-free {
+    align-content: start;
+  }
+
+  #pricing .ewc-offer-card-elite {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    padding: 32px;
+    border-color: rgba(138, 182, 255, 0.22);
+    background:
+      radial-gradient(circle at top right, rgba(138, 182, 255, 0.1), transparent 38%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(138, 182, 255, 0.1);
+  }
+
+  #pricing .ewc-elite-header {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+  }
+
+  #pricing .ewc-elite-header .ewc-offer-subhead {
+    max-width: 34ch;
+  }
+
+  #pricing .ewc-offer-card h3 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  #pricing .ewc-offer-subhead {
+    margin: -2px 0 2px;
+    color: var(--ewc-soft);
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: 1.4;
+  }
+
+  #pricing .ewc-offer-description {
+    margin: 0;
+    color: var(--ewc-muted);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  #pricing .ewc-offer-price {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 4px;
+    font-size: clamp(40px, 5vw, 58px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--ewc-text);
+    white-space: nowrap;
+  }
+
+  #pricing .ewc-offer-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  #pricing .ewc-offer-list li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--ewc-soft);
+    font-size: 15px;
+    line-height: 1.68;
+  }
+
+  #pricing .ewc-offer-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.8em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(107, 241, 211, 0.74);
+    transform: translateY(-50%);
+  }
+
+  #pricing .ewc-offer-card .ewc-actions {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  #pricing .ewc-elite-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    gap: 24px;
+    align-items: start;
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  #pricing .ewc-elite-stack {
+    display: grid;
+    gap: 0;
+    align-self: start;
+    margin-top: -2px;
+    min-width: 0;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 24px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+  }
+
+  #pricing .ewc-elite-features {
+    align-self: start;
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    margin: 0;
+    max-width: 27ch;
+    padding-top: 4px;
+  }
+
+  #pricing .ewc-elite-features li {
+    margin: 0;
+    line-height: 1.62;
+  }
+
+  #pricing .ewc-elite-tier {
+    display: grid;
+    min-height: 150px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 18px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  #pricing .ewc-elite-tier + .ewc-elite-tier {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  #pricing .ewc-elite-tier-grid {
+    display: grid;
+    gap: 12px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  #pricing .ewc-elite-tier-meta {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  #pricing .ewc-elite-tier-topline {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #pricing .ewc-elite-tier-highlight {
+    background:
+      radial-gradient(circle at top right, rgba(107, 241, 211, 0.08), transparent 52%),
+      linear-gradient(180deg, rgba(107, 241, 211, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  }
+
+  #pricing .ewc-elite-tier-name {
+    color: var(--ewc-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  #pricing .ewc-elite-tier-pricing {
+    display: grid;
+    justify-items: start;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  #pricing .ewc-elite-tier-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  #pricing .ewc-elite-tier-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
+  #pricing .ewc-elite-tier-amount {
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--ewc-text);
+  }
+
+  #pricing .ewc-elite-tier-suffix {
+    font-size: 16px;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ewc-muted);
+  }
+
+  #pricing .ewc-elite-tier-note {
+    min-height: 21px;
+    margin: 0;
+    color: var(--ewc-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    flex: 1 1 auto;
+  }
+
+  #pricing .ewc-elite-tier-note-empty {
+    visibility: hidden;
+  }
+
+  #pricing .ewc-elite-tier .ewc-price-badge {
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  #pricing .ewc-price-badge-placeholder {
+    visibility: hidden;
+  }
+
+  #pricing .ewc-elite-tier-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 112px;
+    flex-shrink: 0;
+  }
+
+  #pricing .ewc-elite-tier-footer {
+    display: block;
+    width: 100%;
+  }
+
+  #pricing .ewc-elite-tier .ewc-button {
+    width: 100%;
+    min-width: 112px;
+    min-height: 46px;
+    padding: 0 14px;
+    white-space: nowrap;
+  }
+
+  #pricing .ewc-price-badge-secondary {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--ewc-soft);
+    box-shadow: none;
+  }
+
+  .ewc-price-card {
+    display: grid;
+    grid-template-rows: 40px minmax(76px, auto) 54px 22px minmax(120px, auto) auto 1fr auto;
+    min-height: 644px;
+    padding: 30px;
+    align-items: start;
+    gap: 14px;
+  }
+
+  #pricing .ewc-price-card h3 {
+    grid-row: 2;
+    min-height: 0;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .ewc-price-card .ewc-eyebrow {
+    margin-bottom: 0;
+    min-height: 34px;
+    padding: 9px 12px;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+  }
+
+  .ewc-price-top {
+    display: flex;
+    grid-row: 1;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 0;
+    flex-wrap: nowrap;
+  }
+
+  .ewc-price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(107, 241, 211, 0.24);
+    background: rgba(107, 241, 211, 0.12);
+    color: #d6fff7;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 10px 22px rgba(56, 140, 126, 0.16);
+    min-height: 34px;
+  }
+
+  .ewc-price-card-highlight {
+    border-color: rgba(138, 182, 255, 0.24);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(138, 182, 255, 0.14);
+  }
+
+  .ewc-price-card-premium {
+    border-color: rgba(107, 241, 211, 0.2);
+    background:
+      radial-gradient(circle at top right, rgba(107, 241, 211, 0.08), transparent 34%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
+  }
+
+  .ewc-price-value {
+    display: inline-flex;
+    grid-row: 3;
+    align-items: flex-end;
+    gap: 4px;
+    flex-wrap: nowrap;
+    margin-top: 0;
+    min-height: 0;
+    font-size: clamp(34px, 5vw, 54px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--ewc-text);
+    white-space: nowrap;
+  }
+
+  .ewc-price-period {
+    display: inline-flex;
+    align-items: flex-end;
+    margin-left: 0;
+    padding-bottom: 4px;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--ewc-muted);
+    white-space: nowrap;
+  }
+
+  .ewc-price-note {
+    grid-row: 4;
+    display: flex;
+    align-items: flex-start;
+    margin-top: 0;
+    color: var(--ewc-muted);
+    font-size: 14px;
+  }
+
+  .ewc-price-note:empty::before {
+    content: "\00a0";
+  }
+
+  .ewc-price-card > p:not(.ewc-price-note) {
+    grid-row: 5;
+    min-height: 120px;
+    margin: 0;
+  }
+
+  .ewc-price-list {
+    grid-row: 6;
+  }
+
+  .ewc-price-card .ewc-actions {
+    grid-row: 8;
+    margin-top: 0;
+    padding-top: 24px;
+    align-self: end;
+    margin-top: auto;
+  }
+
+  .ewc-custom-analysis {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: end;
+    margin-top: 22px;
+    padding: 30px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: var(--ewc-shadow);
+    backdrop-filter: blur(20px);
+  }
+
+  .ewc-custom-analysis h3 {
+    margin: 16px 0 0;
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  .ewc-custom-analysis p {
+    margin: 16px 0 0;
+    max-width: 64ch;
+    color: var(--ewc-muted);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  .ewc-custom-analysis-side {
+    display: grid;
+    gap: 18px;
+    justify-items: flex-start;
+  }
+
+  .ewc-custom-analysis-price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: clamp(34px, 5vw, 52px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--ewc-text);
+  }
+
+  .ewc-integrations-surface {
+    display: grid;
+    grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
+    gap: 36px;
+    align-items: center;
+    padding: 40px 42px;
+    border-radius: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(248, 249, 252, 0.98) 0%, rgba(237, 239, 244, 0.96) 100%);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22);
+  }
+
+  .ewc-integrations-copy {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+    color: #111827;
+  }
+
+  .ewc-integrations-copy h2 {
+    margin: 0;
+    color: #060b14;
+    font-size: clamp(36px, 4.6vw, 64px);
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    max-width: 10ch;
+  }
+
+  .ewc-integrations-copy p {
+    margin: 0;
+    max-width: 34ch;
+    color: #5b6474;
+    font-size: 20px;
+    line-height: 1.6;
+  }
+
+  .ewc-integrations-surface .ewc-eyebrow {
+    border-color: rgba(124, 102, 255, 0.22);
+    background: rgba(124, 102, 255, 0.1);
+    color: #7a58dd;
+  }
+
+  .ewc-integrations-cta {
+    background: linear-gradient(135deg, #7a95bc 0%, #597392 100%);
+    border-color: rgba(129, 155, 194, 0.32);
+    color: #f8fbff;
+    box-shadow: 0 18px 34px rgba(49, 67, 96, 0.2);
+  }
+
+  .ewc-integrations-cta:hover {
+    background: linear-gradient(135deg, #87a1c6 0%, #6781a0 100%);
+  }
+
+  .ewc-integrations-visual {
+    position: relative;
+    min-height: 330px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(234, 236, 241, 0.98) 0%, rgba(227, 229, 235, 0.98) 100%);
+    overflow: hidden;
+  }
+
+  .ewc-integrations-visual::before,
+  .ewc-integrations-visual::after {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.38);
+    border-radius: 22px;
+  }
+
+  .ewc-integrations-visual::before {
+    inset: 22px 22px auto 22px;
+    height: 92px;
+  }
+
+  .ewc-integrations-visual::after {
+    inset: auto 24px 24px 24px;
+    height: 114px;
+  }
+
+  .ewc-integrations-stack {
+    position: absolute;
+    inset: 32px 38px 32px auto;
+    width: min(290px, calc(100% - 76px));
+    display: grid;
+    gap: 20px;
+    z-index: 1;
+  }
+
+  .ewc-integration-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 16px 30px rgba(12, 18, 29, 0.08);
+  }
+
+  .ewc-integration-card:nth-child(1) {
+    transform: translateX(22px);
+  }
+
+  .ewc-integration-card:nth-child(2) {
+    transform: translateX(-10px);
+  }
+
+  .ewc-integration-card:nth-child(3) {
+    transform: translateX(14px);
+  }
+
+  .ewc-integration-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .ewc-integration-mark-discord {
+    background: linear-gradient(180deg, #5865f2 0%, #4550d8 100%);
+  }
+
+  .ewc-integration-mark-youtube {
+    background: linear-gradient(180deg, #ff3b30 0%, #e11f1f 100%);
+  }
+
+  .ewc-integration-mark-whop {
+    background: linear-gradient(180deg, #ff7a1a 0%, #f04f23 100%);
+  }
+
+  .ewc-integration-copy {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .ewc-integration-copy strong {
+    color: #101826;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .ewc-integration-lines {
+    display: grid;
+    gap: 8px;
+  }
+
+  .ewc-integration-lines span {
+    display: block;
+    height: 7px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(193, 205, 226, 0.95) 0%, rgba(217, 224, 238, 0.95) 100%);
+  }
+
+  .ewc-integration-lines span:first-child {
+    width: 100%;
+  }
+
+  .ewc-integration-lines span:last-child {
+    width: 72%;
+  }
+
+  .ewc-inline-link {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 18px;
+    color: var(--ewc-soft);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.92;
+  }
+
+  .ewc-inline-link:hover {
+    opacity: 1;
+  }
+
+  .ewc-quote-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ewc-quote {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ewc-quote::before {
+    content: "";
+    position: absolute;
+    top: 26px;
+    bottom: 26px;
+    left: 0;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(107, 241, 211, 0.88) 0%, rgba(107, 241, 211, 0.54) 100%);
+  }
+
+  .ewc-quote strong {
+    display: block;
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .ewc-testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .ewc-testimonial {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 100%;
+    padding: 26px 24px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    box-shadow: var(--ewc-shadow);
+    backdrop-filter: blur(20px);
+  }
+
+  .ewc-testimonial p {
+    margin: 0;
+    color: var(--ewc-soft);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  .ewc-testimonial-meta {
+    display: grid;
+    gap: 4px;
+    margin-top: auto;
+  }
+
+  .ewc-testimonial-meta strong {
+    color: var(--ewc-text);
+    font-size: 16px;
+  }
+
+  .ewc-testimonial-meta span {
+    color: var(--ewc-muted);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .ewc-faq {
+    display: grid;
+    gap: 14px;
+  }
+
+  .ewc-faq details {
+    padding: 22px 24px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ewc-faq summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ewc-text);
+  }
+
+  .ewc-faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ewc-faq p {
+    margin: 14px 0 0;
+    color: var(--ewc-muted);
+    line-height: 1.75;
+  }
+
+  .ewc-disclaimer,
+  .ewc-final-cta {
+    padding: 30px;
+  }
+
+  .ewc-disclaimer h3,
+  .ewc-final-cta h2 {
+    font-size: clamp(28px, 4vw, 44px);
+  }
+
+  .ewc-disclaimer p,
+  .ewc-final-cta p {
+    margin: 14px 0 0;
+    color: var(--ewc-muted);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  .ewc-final-cta {
+    display: grid;
+    gap: 16px;
+    margin-top: 28px;
+    background:
+      radial-gradient(circle at top right, rgba(138, 182, 255, 0.2), transparent 38%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+
+  .ewc-final-cta .ewc-eyebrow {
+    justify-self: start;
+  }
+
+  .ewc-final-cta .ewc-actions {
+    margin-top: 10px;
+  }
+
+  .ewc-site-footer-wrap {
+    padding: 0 0 40px;
+  }
+
+  .ewc-site-footer {
+    padding: 28px 30px 22px;
+    border: 1px solid var(--ewc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    box-shadow: var(--ewc-shadow);
+    backdrop-filter: blur(20px);
+  }
+
+  .ewc-site-footer-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .ewc-site-footer-brand {
+    display: grid;
+    gap: 8px;
+  }
+
+  .ewc-site-footer-brand strong {
+    color: var(--ewc-text);
+    font-size: 18px;
+    letter-spacing: -0.02em;
+  }
+
+  .ewc-site-footer-brand a {
+    color: var(--ewc-muted);
+    font-size: 14px;
+  }
+
+  .ewc-site-footer-brand a:hover {
+    color: var(--ewc-soft);
+  }
+
+  .ewc-site-footer-socials {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .ewc-site-footer-social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ewc-soft);
+  }
+
+  .ewc-site-footer-social:hover {
+    color: var(--ewc-text);
+    border-color: rgba(198, 221, 255, 0.18);
+  }
+
+  .ewc-site-footer-social svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  .ewc-site-footer-copy {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--ewc-muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 1100px) {
+    .ewc-testimonials-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ewc-card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ewc-proof-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+  }
+
+  @media (max-width: 920px) {
+    #pricing .ewc-pricing-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ewc-integrations-surface {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 30px 28px;
+    }
+
+    .ewc-integrations-visual {
+      min-height: 300px;
+    }
+
+    .ewc-integrations-stack {
+      position: relative;
+      inset: auto;
+      width: 100%;
+      padding: 28px 24px;
+    }
+
+    .ewc-integration-card:nth-child(1),
+    .ewc-integration-card:nth-child(2),
+    .ewc-integration-card:nth-child(3) {
+      transform: none;
+    }
+
+    .ewc-shell-nav {
+      width: min(100%, calc(100% - 28px));
+    }
+
+    .ewc-nav-island {
+      position: relative;
+      z-index: 80;
+      gap: 14px;
+      padding: 12px 14px 12px 16px;
+      border-radius: 28px;
+    }
+
+    .ewc-brand {
+      min-width: 0;
+      justify-content: flex-start;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .ewc-nav-toggle {
+      display: inline-flex;
+      margin-left: auto;
+      position: relative;
+      z-index: 82;
+    }
+
+    .ewc-nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(5, 8, 13, 0.56);
+      backdrop-filter: blur(4px);
+    }
+
+    .ewc-nav-panel {
+      display: none;
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 82px);
+      right: calc(env(safe-area-inset-right, 0px) + 14px);
+      left: auto;
+      z-index: 81;
+      width: min(240px, 58vw);
+      min-width: 214px;
+      max-width: calc(100vw - 28px);
+      padding: 12px 14px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(9, 18, 31, 0.08);
+      background: rgba(248, 251, 255, 0.98);
+      box-shadow: 0 26px 56px rgba(3, 8, 16, 0.28);
+      backdrop-filter: blur(20px);
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-overlay {
+      display: block;
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      justify-items: stretch;
+    }
+
+    .ewc-nav-panel-head {
+      order: 1;
+      position: relative;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .ewc-nav-links {
+      order: 2;
+      width: 100%;
+      display: grid;
+      justify-items: start;
+      gap: 1px;
+      justify-self: stretch;
+    }
+
+    .ewc-nav-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 0;
+      padding: 6px 0;
+      border-radius: 0;
+      background: transparent;
+      border: 0;
+      text-align: left;
+      color: #0f1a2a;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: none;
+    }
+
+    .ewc-nav-links a:hover,
+    .ewc-nav-links a[aria-current="page"] {
+      color: #07111d;
+    }
+
+    .ewc-nav-cta {
+      min-height: 40px;
+      margin-top: 0;
+      padding: 0 14px;
+      font-size: 13px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .ewc-nav-panel .ewc-nav-cta.ewc-button-primary {
+      display: inline-flex;
+      width: auto;
+      border-color: rgba(9, 18, 31, 0.12);
+      background: linear-gradient(180deg, #0f1a2a 0%, #091220 100%);
+      color: #f8fbff;
+      box-shadow: 0 10px 22px rgba(6, 12, 21, 0.14);
+    }
+
+    .ewc-nav-panel .ewc-nav-cta.ewc-button-primary:hover {
+      background: linear-gradient(135deg, #77e8d2 0%, #4fcab5 100%);
+      border-color: rgba(107, 241, 211, 0.28);
+      color: #08111d;
+      box-shadow: 0 12px 24px rgba(56, 140, 126, 0.18);
+    }
+
+    .ewc-nav-close {
+      display: inline-flex;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: rgba(9, 18, 31, 0.06);
+      color: #0f1a2a;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 180ms ease, color 180ms ease;
+      transform: translateY(-50%);
+    }
+
+    .ewc-nav-close:hover {
+      background: rgba(9, 18, 31, 0.1);
+      color: #07111d;
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:first-child,
+    .ewc-nav-island.ewc-nav-open .ewc-nav-toggle span:last-child {
+      transform: none;
+    }
+
+    .ewc-nav-island.ewc-nav-open .ewc-nav-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .ewc-topbar {
+      padding-top: 18px;
+    }
+
+    .ewc-hero,
+    .ewc-credibility,
+    .ewc-quote-grid,
+    .ewc-stats-grid,
+    .ewc-custom-analysis {
+      grid-template-columns: 1fr;
+    }
+
+    .ewc-section {
+      padding: 68px 0;
+    }
+
+    .ewc-hero {
+      padding-top: 72px;
+    }
+
+    .ewc-credibility-list {
+      grid-template-columns: 1fr;
+    }
+
+    .ewc-custom-analysis {
+      align-items: flex-start;
+    }
+
+    .ewc-site-footer-main {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .ewc-site-footer-socials {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ewc-shell {
+      width: min(100%, calc(100% - 24px));
+    }
+
+    #pricing .ewc-pricing-grid,
+    .ewc-testimonials-grid,
+    .ewc-card-grid,
+    .ewc-proof-grid,
+    .ewc-inline-proof-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #pricing .ewc-offer-card,
+    #pricing .ewc-elite-tier {
+      padding: 24px 20px;
+    }
+
+    .ewc-card,
+    .ewc-proof-card,
+    .ewc-price-card,
+    .ewc-custom-analysis,
+    .ewc-testimonial,
+    .ewc-disclaimer,
+    .ewc-final-cta {
+      padding: 24px 20px;
+    }
+
+    .ewc-integrations-surface {
+      padding: 24px 20px;
+      border-radius: 26px;
+    }
+
+    .ewc-integrations-copy p {
+      font-size: 18px;
+    }
+
+    .ewc-integrations-visual {
+      min-height: 270px;
+      border-radius: 24px;
+    }
+
+    .ewc-integrations-stack {
+      padding: 22px 18px;
+      gap: 16px;
+    }
+
+    .ewc-integration-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+    }
+
+    .ewc-integration-copy strong {
+      font-size: 20px;
+    }
+
+    .ewc-hero-card {
+      padding: 14px;
+      border-radius: 22px;
+    }
+
+    .ewc-site-footer {
+      padding: 24px 20px 20px;
+    }
+
+    #pricing .ewc-price-card {
+      min-height: auto;
+      grid-template-rows: 34px auto auto 18px auto auto 1fr auto;
+      padding: 22px 18px;
+    }
+
+    .ewc-price-card .ewc-price-top {
+      gap: 10px;
+    }
+
+    .ewc-price-card .ewc-price-value {
+      margin-top: 0;
+    }
+
+    .ewc-price-card .ewc-price-note {
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    .ewc-price-card > p:not(.ewc-price-note) {
+      min-height: 0;
+    }
+
+    .ewc-price-list {
+      margin-top: 12px;
+      gap: 10px;
+    }
+
+    .ewc-price-card .ewc-actions {
+      padding-top: 16px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    #inside .ewc-card {
+      padding: 24px 20px;
+      gap: 14px;
+    }
+
+    #inside .ewc-tier-list {
+      display: none;
+    }
+
+    #inside .ewc-tier-list-mobile {
+      display: grid;
+      gap: 10px;
+    }
+
+    #inside .ewc-tier-list-mobile li {
+      padding-left: 28px;
+      font-size: 14px;
+      line-height: 1.52;
+    }
+
+    #inside .ewc-tier-list-mobile li::before {
+      top: 0.08em;
+      width: 16px;
+      height: 16px;
+      font-size: 10px;
+    }
+
+    #pricing .ewc-elite-layout {
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    #pricing .ewc-elite-features {
+      max-width: none;
+    }
+
+    #pricing .ewc-elite-tier {
+      min-height: 0;
+      padding: 20px;
+    }
+
+    #pricing .ewc-elite-tier-grid {
+      gap: 14px;
+    }
+
+    #pricing .ewc-elite-tier-topline {
+      gap: 10px;
+    }
+
+    #pricing .ewc-elite-tier-main {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    #pricing .ewc-elite-tier-action {
+      width: 100%;
+      justify-content: stretch;
+    }
+
+    #pricing .ewc-elite-tier .ewc-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="ewc-home-v2" id="top">
+  <section class="ewc-shell-nav ewc-topbar">
+    <div class="ewc-nav-island">
+      <a class="ewc-brand" href="#top">
+        <span class="ewc-brand-mark" aria-hidden="true">
+          <img src="http://test.elliottwaveclub.com/wp-content/uploads/2026/03/Copy-of-Copy-of-Elliott-Wave-14.png" alt="" />
+        </span>
+        <span>Elliott Wave Club</span>
+      </a>
+      <button class="ewc-nav-toggle" type="button" aria-expanded="false" aria-controls="ewc-mobile-nav" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+      </button>
+      <div class="ewc-nav-panel" id="ewc-mobile-nav">
+        <div class="ewc-nav-links">
+          <a href="/previous-projections/">Case Studies</a>
+          <a href="/#inside">Membership</a>
+          <a href="/#process">Process</a>
+          <a href="/#pricing">Pricing</a>
+          <a href="/#faq">FAQ</a>
+        </div>
+        <div class="ewc-nav-panel-head">
+          <a class="ewc-button-small ewc-button-primary ewc-nav-cta" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+          <button class="ewc-nav-close" type="button" aria-label="Close navigation">&times;</button>
+        </div>
+      </div>
+      <button class="ewc-nav-overlay" type="button" aria-label="Close navigation"></button>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-hero">
+    <div>
+      <h1>Trade With a Mechanical Edge Using Elliott Wave 2.0</h1>
+      <p class="ewc-lead">
+        A more mechanical, less subjective framework for market structure, built for
+        real-world trading.
+      </p>
+      <div class="ewc-actions">
+        <a class="ewc-button ewc-button-secondary" href="https://whop.com/checkout/1x5V3IH7AxpTASVp17-j4oY-pbEJ-1zcl-59BtejJjOvV0/" target="_blank" rel="noopener noreferrer">Start Free</a>
+        <a class="ewc-button ewc-button-primary" href="#pricing">Explore Elite</a>
+      </div>
+      <div class="ewc-proof-inline">
+        <span class="ewc-proof-pill"><strong>1,400+</strong> members</span>
+        <span class="ewc-proof-pill"><strong>4.8/5</strong> public rating</span>
+        <span class="ewc-proof-pill"><strong>Free + Elite</strong> paths</span>
+        <span class="ewc-proof-pill"><strong>Discord + models</strong> access</span>
+      </div>
+    </div>
+
+    <div class="ewc-hero-card">
+      <div class="ewc-hero-media">
+        <img src="https://test.elliottwaveclub.com/wp-content/uploads/2026/01/Dec-Q4-Weekly-Updates-69-1024x500.png" alt="Elliott Wave Club market analysis example chart" />
+      </div>
+      <div class="ewc-hero-meta">
+        <div>
+          <span>What you see</span>
+          <strong>Real market structure</strong>
+        </div>
+        <div>
+          <span>How it is used</span>
+          <strong>Daily plans and swing setups</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section" id="proof">
+    <div class="ewc-stats-grid">
+      <div class="ewc-stat">
+        <strong>1,400+</strong>
+        <span>Total members across free and paid access paths.</span>
+      </div>
+      <div class="ewc-stat">
+        <strong>4.8/5</strong>
+        <span>Public review score from current member feedback.</span>
+      </div>
+      <div class="ewc-stat">
+        <strong>Discord</strong>
+        <span>Live community discussion around the daily framework.</span>
+      </div>
+      <div class="ewc-stat">
+        <strong>Models</strong>
+        <span>Rules-based trading models like WXY, Momentum Threshold, and 2/4 trendline structure.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section" id="inside">
+    <div class="ewc-section-head">
+      <h2>What You Unlock Inside Elliott Wave Club</h2>
+      <p>
+        Elliott Wave Club is built as a two-tier ecosystem: a free community to build
+        context and skill, and an Elite membership for traders who want the full research,
+        education, and execution-focused experience.
+      </p>
+    </div>
+    <div class="ewc-card-grid">
+      <article class="ewc-card ewc-tier-card">
+        <span class="ewc-eyebrow">Free</span>
+        <h3>Free Community</h3>
+        <ul class="ewc-tier-list">
+          <li>Community chat to share ideas</li>
+          <li>Weekly projections for SPX, NDX, and DJI</li>
+          <li>Chart requests</li>
+          <li>Elliott Wave educational resources</li>
+          <li>Smart Money Concepts like iFVG, SMT, and liquidity</li>
+          <li>"Last Call" intraday update before it hits X</li>
+        </ul>
+        <ul class="ewc-tier-list-mobile">
+          <li>Community chat</li>
+          <li>Weekly SPX / NDX / DJI projections</li>
+          <li>Chart requests</li>
+          <li>Elliott Wave educational resources</li>
+          <li>"Last Call" updates</li>
+        </ul>
+      </article>
+      <article class="ewc-card ewc-tier-card ewc-tier-card-elite">
+        <span class="ewc-eyebrow">Elite</span>
+        <h3>EWC Elite</h3>
+        <ul class="ewc-tier-list">
+          <li>Real-time intraday updates and wave tracking</li>
+          <li>Long / short swing signals</li>
+          <li>Daily SPX plans</li>
+          <li>Weekly and monthly projections</li>
+          <li>Elite discussion chat</li>
+          <li>Chart requests and featured charts</li>
+          <li>Trading models library</li>
+          <li>Educational hub</li>
+          <li>Premium breakdowns and advanced execution content</li>
+        </ul>
+        <ul class="ewc-tier-list-mobile">
+          <li>Real-time intraday updates</li>
+          <li>Long / short swing signals</li>
+          <li>Daily SPX plans</li>
+          <li>Weekly and monthly projections</li>
+          <li>Models, education, and premium discussion</li>
+        </ul>
+      </article>
+    </div>
+    <div class="ewc-inline-proof">
+      <div class="ewc-inline-proof-grid ewc-inline-proof-grid-amzn">
+        <div class="ewc-inline-proof-card">
+          <img src="https://test.elliottwaveclub.com/wp-content/uploads/2026/03/Ads-Q1-2026-scaled.png" alt="AMZN short alert with Discord callout, entry, stop, and targets" />
+          <span>BEFORE</span>
+        </div>
+        <div class="ewc-inline-proof-card">
+          <img src="https://test.elliottwaveclub.com/wp-content/uploads/2026/03/Ads-Q1-2026-52-scaled.png" alt="AMZN short setup after the decline reached the projected target zone" />
+          <span>AFTER</span>
+        </div>
+      </div>
+      <p class="ewc-inline-proof-caption">Swing Trade Alert — AMZN short at 238.70, targets 215–205. Played out as projected.</p>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section" id="process">
+    <div class="ewc-section-head">
+      <span class="ewc-eyebrow">INTRODUCING ELLIOTT WAVE 2.0</span>
+      <h2>What Makes Elliott Wave 2.0 Different</h2>
+      <p>
+        Traditional Elliott Wave often gets buried in labels, exceptions, and hindsight
+        interpretation. Elliott Wave 2.0 strips that down to the elements that actually
+        matter: trend structure, proportionality, invalidation, and repeatable decision-making.
+      </p>
+      <p>
+        Instead of over-classifying every variation, the framework focuses on how price is
+        behaving, where a structure fails, and what that implies next.
+      </p>
+    </div>
+    <div class="ewc-proof-grid">
+      <article class="ewc-proof-card">
+        <span class="ewc-pill">Mechanical</span>
+        <h3>Mechanical Framework</h3>
+        <p>A more rules-based approach built to reduce guesswork and narrow valid interpretations.</p>
+      </article>
+      <article class="ewc-proof-card">
+        <span class="ewc-pill">Trendlines</span>
+        <h3>Trendlines Define Waves</h3>
+        <p>In EW 2.0, trend structure comes first. When the trend breaks, the wave is complete.</p>
+      </article>
+      <article class="ewc-proof-card">
+        <span class="ewc-pill">Structure</span>
+        <h3>Structure Over Labels</h3>
+        <p>The focus is on behavior and outcomes, not endless pattern taxonomy.</p>
+      </article>
+      <article class="ewc-proof-card">
+        <span class="ewc-pill">Execution</span>
+        <h3>Built for Execution</h3>
+        <p>A practical framework built around bias, key levels, invalidation, and cleaner decisions.</p>
+      </article>
+    </div>
+    <div class="ewc-inline-proof">
+      <div class="ewc-inline-proof-grid">
+        <div class="ewc-inline-proof-card">
+          <img src="https://test.elliottwaveclub.com/wp-content/uploads/2026/03/Ads-Q1-2026-53-scaled.png" alt="ES H4 Elliott Wave 2.0 projection before the move" />
+          <span>BEFORE</span>
+        </div>
+        <div class="ewc-inline-proof-card">
+          <img src="https://test.elliottwaveclub.com/wp-content/uploads/2026/03/Ads-Q1-2026-54-scaled.png" alt="ES H4 Elliott Wave 2.0 projection after the move resolved" />
+          <span>AFTER</span>
+        </div>
+      </div>
+      <p class="ewc-inline-proof-caption">ES H4 — projection vs. outcome using the Elliott Wave 2.0 framework.</p>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section">
+    <div class="ewc-credibility">
+      <div class="ewc-credibility-media">
+        <img src="https://test.elliottwaveclub.com/wp-content/uploads/2025/11/FBA4586E-B56B-4CE7-BD06-D2F9F0C6D5CE-17777-0000062DBC89DCBE-4.jpg" alt="Trigger Trades analyst profile" />
+      </div>
+      <div class="ewc-credibility-copy">
+        <span class="ewc-eyebrow">About the Analyst</span>
+        <h2>Meet Trigger Trades, the Analyst Behind the Process.</h2>
+        <p>
+          Elliott Wave Club is built around a more structured, execution-focused way to use
+          Elliott Wave. The goal is not to make the theory sound more complex. The goal is
+          to make it more usable in real markets.
+        </p>
+        <p>
+          The process blends multi-timeframe market modeling with a rules-based framework so
+          traders can move from bias to levels to execution with more consistency and less noise.
+        </p>
+        <a class="ewc-inline-link" href="https://www.twitter.com/triggertrades/" target="_blank" rel="noopener noreferrer">Follow on X →</a>
+        <div class="ewc-credibility-list">
+          <div><strong>Structured Framework.</strong><br />A cleaner way to organize market context before a trade is even considered.</div>
+          <div><strong>Execution-First.</strong><br />The work is designed to support actual decisions, not endless chart theory.</div>
+          <div><strong>Public Proof.</strong><br />Case studies and resolved setups show the process in live markets.</div>
+          <div><strong>Cold-Traffic Friendly.</strong><br />Clear enough for newer traders, still useful for experienced ones.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section" id="case-studies">
+    <div class="ewc-section-head">
+      <h2>Real Case Studies, Not Vague Hindsight.</h2>
+      <p>
+        The strongest proof on this site is the case-study record. Each example is framed the
+        same way: date, thesis, invalidation, target, and resolved outcome.
+      </p>
+    </div>
+    <div class="ewc-proof-grid ewc-case-preview-grid">
+      <article class="ewc-card">
+        <div class="ewc-case-card-meta">
+          <span class="ewc-pill">August 2024</span>
+          <span class="ewc-pill">SPX</span>
+          <span class="ewc-pill">Wave 4 to Wave 5</span>
+        </div>
+        <h3>Projected the W4 Completion and the Next 1,000-Point Rally.</h3>
+        <ul class="ewc-case-card-list">
+          <li><strong>Thesis:</strong> <span>The projected W4 support zone would complete the correction and set up the next higher leg.</span></li>
+          <li><strong>Invalidation:</strong> <span>Loss of the support zone would invalidate the bullish wave continuation.</span></li>
+          <li><strong>Target:</strong> <span>Resume into a multi-month W5 rally.</span></li>
+          <li><strong>Result:</strong> <span>The August low marked the turn and price advanced roughly 1,000 points.</span></li>
+        </ul>
+      </article>
+      <article class="ewc-card">
+        <div class="ewc-case-card-meta">
+          <span class="ewc-pill">October 2024</span>
+          <span class="ewc-pill">NQ</span>
+          <span class="ewc-pill">Bearish WXY</span>
+        </div>
+        <h3>Mapped the Bearish WXY Breakdown and the 400-Point Downside Move.</h3>
+        <ul class="ewc-case-card-list">
+          <li><strong>Thesis:</strong> <span>A bearish WXY correction after the impulse decline would resolve lower.</span></li>
+          <li><strong>Invalidation:</strong> <span>A break in the corrective structure would weaken the lower-target thesis.</span></li>
+          <li><strong>Target:</strong> <span>90-100% downside extensions of the initial impulse.</span></li>
+          <li><strong>Result:</strong> <span>The downside target zone was reached as projected for roughly 400 NQ points.</span></li>
+        </ul>
+      </article>
+      <article class="ewc-card">
+        <div class="ewc-case-card-meta">
+          <span class="ewc-pill">January 2024</span>
+          <span class="ewc-pill">ES</span>
+          <span class="ewc-pill">0-B trendline</span>
+        </div>
+        <h3>Used the 0-B Trendline Break to Project the 50-Point Retracement Move.</h3>
+        <ul class="ewc-case-card-list">
+          <li><strong>Thesis:</strong> <span>A valid 0-B trendline break would support a move into the common retracement zone.</span></li>
+          <li><strong>Invalidation:</strong> <span>Failure to respect the structure would weaken the measured move.</span></li>
+          <li><strong>Target:</strong> <span>50-61.8% retracement zone with confluence from wave equality.</span></li>
+          <li><strong>Result:</strong> <span>Price followed through into the projected area for roughly 50 ES points.</span></li>
+        </ul>
+      </article>
+    </div>
+    <div class="ewc-proof-cta">
+      <a class="ewc-button ewc-button-secondary" href="/previous-projections/">View All Case Studies</a>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section" id="pricing">
+    <div class="ewc-section-head">
+      <h2>Choose Your Path.</h2>
+      <p>
+        Keep the choice simple. Free is the low-friction way to enter the ecosystem.
+        Elite is the full research, education, and community experience.
+      </p>
+    </div>
+    <div class="ewc-pricing-grid">
+      <article class="ewc-offer-card ewc-offer-card-free">
+        <h3>Free</h3>
+        <p class="ewc-offer-subhead">Start With the Public Side of the Ecosystem.</p>
+        <span class="ewc-offer-price">$0</span>
+        <p class="ewc-offer-description">Get a feel for the brand, the community, and the style of analysis before upgrading.</p>
+        <ul class="ewc-offer-list">
+          <li>Community chat</li>
+          <li>Weekly projections for SPX, NDX, and DJI</li>
+          <li>Educational resources</li>
+          <li>Chart requests</li>
+          <li>"Last Call" intraday update before it hits X</li>
+        </ul>
+        <div class="ewc-actions">
+          <a class="ewc-button ewc-button-secondary" href="https://whop.com/checkout/1x5V3IH7AxpTASVp17-j4oY-pbEJ-1zcl-59BtejJjOvV0/" target="_blank" rel="noopener noreferrer">Join Free</a>
+        </div>
+      </article>
+      <article class="ewc-offer-card ewc-offer-card-elite">
+        <div class="ewc-elite-header">
+          <h3>EWC Elite</h3>
+          <p class="ewc-offer-subhead">The full research, education, and execution-focused experience.</p>
+        </div>
+        <div class="ewc-elite-layout">
+          <ul class="ewc-offer-list ewc-elite-features">
+            <li>Daily SPX plans, swing setups, and real-time intraday updates</li>
+            <li>Weekly and monthly projections across indices and top names</li>
+            <li>Trading models library, Elliott Wave education, and execution concepts</li>
+            <li>Elite chat, chart requests, and deeper execution support</li>
+          </ul>
+          <div class="ewc-elite-stack">
+            <article class="ewc-elite-tier ewc-elite-tier-highlight">
+              <div class="ewc-elite-tier-grid">
+                <div class="ewc-elite-tier-meta">
+                  <div class="ewc-elite-tier-topline">
+                    <span class="ewc-elite-tier-name">Monthly</span>
+                    <span class="ewc-price-badge ewc-price-badge-secondary">Most Popular</span>
+                  </div>
+                </div>
+                <div class="ewc-elite-tier-main">
+                  <div class="ewc-elite-tier-pricing">
+                    <div class="ewc-elite-tier-price">
+                      <span class="ewc-elite-tier-amount">$99</span>
+                      <span class="ewc-elite-tier-suffix">/month</span>
+                    </div>
+                  </div>
+                  <div class="ewc-elite-tier-action">
+                    <a class="ewc-button ewc-button-primary ewc-button-accent" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+                  </div>
+                </div>
+                <div class="ewc-elite-tier-footer">
+                  <p class="ewc-elite-tier-note ewc-elite-tier-note-empty" aria-hidden="true">Save $189/year</p>
+                </div>
+              </div>
+            </article>
+            <article class="ewc-elite-tier">
+              <div class="ewc-elite-tier-grid">
+                <div class="ewc-elite-tier-meta">
+                  <div class="ewc-elite-tier-topline">
+                    <span class="ewc-elite-tier-name">Yearly</span>
+                    <span class="ewc-price-badge">Best Value</span>
+                  </div>
+                </div>
+                <div class="ewc-elite-tier-main">
+                  <div class="ewc-elite-tier-pricing">
+                    <div class="ewc-elite-tier-price">
+                      <span class="ewc-elite-tier-amount">$999</span>
+                      <span class="ewc-elite-tier-suffix">/year</span>
+                    </div>
+                  </div>
+                  <div class="ewc-elite-tier-action">
+                    <a class="ewc-button ewc-button-primary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+                  </div>
+                </div>
+                <div class="ewc-elite-tier-footer">
+                  <p class="ewc-elite-tier-note">Save $189/year</p>
+                </div>
+              </div>
+            </article>
+            <article class="ewc-elite-tier">
+              <div class="ewc-elite-tier-grid">
+                <div class="ewc-elite-tier-meta">
+                  <div class="ewc-elite-tier-topline">
+                    <span class="ewc-elite-tier-name">Lifetime</span>
+                  </div>
+                </div>
+                <div class="ewc-elite-tier-main">
+                  <div class="ewc-elite-tier-pricing">
+                    <div class="ewc-elite-tier-price">
+                      <span class="ewc-elite-tier-amount">$1,999</span>
+                      <span class="ewc-elite-tier-suffix">one-time</span>
+                    </div>
+                  </div>
+                  <div class="ewc-elite-tier-action">
+                    <a class="ewc-button ewc-button-primary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+                  </div>
+                </div>
+                <div class="ewc-elite-tier-footer">
+                  <p class="ewc-elite-tier-note ewc-elite-tier-note-empty" aria-hidden="true">Save $189/year</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section">
+    <div class="ewc-integrations-surface">
+      <div class="ewc-integrations-copy">
+        <span class="ewc-eyebrow">Integrations</span>
+        <h2>Seamless Integrations</h2>
+        <p>Access Elliott Wave Club content seamlessly through the platforms you already use.</p>
+        <a class="ewc-button ewc-integrations-cta" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Get Started Now</a>
+      </div>
+      <div class="ewc-integrations-visual" aria-hidden="true">
+        <div class="ewc-integrations-stack">
+          <div class="ewc-integration-card">
+            <span class="ewc-integration-mark ewc-integration-mark-discord">D</span>
+            <div class="ewc-integration-copy">
+              <strong>Discord</strong>
+              <div class="ewc-integration-lines">
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="ewc-integration-card">
+            <span class="ewc-integration-mark ewc-integration-mark-youtube">Y</span>
+            <div class="ewc-integration-copy">
+              <strong>YouTube</strong>
+              <div class="ewc-integration-lines">
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="ewc-integration-card">
+            <span class="ewc-integration-mark ewc-integration-mark-whop">W</span>
+            <div class="ewc-integration-copy">
+              <strong>Whop</strong>
+              <div class="ewc-integration-lines">
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section">
+    <div class="ewc-section-head">
+      <h2>Member Testimonials.</h2>
+      <p>Direct feedback from traders using the Elliott Wave Club process inside the membership.</p>
+    </div>
+    <div class="ewc-testimonials-grid">
+      <article class="ewc-testimonial">
+        <p>"Your counts helped me a ton with structuring profitable plays. Had my best week of trading ever and ended with a huge gain."</p>
+        <div class="ewc-testimonial-meta">
+          <strong>dirt_engineer</strong>
+          <span>EWC Member</span>
+        </div>
+      </article>
+      <article class="ewc-testimonial">
+        <p>"Hands down one of the best Discords I have paid for. I love the education and effort onto your charts."</p>
+        <div class="ewc-testimonial-meta">
+          <strong>ozzy</strong>
+          <span>EWC Member</span>
+        </div>
+      </article>
+      <article class="ewc-testimonial">
+        <p>"I have been in this Discord for two days now and I am positively impressed by how much care and passion goes into every detail."</p>
+        <div class="ewc-testimonial-meta">
+          <strong>vStrimi</strong>
+          <span>EWC Member</span>
+        </div>
+      </article>
+      <article class="ewc-testimonial">
+        <p>"What an amazing day and incredible service. I have joined multiple Discords and this is the best."</p>
+        <div class="ewc-testimonial-meta">
+          <strong>Danimal</strong>
+          <span>EWC Member</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section" id="faq">
+    <div class="ewc-section-head">
+      <h2>Questions Traders Ask Before Joining.</h2>
+      <p>
+        Short answers to the main objections before someone joins.
+      </p>
+    </div>
+    <div class="ewc-faq">
+      <details>
+        <summary>Is this an alert service?</summary>
+        <p>No. Elliott Wave Club is a research and education membership. Members get structured analysis, trade setups, and context they can use to build their own plan.</p>
+      </details>
+      <details>
+        <summary>Can beginners use it?</summary>
+        <p>Yes. The education layer is designed to shorten the learning curve, and the analysis is framed to help newer traders follow the structure more clearly.</p>
+      </details>
+      <details>
+        <summary>What is the difference between Free and Elite?</summary>
+        <p>Free is the easiest way to enter the ecosystem and see the style of analysis. Elite is the full experience with daily plans, swing setups, education, premium models, and community support.</p>
+      </details>
+      <details>
+        <summary>How often is analysis posted?</summary>
+        <p>The core promise is consistent market preparation, with recurring daily plans and ongoing setup updates built around the live market structure.</p>
+      </details>
+      <details>
+        <summary>Is this financial advice?</summary>
+        <p>No. Elliott Wave Club is educational and research-focused. Every trader is responsible for their own execution, risk management, and position sizing.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-section">
+    <div class="ewc-disclaimer">
+      <h3>Educational Research. Real Risk.</h3>
+      <p>
+        Elliott Wave Club exists to help traders think more clearly about market structure. It does not replace personal judgment, disciplined execution, or responsible risk management. Past case studies are proof of process, not a promise of future performance.
+      </p>
+    </div>
+
+    <div class="ewc-final-cta">
+      <span class="ewc-eyebrow">Start Here</span>
+      <h2>Start Free. Upgrade When You Want the Full Process.</h2>
+      <p>
+        Join the free path if you want to see how the framework feels. Join Elite if you want the complete research, education, and community experience.
+      </p>
+      <div class="ewc-actions">
+        <a class="ewc-button ewc-button-primary" href="https://whop.com/checkout/mkka2WqIgroXwIegF-VF2W-TAKx-7lVx-tw1ezvl59AE4/" target="_blank" rel="noopener noreferrer">Join Elite</a>
+        <a class="ewc-button ewc-button-secondary" href="https://whop.com/checkout/1x5V3IH7AxpTASVp17-j4oY-pbEJ-1zcl-59BtejJjOvV0/" target="_blank" rel="noopener noreferrer">Join Free</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ewc-shell ewc-site-footer-wrap">
+    <div class="ewc-site-footer">
+      <div class="ewc-site-footer-main">
+        <div class="ewc-site-footer-brand">
+          <strong>Elliott Wave Club</strong>
+          <a href="mailto:support@elliottwaveclub.com">support@elliottwaveclub.com</a>
+        </div>
+        <div class="ewc-site-footer-socials">
+          <a class="ewc-site-footer-social" href="https://www.twitter.com/triggertrades/" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on X">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </a>
+          <a class="ewc-site-footer-social" href="https://www.tiktok.com/@triggertrades" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on TikTok">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4V13.2A3.2 3.2 0 1 1 10.8 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 4C14.9 6.1 16.8 7.4 19 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </a>
+          <a class="ewc-site-footer-social" href="https://www.youtube.com/channel/UCOfLITbjjNjcIVaV9pBZuCA" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on YouTube">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="11" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M10 9.5L15 12L10 14.5V9.5Z" fill="currentColor"/></svg>
+          </a>
+          <a class="ewc-site-footer-social" href="https://www.instagram.com/triggertrades/" target="_blank" rel="noopener noreferrer" aria-label="Follow Elliott Wave Club on Instagram">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4.5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6.8" r="1" fill="currentColor"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ewc-site-footer-copy">© 2026 Elliott Wave Club. Educational research only. Not financial advice.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function () {
+    var island = document.querySelector(".ewc-nav-island");
+    var toggle = island ? island.querySelector(".ewc-nav-toggle") : null;
+    var panel = island ? island.querySelector(".ewc-nav-panel") : null;
+    var closeButton = island ? island.querySelector(".ewc-nav-close") : null;
+    var overlay = island ? island.querySelector(".ewc-nav-overlay") : null;
+
+    if (!island || !toggle || !panel || !closeButton || !overlay) {
+      return;
+    }
+
+    function closeNav() {
+      island.classList.remove("ewc-nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleNav() {
+      var isOpen = island.classList.toggle("ewc-nav-open");
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    toggle.addEventListener("click", function (event) {
+      event.stopPropagation();
+      toggleNav();
+    });
+
+    closeButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      closeNav();
+    });
+
+    overlay.addEventListener("click", closeNav);
+
+    panel.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", closeNav);
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!island.contains(event.target)) {
+        closeNav();
+      }
+    });
+
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 920) {
+        closeNav();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeNav();
+      }
+    });
+  })();
+
+  (function () {
+    var images = Array.from(document.querySelectorAll(".ewc-inline-proof-card img"));
+
+    if (!images.length) {
+      return;
+    }
+
+    var lightbox = document.createElement("div");
+    lightbox.className = "ewc-lightbox";
+    lightbox.innerHTML = [
+      '<div class="ewc-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Expanded chart image">',
+      '<button class="ewc-lightbox-close" type="button" aria-label="Close enlarged chart">&times;</button>',
+      '<div class="ewc-lightbox-image-wrap"><img class="ewc-lightbox-image" alt="" /></div>',
+      '<p class="ewc-lightbox-caption"></p>',
+      "</div>"
+    ].join("");
+    document.body.appendChild(lightbox);
+
+    var dialog = lightbox.querySelector(".ewc-lightbox-dialog");
+    var lightboxImage = lightbox.querySelector(".ewc-lightbox-image");
+    var caption = lightbox.querySelector(".ewc-lightbox-caption");
+    var closeButton = lightbox.querySelector(".ewc-lightbox-close");
+
+    function closeLightbox() {
+      lightbox.classList.remove("is-open");
+      document.body.style.overflow = "";
+    }
+
+    function openLightbox(image) {
+      lightboxImage.src = image.currentSrc || image.src;
+      lightboxImage.alt = image.alt || "";
+      caption.textContent = image.alt || "";
+      lightbox.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+    }
+
+    images.forEach(function (image) {
+      image.setAttribute("tabindex", "0");
+      image.setAttribute("role", "button");
+      image.setAttribute("aria-label", (image.alt || "Chart image") + ". Open enlarged view");
+
+      image.addEventListener("click", function () {
+        openLightbox(image);
+      });
+
+      image.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openLightbox(image);
+        }
+      });
+    });
+
+    closeButton.addEventListener("click", closeLightbox);
+
+    lightbox.addEventListener("click", function (event) {
+      if (!dialog.contains(event.target)) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && lightbox.classList.contains("is-open")) {
+        closeLightbox();
+      }
+    });
+  })();
+</script>

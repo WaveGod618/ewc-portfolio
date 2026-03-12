@@ -1,0 +1,138 @@
+{
+  "node": {
+    "0018570660e74d63283ab02952020550bc1a353e51": {
+      "workers": {
+        "app/admin/page": {
+          "moduleId": 34214,
+          "async": false,
+          "exportedName": "logoutAction",
+          "filename": "src/lib/actions.ts"
+        },
+        "app/login/page": {
+          "moduleId": 29253,
+          "async": false,
+          "exportedName": "logoutAction",
+          "filename": "src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/page": "rsc",
+        "app/login/page": "rsc"
+      },
+      "filename": "src/lib/actions.ts",
+      "exportedName": "logoutAction"
+    },
+    "40028de1f73b4f43f1d21123b3a3f3600c06f6481d": {
+      "workers": {
+        "app/admin/page": {
+          "moduleId": 34214,
+          "async": false,
+          "exportedName": "saveTradeAction",
+          "filename": "src/lib/actions.ts"
+        },
+        "app/login/page": {
+          "moduleId": 29253,
+          "async": false,
+          "exportedName": "saveTradeAction",
+          "filename": "src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/page": "rsc",
+        "app/login/page": "rsc"
+      },
+      "filename": "src/lib/actions.ts",
+      "exportedName": "saveTradeAction"
+    },
+    "4027ebe833b121a260cbd5be8690669ba8932b7bd1": {
+      "workers": {
+        "app/admin/page": {
+          "moduleId": 34214,
+          "async": false,
+          "exportedName": "closeTradeAction",
+          "filename": "src/lib/actions.ts"
+        },
+        "app/login/page": {
+          "moduleId": 29253,
+          "async": false,
+          "exportedName": "closeTradeAction",
+          "filename": "src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/page": "rsc",
+        "app/login/page": "rsc"
+      },
+      "filename": "src/lib/actions.ts",
+      "exportedName": "closeTradeAction"
+    },
+    "4050545888e561e24137fbff5e93b289281cc25dba": {
+      "workers": {
+        "app/admin/page": {
+          "moduleId": 34214,
+          "async": false,
+          "exportedName": "loginAction",
+          "filename": "src/lib/actions.ts"
+        },
+        "app/login/page": {
+          "moduleId": 29253,
+          "async": false,
+          "exportedName": "loginAction",
+          "filename": "src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/page": "rsc",
+        "app/login/page": "rsc"
+      },
+      "filename": "src/lib/actions.ts",
+      "exportedName": "loginAction"
+    },
+    "4085fe3b5f7bcf13fb40b318eb586db98c75a347e1": {
+      "workers": {
+        "app/admin/page": {
+          "moduleId": 34214,
+          "async": false,
+          "exportedName": "createSnapshotAction",
+          "filename": "src/lib/actions.ts"
+        },
+        "app/login/page": {
+          "moduleId": 29253,
+          "async": false,
+          "exportedName": "createSnapshotAction",
+          "filename": "src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/page": "rsc",
+        "app/login/page": "rsc"
+      },
+      "filename": "src/lib/actions.ts",
+      "exportedName": "createSnapshotAction"
+    },
+    "40df06c15aef3cfd11604615dce805565d88905a0f": {
+      "workers": {
+        "app/admin/page": {
+          "moduleId": 34214,
+          "async": false,
+          "exportedName": "updateSettingsAction",
+          "filename": "src/lib/actions.ts"
+        },
+        "app/login/page": {
+          "moduleId": 29253,
+          "async": false,
+          "exportedName": "updateSettingsAction",
+          "filename": "src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/page": "rsc",
+        "app/login/page": "rsc"
+      },
+      "filename": "src/lib/actions.ts",
+      "exportedName": "updateSettingsAction"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "7tyZUNtl6IS58zSFyCwyxI3I4slymB3zzhLzHdHCAyE="
+}

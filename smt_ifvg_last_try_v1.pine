@@ -1,0 +1,329 @@
+// This Pine Script code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=6
+indicator("SMT iFVG Last Try [EWC]", shorttitle="SMTtry", overlay=true, max_lines_count=100, max_boxes_count=20, max_labels_count=20)
+
+COLOR_BULL = #089981
+COLOR_BEAR = #f23645
+COLOR_NEUTRAL = color.gray
+
+type Pivot
+    int index
+    float price
+    bool isHigh
+
+grp_core = "Core"
+compSymbol = input.symbol("CME_MINI:NQ1!", "Comparison Symbol", group=grp_core)
+pivotLen = input.int(2, "Pivot Length", minval=1, group=grp_core)
+pivotTolerance = input.int(3, "Pivot Tolerance", minval=0, maxval=10, group=grp_core)
+sweepToSmtBars = input.int(24, "Sweep To SMT Bars", minval=1, group=grp_core)
+smtToFvgBars = input.int(24, "SMT To FVG Bars", minval=1, group=grp_core)
+fvgToTriggerBars = input.int(12, "FVG To Trigger Bars", minval=1, group=grp_core)
+holdBars = input.int(40, "Signal Hold Bars", minval=5, group=grp_core)
+
+grp_refs = "References"
+useLondon = input.bool(true, "Use London High/Low", group=grp_refs)
+londonSession = input.session("0200-0500", "London Session", group=grp_refs)
+useSwing = input.bool(true, "Use Swing High/Low", group=grp_refs)
+
+grp_vis = "Visuals"
+showIfvgText = input.bool(true, "Show iFVG Text", group=grp_vis)
+
+var chartHighs = array.new<Pivot>()
+var chartLows = array.new<Pivot>()
+var compHighs = array.new<Pivot>()
+var compLows = array.new<Pivot>()
+
+var float londonHighLive = na
+var float londonLowLive = na
+var float londonHigh = na
+var float londonLow = na
+
+var int state = 0
+var bool activeBearish = false
+var int sweepBar = na
+var int smtBar = na
+var int fvgBar = na
+var int signalBar = na
+var float refPrice = na
+var string refName = ""
+var float targetPrice = na
+var float fvgTop = na
+var float fvgBottom = na
+var float fvgTriggerOpen = na
+
+var line refLine = na
+var line smtLine = na
+var line targetLine = na
+var box ifvgBox = na
+var label refLabel = na
+var label ifvgLabel = na
+var label signalLabel = na
+var table statusTable = table.new(position.top_right, 1, 1, bgcolor=color.new(color.black, 10), border_width=1)
+
+method updatePivots(array<Pivot> pivots, float price, bool isHigh) =>
+    if not na(price)
+        array.unshift(pivots, Pivot.new(bar_index[pivotLen], price, isHigh))
+        if array.size(pivots) > 50
+            array.pop(pivots)
+
+get_ohlc() =>
+    [open, high, low, close]
+
+findPivotOccurrenceAfter(array<Pivot> pivots, int minIndex, int occurrence) =>
+    Pivot result = na
+    int seen = 0
+    int idx = array.size(pivots) - 1
+    while idx >= 0
+        Pivot p = array.get(pivots, idx)
+        if p.index >= minIndex
+            seen += 1
+            if seen == occurrence
+                result := p
+                idx := -1
+        idx -= 1
+    result
+
+findMatchingPivotAfter(array<Pivot> pivots, int targetIndex, int tolerance, int minIndex) =>
+    Pivot result = na
+    int bestDistance = 1000000
+    if array.size(pivots) > 0
+        int idx = array.size(pivots) - 1
+        while idx >= 0
+            Pivot p = array.get(pivots, idx)
+            if p.index >= minIndex
+                int distance = math.abs(p.index - targetIndex)
+                if distance <= tolerance and distance < bestDistance
+                    bestDistance := distance
+                    result := p
+            idx -= 1
+    result
+
+findLatestPivotBefore(array<Pivot> pivots, int maxIndex) =>
+    Pivot result = na
+    if array.size(pivots) > 0
+        int idx = 0
+        while idx < array.size(pivots)
+            Pivot p = array.get(pivots, idx)
+            if p.index <= maxIndex
+                result := p
+                idx := array.size(pivots)
+            else
+                idx += 1
+    result
+
+[compOpen, compHigh, compLow, compClose] = request.security(compSymbol, timeframe.period, get_ohlc())
+
+bool tfOk = timeframe.isminutes and timeframe.multiplier == 5
+
+bool inLondon = not na(time(timeframe.period, londonSession))
+if inLondon and not inLondon[1]
+    londonHighLive := high
+    londonLowLive := low
+else if inLondon
+    londonHighLive := math.max(londonHighLive, high)
+    londonLowLive := math.min(londonLowLive, low)
+else if not inLondon and inLondon[1]
+    londonHigh := londonHighLive
+    londonLow := londonLowLive
+
+chartPH = ta.pivothigh(pivotLen, pivotLen)
+chartPL = ta.pivotlow(pivotLen, pivotLen)
+compPH = ta.pivothigh(compHigh, pivotLen, pivotLen)
+compPL = ta.pivotlow(compLow, pivotLen, pivotLen)
+chartHighs.updatePivots(chartPH, true)
+chartLows.updatePivots(chartPL, false)
+compHighs.updatePivots(compPH, true)
+compLows.updatePivots(compPL, false)
+
+bool resetNow = false
+if state == 1 and not na(sweepBar) and bar_index - sweepBar > sweepToSmtBars
+    resetNow := true
+if state == 2 and not na(smtBar) and bar_index - smtBar > smtToFvgBars
+    resetNow := true
+if state == 3 and not na(fvgBar) and bar_index - fvgBar > fvgToTriggerBars
+    resetNow := true
+if state == 4 and not na(signalBar) and bar_index - signalBar > holdBars
+    resetNow := true
+
+if resetNow
+    if not na(refLine)
+        line.delete(refLine)
+    if not na(smtLine)
+        line.delete(smtLine)
+    if not na(targetLine)
+        line.delete(targetLine)
+    if not na(ifvgBox)
+        box.delete(ifvgBox)
+    if not na(refLabel)
+        label.delete(refLabel)
+    if not na(ifvgLabel)
+        label.delete(ifvgLabel)
+    if not na(signalLabel)
+        label.delete(signalLabel)
+    refLine := na
+    smtLine := na
+    targetLine := na
+    ifvgBox := na
+    refLabel := na
+    ifvgLabel := na
+    signalLabel := na
+    state := 0
+    activeBearish := false
+    sweepBar := na
+    smtBar := na
+    fvgBar := na
+    signalBar := na
+    refPrice := na
+    refName := ""
+    targetPrice := na
+    fvgTop := na
+    fvgBottom := na
+    fvgTriggerOpen := na
+
+if tfOk and state == 0
+    bool newSweep = false
+    bool newSweepBearish = false
+    float newSweepPrice = na
+    string newSweepName = ""
+
+    if useLondon and not na(londonHigh) and high > londonHigh and close < londonHigh
+        newSweep := true
+        newSweepBearish := true
+        newSweepPrice := londonHigh
+        newSweepName := "LO.H"
+    else if useLondon and not na(londonLow) and low < londonLow and close > londonLow
+        newSweep := true
+        newSweepBearish := false
+        newSweepPrice := londonLow
+        newSweepName := "LO.L"
+    else if useSwing and array.size(chartHighs) > 0 and high > array.get(chartHighs, 0).price and close < array.get(chartHighs, 0).price
+        newSweep := true
+        newSweepBearish := true
+        newSweepPrice := array.get(chartHighs, 0).price
+        newSweepName := "Swing High"
+    else if useSwing and array.size(chartLows) > 0 and low < array.get(chartLows, 0).price and close > array.get(chartLows, 0).price
+        newSweep := true
+        newSweepBearish := false
+        newSweepPrice := array.get(chartLows, 0).price
+        newSweepName := "Swing Low"
+
+    if newSweep
+        activeBearish := newSweepBearish
+        state := 1
+        sweepBar := bar_index
+        refPrice := newSweepPrice
+        refName := newSweepName
+        color refColor = newSweepBearish ? COLOR_BEAR : COLOR_BULL
+        refLine := line.new(bar_index - 30, newSweepPrice, bar_index + 20, newSweepPrice, extend=extend.right, color=refColor, width=2)
+        refLabel := label.new(bar_index, newSweepPrice, newSweepName, color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+if tfOk and state == 1
+    bool smtConfirmed = false
+    int smtX1 = na
+    int smtX2 = na
+    float smtY1 = na
+    float smtY2 = na
+    float newTarget = na
+
+    if activeBearish
+        Pivot esHigh1 = findPivotOccurrenceAfter(chartHighs, sweepBar, 1)
+        Pivot esHigh2 = findPivotOccurrenceAfter(chartHighs, sweepBar, 2)
+        if not na(esHigh1) and not na(esHigh2)
+            Pivot nqHigh1 = findMatchingPivotAfter(compHighs, esHigh1.index, pivotTolerance, sweepBar)
+            Pivot nqHigh2 = findMatchingPivotAfter(compHighs, esHigh2.index, pivotTolerance, sweepBar)
+            if not na(nqHigh1) and not na(nqHigh2)
+                smtConfirmed := esHigh2.price < esHigh1.price and nqHigh2.price > nqHigh1.price
+                if smtConfirmed
+                    Pivot targetPivot = findLatestPivotBefore(chartLows, esHigh2.index)
+                    newTarget := not na(targetPivot) ? targetPivot.price : low
+                    smtX1 := esHigh1.index
+                    smtY1 := esHigh1.price
+                    smtX2 := esHigh2.index
+                    smtY2 := esHigh2.price
+    else
+        Pivot esLow1 = findPivotOccurrenceAfter(chartLows, sweepBar, 1)
+        Pivot esLow2 = findPivotOccurrenceAfter(chartLows, sweepBar, 2)
+        if not na(esLow1) and not na(esLow2)
+            Pivot nqLow1 = findMatchingPivotAfter(compLows, esLow1.index, pivotTolerance, sweepBar)
+            Pivot nqLow2 = findMatchingPivotAfter(compLows, esLow2.index, pivotTolerance, sweepBar)
+            if not na(nqLow1) and not na(nqLow2)
+                smtConfirmed := esLow2.price > esLow1.price and nqLow2.price < nqLow1.price
+                if smtConfirmed
+                    Pivot targetPivot = findLatestPivotBefore(chartHighs, esLow2.index)
+                    newTarget := not na(targetPivot) ? targetPivot.price : high
+                    smtX1 := esLow1.index
+                    smtY1 := esLow1.price
+                    smtX2 := esLow2.index
+                    smtY2 := esLow2.price
+
+    if smtConfirmed
+        state := 2
+        smtBar := bar_index
+        targetPrice := newTarget
+        color smtColor = activeBearish ? COLOR_BEAR : COLOR_BULL
+        smtLine := line.new(smtX1, smtY1, smtX2, smtY2, color=smtColor, width=1)
+
+bool bullishFvg = high[2] < low and close[1] > open[1]
+bool bearishFvg = low[2] > high and close[1] < open[1]
+
+if tfOk and state == 2 and bar_index > smtBar
+    bool foundFvg = false
+    float newTop = na
+    float newBottom = na
+    float newTrigger = na
+
+    if activeBearish and bullishFvg
+        foundFvg := true
+        newTop := low
+        newBottom := high[2]
+        newTrigger := open[2]
+    else if not activeBearish and bearishFvg
+        foundFvg := true
+        newTop := low[2]
+        newBottom := high
+        newTrigger := open[2]
+
+    if foundFvg
+        state := 3
+        fvgBar := bar_index
+        fvgTop := newTop
+        fvgBottom := newBottom
+        fvgTriggerOpen := newTrigger
+        ifvgBox := box.new(bar_index[2], newTop, bar_index + 4, newBottom, border_color=color.white, border_style=line.style_dotted, bgcolor=color.new(color.white, 100))
+        if showIfvgText
+            ifvgLabel := label.new(bar_index + 2, math.avg(newTop, newBottom), "iFVG", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+if tfOk and state == 3
+    if not na(ifvgBox)
+        box.set_right(ifvgBox, bar_index + 4)
+    if not na(ifvgLabel)
+        label.set_x(ifvgLabel, bar_index + 2)
+    bool triggerNow = activeBearish ? close < fvgTriggerOpen : close > fvgTriggerOpen
+    if triggerNow
+        state := 4
+        signalBar := bar_index
+        color sigColor = activeBearish ? COLOR_BEAR : COLOR_BULL
+        signalLabel := label.new(bar_index + 3, math.avg(fvgTop, fvgBottom), activeBearish ? "Sell Signal" : "Buy Signal", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.normal)
+        targetLine := line.new(bar_index - 10, targetPrice, bar_index + 40, targetPrice, color=sigColor, width=2)
+
+string statusText = "Use 5m"
+color statusColor = COLOR_NEUTRAL
+if tfOk
+    if state == 0
+        statusText := "WAIT SWEEP"
+        statusColor := COLOR_NEUTRAL
+    else if state == 1
+        statusText := activeBearish ? "WAIT SMT SELL" : "WAIT SMT BUY"
+        statusColor := activeBearish ? COLOR_BEAR : COLOR_BULL
+    else if state == 2
+        statusText := activeBearish ? "WAIT FVG SELL" : "WAIT FVG BUY"
+        statusColor := activeBearish ? COLOR_BEAR : COLOR_BULL
+    else if state == 3
+        statusText := activeBearish ? "WAIT TRIGGER SELL" : "WAIT TRIGGER BUY"
+        statusColor := activeBearish ? COLOR_BEAR : COLOR_BULL
+    else if state == 4
+        statusText := activeBearish ? "SELL ACTIVE" : "BUY ACTIVE"
+        statusColor := activeBearish ? COLOR_BEAR : COLOR_BULL
+
+if barstate.islast
+    table.cell(statusTable, 0, 0, statusText, text_color=color.white, bgcolor=color.new(statusColor, 0), text_size=size.small)

@@ -1,0 +1,102 @@
+<svg width="1600" height="1236" viewBox="0 0 1600 1236" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="800" y1="0" x2="800" y2="1236" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#171A1E"/>
+      <stop offset="1" stop-color="#101214"/>
+    </linearGradient>
+    <radialGradient id="aquaGlow3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(230 90) rotate(37.9) scale(620 348)">
+      <stop stop-color="#5DCAB9" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#5DCAB9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="goldGlow3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1320 90) rotate(141) scale(420 248)">
+      <stop stop-color="#D7BD8B" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#D7BD8B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="frameCard3" x1="800" y1="264" x2="800" y2="1088" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B2024"/>
+      <stop offset="1" stop-color="#13171A"/>
+    </linearGradient>
+    <linearGradient id="lineFade3" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="1236" fill="url(#bg3)"/>
+  <rect width="1600" height="1236" fill="url(#aquaGlow3)"/>
+  <rect width="1600" height="1236" fill="url(#goldGlow3)"/>
+
+  <g opacity="0.18">
+    <path d="M180 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M380 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M580 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M780 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M980 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M1180 0V1236" stroke="white" stroke-opacity="0.03"/>
+    <path d="M1380 0V1236" stroke="white" stroke-opacity="0.03"/>
+  </g>
+
+  <g id="Header">
+    <rect x="58" y="44" width="54" height="54" rx="16" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.10)"/>
+    <text x="85" y="78" text-anchor="middle" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="3">EWC</text>
+    <text x="126" y="57" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="500" letter-spacing="3.2">CHART ANALYSIS PAGE</text>
+    <text x="126" y="86" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="31" font-weight="600">Elliott Wave Club</text>
+
+    <g transform="translate(1352 58)">
+      <rect width="190" height="34" rx="17" fill="rgba(93,202,185,0.10)" stroke="rgba(93,202,185,0.20)"/>
+      <text x="95" y="22" text-anchor="middle" fill="#5DCAB9" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="2.2">PAGE 03 OF 03</text>
+    </g>
+  </g>
+
+  <g id="Title">
+    <text x="58" y="170" fill="#D7BD8B" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="4.2">INTERMEDIATE STRUCTURE</text>
+    <text x="58" y="224" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="54" font-weight="650">Weekly Chart Placeholder</text>
+    <text x="58" y="264" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="400">Use this page for the large weekly chart, a concise caption, and clean footer details.</text>
+  </g>
+
+  <g id="Chart-Frame">
+    <rect x="58" y="314" width="1484" height="790" rx="34" fill="url(#frameCard3)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="88" y="344" width="1424" height="730" rx="26" fill="#0D1115" stroke="rgba(255,255,255,0.06)"/>
+
+    <g opacity="0.18">
+      <path d="M112 466H1488" stroke="white" stroke-opacity="0.10"/>
+      <path d="M112 588H1488" stroke="white" stroke-opacity="0.08"/>
+      <path d="M112 710H1488" stroke="white" stroke-opacity="0.08"/>
+      <path d="M112 832H1488" stroke="white" stroke-opacity="0.08"/>
+      <path d="M112 954H1488" stroke="white" stroke-opacity="0.08"/>
+      <path d="M312 344V1074" stroke="white" stroke-opacity="0.06"/>
+      <path d="M512 344V1074" stroke="white" stroke-opacity="0.06"/>
+      <path d="M712 344V1074" stroke="white" stroke-opacity="0.06"/>
+      <path d="M912 344V1074" stroke="white" stroke-opacity="0.06"/>
+      <path d="M1112 344V1074" stroke="white" stroke-opacity="0.06"/>
+      <path d="M1312 344V1074" stroke="white" stroke-opacity="0.06"/>
+    </g>
+
+    <rect x="256" y="510" width="1092" height="398" rx="18" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.10)" stroke-dasharray="10 10"/>
+    <text x="802" y="646" text-anchor="middle" fill="#F5F7F8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="44" font-weight="600">Drop Weekly Chart Here</text>
+    <text x="802" y="704" text-anchor="middle" fill="#99A3AD" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="400">Replace this placeholder with the exported weekly chart image.</text>
+
+    <path d="M408 788L514 694L628 742L742 618L846 668L952 574L1072 620L1198 516" stroke="#D7BD8B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="408" cy="788" r="14" fill="#D7BD8B"/>
+    <circle cx="514" cy="694" r="14" fill="#D7BD8B"/>
+    <circle cx="628" cy="742" r="14" fill="#D7BD8B"/>
+    <circle cx="742" cy="618" r="14" fill="#D7BD8B"/>
+    <circle cx="846" cy="668" r="14" fill="#D7BD8B"/>
+    <circle cx="952" cy="574" r="14" fill="#D7BD8B"/>
+    <circle cx="1072" cy="620" r="14" fill="#D7BD8B"/>
+    <circle cx="1198" cy="516" r="14" fill="#D7BD8B"/>
+  </g>
+
+  <g id="Caption">
+    <rect x="58" y="1122" width="1484" height="64" rx="20" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="84" y="1162" fill="#9AA4AE" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.4">CAPTION</text>
+    <text x="248" y="1162" fill="#D7DDE3" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="18" font-weight="400">Use one concise sentence to explain what the client should focus on in the weekly chart.</text>
+  </g>
+
+  <g id="Footer">
+    <rect x="58" y="1208" width="1484" height="1" fill="url(#lineFade3)"/>
+    <text x="58" y="1230" fill="#8F98A2" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="13" font-weight="500" letter-spacing="3.2">PREPARED BY ELLIOTT WAVE CLUB</text>
+    <text x="1542" y="1230" text-anchor="end" fill="#C8D0D8" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="500">Weekly chart page template</text>
+  </g>
+</svg>

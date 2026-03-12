@@ -1,0 +1,287 @@
+// This Pine Script code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// iFVG engine adapted from edgeful's open-source script:
+// This work is licensed under CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © edgeful
+//@version=6
+indicator("SMT + iFVG Integration [EWC]", shorttitle="SMTiFVG", overlay=true, max_lines_count=400, max_boxes_count=400, max_labels_count=400)
+
+type Pivot
+    int index
+    float price
+    bool isHigh
+
+type SmtEvent
+    int pivotIndex
+    bool isBearish
+
+type zone
+    float max
+    float min
+    bool isbull
+    int bar_time
+    int linkedSmtPivot
+
+grp_smt = "1. SMT"
+comparisonSymbol = input.symbol("CME_MINI:NQ1!", "Comparison Symbol", group=grp_smt)
+depth = input.string("Medium", "Depth", options=["Small", "Medium", "Large"], group=grp_smt)
+scanPivots = input.int(12, "Scan Last X Pivots", minval=2, maxval=50, group=grp_smt)
+pivotTolerance = input.int(2, "Pivot Time Tolerance", minval=0, maxval=10, group=grp_smt)
+smtMemoryBars = input.int(20, "Bars SMT Stays Eligible", minval=1, group=grp_smt)
+onePerPivot = input.bool(true, "One SMT Per Pivot", group=grp_smt)
+maxSmtsShown = input.int(30, "Max SMTs Shown", minval=1, maxval=100, group=grp_smt)
+
+grp_ifvg = "2. iFVG"
+tzInput = input.string("America/New_York", "Timezone", group=grp_ifvg)
+useSession = input.bool(false, "Filter To Session", group=grp_ifvg)
+sessionInput = input.session("0930-1600", "Session", group=grp_ifvg)
+threshold = input.float(0.0, "Min FVG Size %", minval=0.0, step=0.01, group=grp_ifvg)
+mitType = input.string("Close", "Mitigation By", options=["Close", "Wick"], group=grp_ifvg)
+showFVG = input.bool(false, "Show Original Linked FVGs", group=grp_ifvg)
+showIFVG = input.bool(true, "Show iFVG Zones", group=grp_ifvg)
+extendBars = input.int(200, "Extend Boxes (bars)", minval=0, maxval=5000, group=grp_ifvg)
+maxAgeBars = input.int(200, "Max Zone Age (bars)", minval=10, maxval=5000, group=grp_ifvg)
+showSignalLabels = input.bool(true, "Show BUY/SELL Labels", group=grp_ifvg)
+
+grp_vis = "3. Visuals"
+showBearish = input.bool(true, "Show Bearish SMT", group=grp_vis)
+showBullish = input.bool(true, "Show Bullish SMT", group=grp_vis)
+showSmtLabels = input.bool(true, "Show SMT Labels", group=grp_vis)
+bullFVGColor = input.color(color.new(#2962FF, 80), "Bull FVG Color", group=grp_vis, inline="fvg")
+bearFVGColor = input.color(color.new(#F23645, 80), "Bear FVG Color", group=grp_vis, inline="fvg")
+bullIFVGColor = input.color(color.new(#00BCD4, 70), "Bull iFVG Color", group=grp_vis, inline="ifvg")
+bearIFVGColor = input.color(color.new(#FF9800, 70), "Bear iFVG Color", group=grp_vis, inline="ifvg")
+
+pivotLen = depth == "Small" ? 2 : depth == "Medium" ? 3 : 5
+inSession = useSession ? not na(time(timeframe.period, sessionInput, tzInput)) : true
+
+var chartHighs = array.new<Pivot>()
+var chartLows = array.new<Pivot>()
+var compHighs = array.new<Pivot>()
+var compLows = array.new<Pivot>()
+var recentSmts = array.new<SmtEvent>()
+var seenBearKeys = array.new<string>()
+var seenBullKeys = array.new<string>()
+var drawnLines = array.new<line>()
+var drawnLabels = array.new<label>()
+var fvg_records = array.new<zone>()
+var fvg_boxes = array.new<box>()
+var ifvg_records = array.new<zone>()
+var ifvg_boxes = array.new<box>()
+
+method updatePivots(array<Pivot> pivots, float price, bool isHigh, int len, int maxSize) =>
+    if not na(price)
+        array.unshift(pivots, Pivot.new(bar_index[len], price, isHigh))
+        if array.size(pivots) > maxSize
+            array.pop(pivots)
+
+findMatchingPivot(array<Pivot> pivots, int targetIndex, int tolerance) =>
+    Pivot result = na
+    int bestDistance = 1000000
+    if array.size(pivots) > 0
+        for i = 0 to array.size(pivots) - 1
+            Pivot p = array.get(pivots, i)
+            int distance = math.abs(p.index - targetIndex)
+            if distance <= tolerance and distance < bestDistance
+                bestDistance := distance
+                result := p
+    result
+
+arrayHasKey(array<string> keys, string key) =>
+    bool exists = false
+    if array.size(keys) > 0
+        for i = 0 to array.size(keys) - 1
+            if array.get(keys, i) == key
+                exists := true
+                break
+    exists
+
+method pushLine(array<line> ids, line id, int maxItems) =>
+    array.unshift(ids, id)
+    if array.size(ids) > maxItems
+        line.delete(array.pop(ids))
+
+method pushLabel(array<label> ids, label id, int maxItems) =>
+    array.unshift(ids, id)
+    if array.size(ids) > maxItems
+        label.delete(array.pop(ids))
+
+makeKey(bool isBearish, int pivotIndex) =>
+    (isBearish ? "B-" : "U-") + str.tostring(pivotIndex)
+
+get_ohlc() =>
+    [open, high, low, close]
+
+findRecentSmtPivot(bool wantBearish, int maxBars) =>
+    int result = na
+    if array.size(recentSmts) > 0
+        for i = 0 to array.size(recentSmts) - 1
+            SmtEvent s = array.get(recentSmts, i)
+            if s.isBearish == wantBearish and bar_index - s.pivotIndex <= maxBars
+                result := s.pivotIndex
+                break
+    result
+
+[compOpen, compHigh, compLow, compClose] = request.security(comparisonSymbol, timeframe.period, get_ohlc())
+
+chartPH = ta.pivothigh(pivotLen, pivotLen)
+chartPL = ta.pivotlow(pivotLen, pivotLen)
+compPH = ta.pivothigh(compHigh, pivotLen, pivotLen)
+compPL = ta.pivotlow(compLow, pivotLen, pivotLen)
+
+chartHighs.updatePivots(chartPH, true, pivotLen, 60)
+chartLows.updatePivots(chartPL, false, pivotLen, 60)
+compHighs.updatePivots(compPH, true, pivotLen, 60)
+compLows.updatePivots(compPL, false, pivotLen, 60)
+
+int smtIdx = 0
+while smtIdx < array.size(recentSmts)
+    if bar_index - array.get(recentSmts, smtIdx).pivotIndex > smtMemoryBars
+        array.remove(recentSmts, smtIdx)
+    else
+        smtIdx += 1
+
+bool newBearSmt = false
+bool newBullSmt = false
+
+if showBearish and array.size(chartHighs) >= 2 and array.size(compHighs) >= 2
+    int highScanLimit = math.min(scanPivots, array.size(chartHighs) - 1)
+    for i = 0 to highScanLimit - 1
+        Pivot c2 = array.get(chartHighs, i)
+        Pivot c1 = array.get(chartHighs, i + 1)
+        Pivot s2 = findMatchingPivot(compHighs, c2.index, pivotTolerance)
+        Pivot s1 = findMatchingPivot(compHighs, c1.index, pivotTolerance)
+        if not na(s2) and not na(s1)
+            bool bearishSmt = (c2.price > c1.price and s2.price < s1.price) or (c2.price < c1.price and s2.price > s1.price)
+            string key = makeKey(true, c2.index)
+            bool allowPrint = bearishSmt and (not onePerPivot or not arrayHasKey(seenBearKeys, key))
+            if allowPrint
+                array.unshift(seenBearKeys, key)
+                array.unshift(recentSmts, SmtEvent.new(c2.index, true))
+                line diag = line.new(c1.index, c1.price, c2.index, c2.price, color=#f23645, width=1)
+                drawnLines.pushLine(diag, maxSmtsShown)
+                if showSmtLabels
+                    label lbl = label.new(c2.index, c2.price, "Bear SMT", color=color.new(color.black, 100), textcolor=#f23645, style=label.style_label_down, size=size.tiny)
+                    drawnLabels.pushLabel(lbl, maxSmtsShown)
+                newBearSmt := true
+                break
+
+if showBullish and array.size(chartLows) >= 2 and array.size(compLows) >= 2
+    int lowScanLimit = math.min(scanPivots, array.size(chartLows) - 1)
+    for i = 0 to lowScanLimit - 1
+        Pivot c2 = array.get(chartLows, i)
+        Pivot c1 = array.get(chartLows, i + 1)
+        Pivot s2 = findMatchingPivot(compLows, c2.index, pivotTolerance)
+        Pivot s1 = findMatchingPivot(compLows, c1.index, pivotTolerance)
+        if not na(s2) and not na(s1)
+            bool bullishSmt = (c2.price < c1.price and s2.price > s1.price) or (c2.price > c1.price and s2.price < s1.price)
+            string key = makeKey(false, c2.index)
+            bool allowPrint = bullishSmt and (not onePerPivot or not arrayHasKey(seenBullKeys, key))
+            if allowPrint
+                array.unshift(seenBullKeys, key)
+                array.unshift(recentSmts, SmtEvent.new(c2.index, false))
+                line diag = line.new(c1.index, c1.price, c2.index, c2.price, color=#089981, width=1)
+                drawnLines.pushLine(diag, maxSmtsShown)
+                if showSmtLabels
+                    label lbl = label.new(c2.index, c2.price, "Bull SMT", color=color.new(color.black, 100), textcolor=#089981, style=label.style_label_up, size=size.tiny)
+                    drawnLabels.pushLabel(lbl, maxSmtsShown)
+                newBullSmt := true
+                break
+
+int tfMs = math.round(timeframe.in_seconds() * 1000)
+int extendMs = extendBars * tfMs
+int cutoffTime = time - maxAgeBars * tfMs
+
+bool bull_fvg = low > high[2] and close[1] > high[2] and (threshold == 0.0 or (low - high[2]) / high[2] >= threshold / 100)
+bool bear_fvg = high < low[2] and close[1] < low[2] and (threshold == 0.0 or (low[2] - high) / high >= threshold / 100)
+
+if bull_fvg and inSession and barstate.isconfirmed
+    int linkedBearSmt = findRecentSmtPivot(true, smtMemoryBars)
+    if not na(linkedBearSmt)
+        array.unshift(fvg_records, zone.new(low, high[2], true, time[2], linkedBearSmt))
+        array.unshift(fvg_boxes, showFVG ? box.new(time[2], low, time + extendMs, high[2], xloc=xloc.bar_time, border_color=na, bgcolor=bullFVGColor) : na)
+
+if bear_fvg and inSession and barstate.isconfirmed
+    int linkedBullSmt = findRecentSmtPivot(false, smtMemoryBars)
+    if not na(linkedBullSmt)
+        array.unshift(fvg_records, zone.new(low[2], high, false, time[2], linkedBullSmt))
+        array.unshift(fvg_boxes, showFVG ? box.new(time[2], low[2], time + extendMs, high, xloc=xloc.bar_time, border_color=na, bgcolor=bearFVGColor) : na)
+
+var bool bull_ifvg_created = false
+var bool bear_ifvg_created = false
+bull_ifvg_created := false
+bear_ifvg_created := false
+
+int fvgIdx = array.size(fvg_records) - 1
+while fvgIdx >= 0
+    zone g = array.get(fvg_records, fvgIdx)
+    bool mitigated = false
+    if g.isbull
+        float mitSrc = mitType == "Close" ? close : low
+        mitigated := mitSrc < g.min
+    else
+        float mitSrc = mitType == "Close" ? close : high
+        mitigated := mitSrc > g.max
+
+    bool tooOld = g.bar_time < cutoffTime
+
+    if tooOld
+        box b = array.get(fvg_boxes, fvgIdx)
+        if not na(b)
+            box.delete(b)
+        array.remove(fvg_boxes, fvgIdx)
+        array.remove(fvg_records, fvgIdx)
+    else if mitigated
+        box b = array.get(fvg_boxes, fvgIdx)
+        if not na(b)
+            box.delete(b)
+        array.remove(fvg_boxes, fvgIdx)
+        array.remove(fvg_records, fvgIdx)
+
+        bool ifvgBull = not g.isbull
+        array.unshift(ifvg_records, zone.new(g.max, g.min, ifvgBull, g.bar_time, g.linkedSmtPivot))
+        color ifvgColor = ifvgBull ? bullIFVGColor : bearIFVGColor
+        array.unshift(ifvg_boxes, showIFVG ? box.new(g.bar_time, g.max, time + extendMs, g.min, xloc=xloc.bar_time, border_color=na, bgcolor=ifvgColor) : na)
+
+        if showSignalLabels
+            label.new(bar_index, ifvgBull ? low : high, ifvgBull ? "BUY" : "SELL", color=ifvgBull ? #089981 : #f23645, textcolor=color.white, style=ifvgBull ? label.style_label_up : label.style_label_down, size=size.small)
+
+        if ifvgBull
+            bull_ifvg_created := true
+        else
+            bear_ifvg_created := true
+    else
+        if showFVG
+            box b = array.get(fvg_boxes, fvgIdx)
+            if not na(b)
+                box.set_right(b, time + extendMs)
+    fvgIdx -= 1
+
+int ifvgIdx = array.size(ifvg_records) - 1
+while ifvgIdx >= 0
+    zone g = array.get(ifvg_records, ifvgIdx)
+    bool mitigated = false
+    if g.isbull
+        float mitSrc = mitType == "Close" ? close : low
+        mitigated := mitSrc < g.min
+    else
+        float mitSrc = mitType == "Close" ? close : high
+        mitigated := mitSrc > g.max
+    bool tooOld = g.bar_time < cutoffTime
+
+    if tooOld or mitigated
+        box b = array.get(ifvg_boxes, ifvgIdx)
+        if not na(b)
+            box.delete(b)
+        array.remove(ifvg_boxes, ifvgIdx)
+        array.remove(ifvg_records, ifvgIdx)
+    else
+        if showIFVG
+            box b = array.get(ifvg_boxes, ifvgIdx)
+            if not na(b)
+                box.set_right(b, time + extendMs)
+    ifvgIdx -= 1
+
+alertcondition(newBearSmt, "Bearish SMT", "Bearish SMT detected.")
+alertcondition(newBullSmt, "Bullish SMT", "Bullish SMT detected.")
+alertcondition(bull_ifvg_created, "Bullish iFVG Created", "Bullish iFVG formed after linked SMT.")
+alertcondition(bear_ifvg_created, "Bearish iFVG Created", "Bearish iFVG formed after linked SMT.")

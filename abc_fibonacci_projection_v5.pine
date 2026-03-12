@@ -1,0 +1,578 @@
+// This Pine Script code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//
+// ABC Fib Projection
+// - Uses confirmed pivots only (no repainting after pivot confirmation)
+// - Finds the active A->B leg from filtered major pivots
+// - Default mode selects C as the largest internal correction between A and B
+// - Optional trendline-break mode uses the post-B corrective move and falls back to mode 1
+// - Draws A, B, C, projection levels, and the 61.8% -> 100% zone
+//@version=5
+indicator("ABC Fib Projection", shorttitle="ABCFibProj", overlay=true, max_lines_count=500, max_labels_count=500, max_boxes_count=500)
+
+//-----------------------------------------------------------------------------
+// Inputs
+//-----------------------------------------------------------------------------
+leftBars = input.int(5, "Left Bars", minval=1, maxval=50)
+rightBars = input.int(5, "Right Bars", minval=1, maxval=50)
+minSwingSize = input.float(10.0, "Min Swing Size (pts)", minval=0.1)
+
+projectionMode = input.string("Largest Correction", "Projection Mode", options=["Largest Correction", "Trendline Break"])
+
+showHistorical = input.bool(false, "Show Historical Setups")
+extendBars = input.int(50, "Extend Lines (bars)", minval=10, maxval=500)
+
+levelColor50 = input.color(color.new(color.gray, 30), "50% Level Color")
+levelColor618 = input.color(color.new(color.gray, 30), "61.8% Level Color")
+levelColor90 = input.color(color.new(color.orange, 30), "90% Level Color")
+levelColor100 = input.color(color.new(color.orange, 30), "100% Level Color")
+zoneColor = input.color(color.new(color.gray, 85), "Zone Fill Color")
+
+//-----------------------------------------------------------------------------
+// Constants and helpers
+//-----------------------------------------------------------------------------
+maxStoredPivots = 1200
+maxHistoricalObjects = 300
+labelBgColor = color.new(color.teal, 40)
+trendlineColor = color.new(color.aqua, 20)
+
+f_moreExtreme(bool isHigh, float newPrice, float oldPrice) =>
+    isHigh ? newPrice >= oldPrice : newPrice <= oldPrice
+
+f_labelStyle(bool isHigh) =>
+    isHigh ? label.style_label_down : label.style_label_up
+
+f_linePrice(int x1, float y1, int x2, float y2, int x) =>
+    float result = na
+    int span = x2 - x1
+    if span != 0
+        result := y1 + (y2 - y1) * (x - x1) / span
+    result
+
+f_pushHistoryLine(array<line> ids, line id, int maxKeep) =>
+    if not na(id)
+        array.push(ids, id)
+        if array.size(ids) > maxKeep
+            line.delete(array.shift(ids))
+
+f_pushHistoryLabel(array<label> ids, label id, int maxKeep) =>
+    if not na(id)
+        array.push(ids, id)
+        if array.size(ids) > maxKeep
+            label.delete(array.shift(ids))
+
+f_pushHistoryBox(array<box> ids, box id, int maxKeep) =>
+    if not na(id)
+        array.push(ids, id)
+        if array.size(ids) > maxKeep
+            box.delete(array.shift(ids))
+
+f_pushRawPivot(array<int> bars, array<int> times, array<float> prices, array<bool> isHighs, int pivotBar, int pivotTime, float pivotPrice, bool pivotIsHigh, int maxKeep) =>
+    array.push(bars, pivotBar)
+    array.push(times, pivotTime)
+    array.push(prices, pivotPrice)
+    array.push(isHighs, pivotIsHigh)
+    if array.size(bars) > maxKeep
+        array.shift(bars)
+        array.shift(times)
+        array.shift(prices)
+        array.shift(isHighs)
+
+f_addMajorPivot(array<int> bars, array<int> times, array<float> prices, array<bool> isHighs, int pivotBar, int pivotTime, float pivotPrice, bool pivotIsHigh, float minSwing, int maxKeep) =>
+    bool changed = false
+    int size = array.size(bars)
+    if size == 0
+        array.push(bars, pivotBar)
+        array.push(times, pivotTime)
+        array.push(prices, pivotPrice)
+        array.push(isHighs, pivotIsHigh)
+        changed := true
+    else
+        int lastPos = size - 1
+        int lastBar = array.get(bars, lastPos)
+        float lastPrice = array.get(prices, lastPos)
+        bool lastIsHigh = array.get(isHighs, lastPos)
+        if pivotIsHigh == lastIsHigh
+            if f_moreExtreme(pivotIsHigh, pivotPrice, lastPrice) and (pivotBar != lastBar or pivotPrice != lastPrice)
+                array.set(bars, lastPos, pivotBar)
+                array.set(times, lastPos, pivotTime)
+                array.set(prices, lastPos, pivotPrice)
+                array.set(isHighs, lastPos, pivotIsHigh)
+                changed := true
+        else
+            if math.abs(pivotPrice - lastPrice) >= minSwing
+                array.push(bars, pivotBar)
+                array.push(times, pivotTime)
+                array.push(prices, pivotPrice)
+                array.push(isHighs, pivotIsHigh)
+                changed := true
+                if array.size(bars) > maxKeep
+                    array.shift(bars)
+                    array.shift(times)
+                    array.shift(prices)
+                    array.shift(isHighs)
+    changed
+
+f_findLargestCorrection(array<int> rawBars, array<int> rawTimes, array<float> rawPrices, array<bool> rawIsHighs, int aBar, float aPrice, int bBar, float bPrice, int direction) =>
+    bool found = false
+    int cBar = na
+    int cTime = na
+    float cPrice = na
+    bool cIsHigh = false
+    int size = array.size(rawBars)
+    if size > 0
+        for i = 0 to size - 1
+            int pivotBar = array.get(rawBars, i)
+            if pivotBar > aBar and pivotBar < bBar
+                bool pivotIsHigh = array.get(rawIsHighs, i)
+                float pivotPrice = array.get(rawPrices, i)
+                int pivotTime = array.get(rawTimes, i)
+                if direction == 1 and not pivotIsHigh and pivotPrice > aPrice and pivotPrice < bPrice
+                    if not found or pivotPrice < cPrice
+                        found := true
+                        cBar := pivotBar
+                        cTime := pivotTime
+                        cPrice := pivotPrice
+                        cIsHigh := false
+                if direction == -1 and pivotIsHigh and pivotPrice < aPrice and pivotPrice > bPrice
+                    if not found or pivotPrice > cPrice
+                        found := true
+                        cBar := pivotBar
+                        cTime := pivotTime
+                        cPrice := pivotPrice
+                        cIsHigh := true
+    [found, cBar, cTime, cPrice, cIsHigh]
+
+//-----------------------------------------------------------------------------
+// Confirmed pivot detection
+//-----------------------------------------------------------------------------
+confirmedPivotHigh = ta.pivothigh(high, leftBars, rightBars)
+confirmedPivotLow = ta.pivotlow(low, leftBars, rightBars)
+
+confirmedHighBar = not na(confirmedPivotHigh) ? bar_index - rightBars : na
+confirmedLowBar = not na(confirmedPivotLow) ? bar_index - rightBars : na
+confirmedHighTime = not na(confirmedPivotHigh) ? time[rightBars] : na
+confirmedLowTime = not na(confirmedPivotLow) ? time[rightBars] : na
+
+plotshape(not na(confirmedPivotHigh) ? confirmedPivotHigh : na, title="Confirmed Pivot High", style=shape.triangledown, location=location.absolute, color=color.new(color.red, 0), size=size.tiny, offset=-rightBars)
+plotshape(not na(confirmedPivotLow) ? confirmedPivotLow : na, title="Confirmed Pivot Low", style=shape.triangleup, location=location.absolute, color=color.new(color.lime, 0), size=size.tiny, offset=-rightBars)
+
+//-----------------------------------------------------------------------------
+// Persistent pivot storage
+//-----------------------------------------------------------------------------
+var rawBars = array.new_int()
+var rawTimes = array.new_int()
+var rawPrices = array.new_float()
+var rawIsHighs = array.new_bool()
+
+var majorBars = array.new_int()
+var majorTimes = array.new_int()
+var majorPrices = array.new_float()
+var majorIsHighs = array.new_bool()
+
+// Process confirmed pivots in chronological order for this bar.
+bool processHighFirst = not na(confirmedPivotHigh) and (na(confirmedPivotLow) or confirmedHighBar <= confirmedLowBar)
+bool processLowFirst = not na(confirmedPivotLow) and (na(confirmedPivotHigh) or confirmedLowBar < confirmedHighBar)
+bool processHighSecond = not na(confirmedPivotHigh) and not processHighFirst
+bool processLowSecond = not na(confirmedPivotLow) and not processLowFirst
+
+if processHighFirst
+    f_pushRawPivot(rawBars, rawTimes, rawPrices, rawIsHighs, confirmedHighBar, confirmedHighTime, confirmedPivotHigh, true, maxStoredPivots)
+    f_addMajorPivot(majorBars, majorTimes, majorPrices, majorIsHighs, confirmedHighBar, confirmedHighTime, confirmedPivotHigh, true, minSwingSize, maxStoredPivots)
+
+if processLowFirst
+    f_pushRawPivot(rawBars, rawTimes, rawPrices, rawIsHighs, confirmedLowBar, confirmedLowTime, confirmedPivotLow, false, maxStoredPivots)
+    f_addMajorPivot(majorBars, majorTimes, majorPrices, majorIsHighs, confirmedLowBar, confirmedLowTime, confirmedPivotLow, false, minSwingSize, maxStoredPivots)
+
+if processHighSecond
+    f_pushRawPivot(rawBars, rawTimes, rawPrices, rawIsHighs, confirmedHighBar, confirmedHighTime, confirmedPivotHigh, true, maxStoredPivots)
+    f_addMajorPivot(majorBars, majorTimes, majorPrices, majorIsHighs, confirmedHighBar, confirmedHighTime, confirmedPivotHigh, true, minSwingSize, maxStoredPivots)
+
+if processLowSecond
+    f_pushRawPivot(rawBars, rawTimes, rawPrices, rawIsHighs, confirmedLowBar, confirmedLowTime, confirmedPivotLow, false, maxStoredPivots)
+    f_addMajorPivot(majorBars, majorTimes, majorPrices, majorIsHighs, confirmedLowBar, confirmedLowTime, confirmedPivotLow, false, minSwingSize, maxStoredPivots)
+
+//-----------------------------------------------------------------------------
+// Active leg detection from the two most recent major pivots
+//-----------------------------------------------------------------------------
+int majorCount = array.size(majorBars)
+bool hasMajorLeg = majorCount >= 2
+
+int aBar = na
+int aTime = na
+float aPrice = na
+bool aIsHigh = false
+
+int bBar = na
+int bTime = na
+float bPrice = na
+bool bIsHigh = false
+
+int direction = 0
+float legDistance = na
+
+if hasMajorLeg
+    int aPos = majorCount - 2
+    int bPos = majorCount - 1
+    aBar := array.get(majorBars, aPos)
+    aTime := array.get(majorTimes, aPos)
+    aPrice := array.get(majorPrices, aPos)
+    aIsHigh := array.get(majorIsHighs, aPos)
+    bBar := array.get(majorBars, bPos)
+    bTime := array.get(majorTimes, bPos)
+    bPrice := array.get(majorPrices, bPos)
+    bIsHigh := array.get(majorIsHighs, bPos)
+    direction := not aIsHigh and bIsHigh ? 1 : aIsHigh and not bIsHigh ? -1 : 0
+    legDistance := math.abs(bPrice - aPrice)
+
+bool legValid = hasMajorLeg and direction != 0 and (direction == 1 ? close >= aPrice : close <= aPrice)
+string legKey = legValid ? str.tostring(direction) + "|" + str.tostring(aBar) + "|" + str.tostring(aPrice, format.mintick) + "|" + str.tostring(bBar) + "|" + str.tostring(bPrice, format.mintick) : ""
+
+//-----------------------------------------------------------------------------
+// Mode 1: Largest internal correction between A and B
+//-----------------------------------------------------------------------------
+bool mode1HasC = false
+int mode1CBar = na
+int mode1CTime = na
+float mode1CPrice = na
+bool mode1CIsHigh = false
+
+if legValid
+    [mode1HasC, mode1CBar, mode1CTime, mode1CPrice, mode1CIsHigh] = f_findLargestCorrection(rawBars, rawTimes, rawPrices, rawIsHighs, aBar, aPrice, bBar, bPrice, direction)
+
+//-----------------------------------------------------------------------------
+// Mode 2: Trendline break on the post-B correction
+//-----------------------------------------------------------------------------
+var string mode2LegKey = ""
+var int tlBar1 = na
+var int tlTime1 = na
+var float tlPrice1 = na
+var int tlBar2 = na
+var int tlTime2 = na
+var float tlPrice2 = na
+var bool tlBroken = false
+var int tlBreakBar = na
+var int tlBreakTime = na
+var int mode2CBar = na
+var int mode2CTime = na
+var float mode2CPrice = na
+var bool mode2CIsHigh = false
+
+if legKey != mode2LegKey
+    mode2LegKey := legKey
+    tlBar1 := legValid ? bBar : na
+    tlTime1 := legValid ? bTime : na
+    tlPrice1 := legValid ? bPrice : na
+    tlBar2 := na
+    tlTime2 := na
+    tlPrice2 := na
+    tlBroken := false
+    tlBreakBar := na
+    tlBreakTime := na
+    mode2CBar := na
+    mode2CTime := na
+    mode2CPrice := na
+    mode2CIsHigh := false
+
+// Feed new confirmed pivots into the mode 2 state only while the current leg is valid.
+if legValid
+    if direction == 1
+        // Bullish leg: track descending correction highs after B.
+        if not tlBroken
+            if processHighFirst and confirmedHighBar > bBar
+                if na(tlBar2)
+                    if confirmedPivotHigh < tlPrice1
+                        tlBar2 := confirmedHighBar
+                        tlTime2 := confirmedHighTime
+                        tlPrice2 := confirmedPivotHigh
+                else if confirmedHighBar > tlBar2 and confirmedPivotHigh < tlPrice2
+                    tlBar1 := tlBar2
+                    tlTime1 := tlTime2
+                    tlPrice1 := tlPrice2
+                    tlBar2 := confirmedHighBar
+                    tlTime2 := confirmedHighTime
+                    tlPrice2 := confirmedPivotHigh
+            if processHighSecond and confirmedHighBar > bBar
+                if na(tlBar2)
+                    if confirmedPivotHigh < tlPrice1
+                        tlBar2 := confirmedHighBar
+                        tlTime2 := confirmedHighTime
+                        tlPrice2 := confirmedPivotHigh
+                else if confirmedHighBar > tlBar2 and confirmedPivotHigh < tlPrice2
+                    tlBar1 := tlBar2
+                    tlTime1 := tlTime2
+                    tlPrice1 := tlPrice2
+                    tlBar2 := confirmedHighBar
+                    tlTime2 := confirmedHighTime
+                    tlPrice2 := confirmedPivotHigh
+        if not na(tlBar2) and not tlBroken and tlPrice2 < tlPrice1 and barstate.isconfirmed and bar_index > tlBar2
+            float lineNow = f_linePrice(tlBar1, tlPrice1, tlBar2, tlPrice2, bar_index)
+            float linePrev = f_linePrice(tlBar1, tlPrice1, tlBar2, tlPrice2, bar_index - 1)
+            if not na(lineNow) and not na(linePrev) and close > lineNow and close[1] <= linePrev
+                tlBroken := true
+                tlBreakBar := bar_index
+                tlBreakTime := time
+        if tlBroken
+            if processLowFirst and confirmedLowBar > tlBreakBar
+                if na(mode2CBar) or confirmedPivotLow < mode2CPrice
+                    mode2CBar := confirmedLowBar
+                    mode2CTime := confirmedLowTime
+                    mode2CPrice := confirmedPivotLow
+                    mode2CIsHigh := false
+            if processLowSecond and confirmedLowBar > tlBreakBar
+                if na(mode2CBar) or confirmedPivotLow < mode2CPrice
+                    mode2CBar := confirmedLowBar
+                    mode2CTime := confirmedLowTime
+                    mode2CPrice := confirmedPivotLow
+                    mode2CIsHigh := false
+    if direction == -1
+        // Bearish leg: track ascending correction lows after B.
+        if not tlBroken
+            if processLowFirst and confirmedLowBar > bBar
+                if na(tlBar2)
+                    if confirmedPivotLow > tlPrice1
+                        tlBar2 := confirmedLowBar
+                        tlTime2 := confirmedLowTime
+                        tlPrice2 := confirmedPivotLow
+                else if confirmedLowBar > tlBar2 and confirmedPivotLow > tlPrice2
+                    tlBar1 := tlBar2
+                    tlTime1 := tlTime2
+                    tlPrice1 := tlPrice2
+                    tlBar2 := confirmedLowBar
+                    tlTime2 := confirmedLowTime
+                    tlPrice2 := confirmedPivotLow
+            if processLowSecond and confirmedLowBar > bBar
+                if na(tlBar2)
+                    if confirmedPivotLow > tlPrice1
+                        tlBar2 := confirmedLowBar
+                        tlTime2 := confirmedLowTime
+                        tlPrice2 := confirmedPivotLow
+                else if confirmedLowBar > tlBar2 and confirmedPivotLow > tlPrice2
+                    tlBar1 := tlBar2
+                    tlTime1 := tlTime2
+                    tlPrice1 := tlPrice2
+                    tlBar2 := confirmedLowBar
+                    tlTime2 := confirmedLowTime
+                    tlPrice2 := confirmedPivotLow
+        if not na(tlBar2) and not tlBroken and tlPrice2 > tlPrice1 and barstate.isconfirmed and bar_index > tlBar2
+            float lineNow = f_linePrice(tlBar1, tlPrice1, tlBar2, tlPrice2, bar_index)
+            float linePrev = f_linePrice(tlBar1, tlPrice1, tlBar2, tlPrice2, bar_index - 1)
+            if not na(lineNow) and not na(linePrev) and close < lineNow and close[1] >= linePrev
+                tlBroken := true
+                tlBreakBar := bar_index
+                tlBreakTime := time
+        if tlBroken
+            if processHighFirst and confirmedHighBar > tlBreakBar
+                if na(mode2CBar) or confirmedPivotHigh > mode2CPrice
+                    mode2CBar := confirmedHighBar
+                    mode2CTime := confirmedHighTime
+                    mode2CPrice := confirmedPivotHigh
+                    mode2CIsHigh := true
+            if processHighSecond and confirmedHighBar > tlBreakBar
+                if na(mode2CBar) or confirmedPivotHigh > mode2CPrice
+                    mode2CBar := confirmedHighBar
+                    mode2CTime := confirmedHighTime
+                    mode2CPrice := confirmedPivotHigh
+                    mode2CIsHigh := true
+
+bool mode2HasTrendline = legValid and not na(tlBar2)
+bool mode2HasC = legValid and not na(mode2CBar)
+
+//-----------------------------------------------------------------------------
+// Final C selection
+//-----------------------------------------------------------------------------
+bool useMode1 = projectionMode == "Largest Correction" or (projectionMode == "Trendline Break" and not mode2HasTrendline)
+bool useMode2 = projectionMode == "Trendline Break" and mode2HasTrendline and mode2HasC
+
+bool hasC = false
+int cBar = na
+int cTime = na
+float cPrice = na
+bool cIsHigh = false
+
+if useMode1 and mode1HasC
+    hasC := true
+    cBar := mode1CBar
+    cTime := mode1CTime
+    cPrice := mode1CPrice
+    cIsHigh := mode1CIsHigh
+
+if useMode2
+    hasC := true
+    cBar := mode2CBar
+    cTime := mode2CTime
+    cPrice := mode2CPrice
+    cIsHigh := mode2CIsHigh
+
+//-----------------------------------------------------------------------------
+// Projection levels from C in the A->B direction
+//-----------------------------------------------------------------------------
+float level50 = na
+float level618 = na
+float level90 = na
+float level100 = na
+
+if legValid and hasC
+    if direction == 1
+        level50 := cPrice + legDistance * 0.50
+        level618 := cPrice + legDistance * 0.618
+        level90 := cPrice + legDistance * 0.90
+        level100 := cPrice + legDistance * 1.00
+    else
+        level50 := cPrice - legDistance * 0.50
+        level618 := cPrice - legDistance * 0.618
+        level90 := cPrice - legDistance * 0.90
+        level100 := cPrice - legDistance * 1.00
+
+bool drawableSetup = legValid
+bool drawableProjection = legValid and hasC
+
+int barMs = int(nz(time - time[1], 60000))
+int extendMs = math.max(barMs, 60000) * extendBars
+int projectionRightTime = drawableProjection ? cTime + extendMs : na
+float zoneTop = drawableProjection ? math.max(level618, level100) : na
+float zoneBottom = drawableProjection ? math.min(level618, level100) : na
+
+//-----------------------------------------------------------------------------
+// Current drawing references
+//-----------------------------------------------------------------------------
+var line abLine = na
+var line trendlineLine = na
+var line line50 = na
+var line line618 = na
+var line line90 = na
+var line line100 = na
+
+var label labelA = na
+var label labelB = na
+var label labelC = na
+var label label50 = na
+var label label618 = na
+var label label90 = na
+var label label100 = na
+
+var box zoneBox = na
+
+var historyLines = array.new_line()
+var historyLabels = array.new_label()
+var historyBoxes = array.new_box()
+
+var string drawnLegKey = ""
+var string drawnSetupKey = ""
+var bool prevShowHistorical = showHistorical
+
+// If the user turns history off, clear preserved drawings.
+if prevShowHistorical and not showHistorical
+    if array.size(historyLines) > 0
+        int lineIdx = array.size(historyLines) - 1
+        while lineIdx >= 0
+            line.delete(array.get(historyLines, lineIdx))
+            lineIdx -= 1
+        array.clear(historyLines)
+    if array.size(historyLabels) > 0
+        int labelIdx = array.size(historyLabels) - 1
+        while labelIdx >= 0
+            label.delete(array.get(historyLabels, labelIdx))
+            labelIdx -= 1
+        array.clear(historyLabels)
+    if array.size(historyBoxes) > 0
+        int boxIdx = array.size(historyBoxes) - 1
+        while boxIdx >= 0
+            box.delete(array.get(historyBoxes, boxIdx))
+            boxIdx -= 1
+        array.clear(historyBoxes)
+prevShowHistorical := showHistorical
+
+string currentSetupKey = ""
+if drawableSetup
+    currentSetupKey := legKey + "|" + projectionMode + "|" + str.tostring(hasC) + "|" + str.tostring(cBar) + "|" + str.tostring(cPrice, format.mintick) + "|" + str.tostring(tlBar1) + "|" + str.tostring(tlBar2) + "|" + str.tostring(tlBroken)
+
+bool needsRedraw = currentSetupKey != drawnSetupKey
+
+if needsRedraw
+    bool preserveCurrent = showHistorical and drawnLegKey != "" and legKey != drawnLegKey and not na(labelA)
+
+    if preserveCurrent
+        f_pushHistoryLine(historyLines, abLine, maxHistoricalObjects)
+        f_pushHistoryLine(historyLines, trendlineLine, maxHistoricalObjects)
+        f_pushHistoryLine(historyLines, line50, maxHistoricalObjects)
+        f_pushHistoryLine(historyLines, line618, maxHistoricalObjects)
+        f_pushHistoryLine(historyLines, line90, maxHistoricalObjects)
+        f_pushHistoryLine(historyLines, line100, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, labelA, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, labelB, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, labelC, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, label50, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, label618, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, label90, maxHistoricalObjects)
+        f_pushHistoryLabel(historyLabels, label100, maxHistoricalObjects)
+        f_pushHistoryBox(historyBoxes, zoneBox, maxHistoricalObjects)
+    else
+        if not na(abLine)
+            line.delete(abLine)
+        if not na(trendlineLine)
+            line.delete(trendlineLine)
+        if not na(line50)
+            line.delete(line50)
+        if not na(line618)
+            line.delete(line618)
+        if not na(line90)
+            line.delete(line90)
+        if not na(line100)
+            line.delete(line100)
+        if not na(labelA)
+            label.delete(labelA)
+        if not na(labelB)
+            label.delete(labelB)
+        if not na(labelC)
+            label.delete(labelC)
+        if not na(label50)
+            label.delete(label50)
+        if not na(label618)
+            label.delete(label618)
+        if not na(label90)
+            label.delete(label90)
+        if not na(label100)
+            label.delete(label100)
+        if not na(zoneBox)
+            box.delete(zoneBox)
+
+    abLine := na
+    trendlineLine := na
+    line50 := na
+    line618 := na
+    line90 := na
+    line100 := na
+    labelA := na
+    labelB := na
+    labelC := na
+    label50 := na
+    label618 := na
+    label90 := na
+    label100 := na
+    zoneBox := na
+
+    if drawableSetup
+        abLine := line.new(aTime, aPrice, bTime, bPrice, xloc=xloc.bar_time, color=color.new(color.teal, 0), width=2)
+        labelA := label.new(aTime, aPrice, "A", xloc=xloc.bar_time, style=f_labelStyle(aIsHigh), color=labelBgColor, textcolor=color.white, size=size.small)
+        labelB := label.new(bTime, bPrice, "B", xloc=xloc.bar_time, style=f_labelStyle(bIsHigh), color=labelBgColor, textcolor=color.white, size=size.small)
+
+        if projectionMode == "Trendline Break" and mode2HasTrendline
+            trendlineLine := line.new(tlTime1, tlPrice1, tlTime2, tlPrice2, xloc=xloc.bar_time, color=trendlineColor, style=line.style_dashed, width=2, extend=extend.right)
+
+        if drawableProjection
+            labelC := label.new(cTime, cPrice, "C", xloc=xloc.bar_time, style=f_labelStyle(cIsHigh), color=labelBgColor, textcolor=color.white, size=size.small)
+
+            line50 := line.new(cTime, level50, projectionRightTime, level50, xloc=xloc.bar_time, color=levelColor50, style=line.style_dotted, width=1)
+            line618 := line.new(cTime, level618, projectionRightTime, level618, xloc=xloc.bar_time, color=levelColor618, style=line.style_dotted, width=1)
+            line90 := line.new(cTime, level90, projectionRightTime, level90, xloc=xloc.bar_time, color=levelColor90, style=line.style_dashed, width=2)
+            line100 := line.new(cTime, level100, projectionRightTime, level100, xloc=xloc.bar_time, color=levelColor100, style=line.style_dashed, width=2)
+
+            label50 := label.new(projectionRightTime, level50, "50% (" + str.tostring(level50, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.black, 100), textcolor=levelColor50, size=size.small)
+            label618 := label.new(projectionRightTime, level618, "61.8% (" + str.tostring(level618, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.black, 100), textcolor=levelColor618, size=size.small)
+            label90 := label.new(projectionRightTime, level90, "90% (" + str.tostring(level90, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.black, 100), textcolor=levelColor90, size=size.small)
+            label100 := label.new(projectionRightTime, level100, "100% (" + str.tostring(level100, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.black, 100), textcolor=levelColor100, size=size.small)
+
+            zoneBox := box.new(cTime, zoneTop, projectionRightTime, zoneBottom, xloc=xloc.bar_time, bgcolor=zoneColor, border_color=color.new(color.gray, 60), border_style=line.style_dotted)
+
+    drawnLegKey := legKey
+    drawnSetupKey := currentSetupKey

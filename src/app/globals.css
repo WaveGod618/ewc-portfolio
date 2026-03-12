@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-body:
+    "Avenir Next", "SF Pro Text", "Segoe UI Variable", "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
+  --font-heading:
+    "Avenir Next", "SF Pro Display", "Segoe UI Variable", "Helvetica Neue", sans-serif;
+  --background: 224 34% 7%;
+  --foreground: 210 40% 98%;
+  --card: 223 23% 10%;
+  --card-foreground: 210 40% 98%;
+  --border: 219 18% 18%;
+  --muted: 223 20% 13%;
+  --muted-foreground: 215 16% 70%;
+  --accent: 199 76% 62%;
+  --accent-foreground: 224 34% 7%;
+  --positive: 152 60% 48%;
+  --negative: 0 72% 56%;
+  --warning: 39 88% 58%;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(104, 168, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 85% 8%, rgba(255, 255, 255, 0.06), transparent 18%),
+    linear-gradient(180deg, #070c17 0%, #050913 52%, #04070f 100%);
+}
+
+body {
+  min-height: 100vh;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(circle at 16% 0%, rgba(112, 165, 255, 0.16), transparent 20%),
+    radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.05), transparent 16%),
+    linear-gradient(180deg, rgba(7, 12, 23, 0.98) 0%, rgba(5, 9, 19, 1) 48%, rgba(4, 7, 15, 1) 100%);
+  font-family: var(--font-body), sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-heading), sans-serif;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.28);
+  color: white;
+}

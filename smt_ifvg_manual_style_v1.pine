@@ -1,0 +1,349 @@
+// This Pine Script code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=6
+indicator("SMT iFVG Manual Style [EWC]", shorttitle="SMTman", overlay=true, max_lines_count=500, max_boxes_count=100, max_labels_count=100)
+
+COLOR_BULL = #089981
+COLOR_BEAR = #f23645
+COLOR_REF = #3f7cff
+
+type Pivot
+    int index
+    float price
+    bool isHigh
+
+grp_core = "1. Core"
+compSymbol = input.symbol("CME_MINI:NQ1!", "Comparison Symbol", group=grp_core)
+pivotLookback = input.int(2, "Pivot Length", minval=1, group=grp_core)
+pivotTolerance = input.int(3, "Pivot Tolerance", minval=0, maxval=10, group=grp_core)
+sweepToSmtBars = input.int(20, "Sweep To SMT Bars", minval=1, group=grp_core)
+smtToFvgBars = input.int(20, "SMT To FVG Bars", minval=1, group=grp_core)
+fvgExpiryBars = input.int(15, "Pending iFVG Bars", minval=1, group=grp_core)
+signalHoldBars = input.int(60, "Signal Hold Bars", minval=5, group=grp_core)
+
+grp_refs = "2. References"
+useAsia = input.bool(true, "Asia High/Low", group=grp_refs)
+asiaSession = input.session("1800-0000", "Asia Session", group=grp_refs)
+useLondon = input.bool(true, "London High/Low", group=grp_refs)
+londonSession = input.session("0200-0500", "London Session", group=grp_refs)
+usePrevDay = input.bool(true, "Prior Day High/Low", group=grp_refs)
+usePrevWeek = input.bool(false, "Prior Week High/Low", group=grp_refs)
+usePrevMonth = input.bool(false, "Prior Month High/Low", group=grp_refs)
+useSwingPoint = input.bool(true, "Swing Point", group=grp_refs)
+
+grp_vis = "3. Visuals"
+refLineWidth = input.int(2, "Reference Width", minval=1, maxval=4, group=grp_vis)
+smtLineWidth = input.int(1, "SMT Width", minval=1, maxval=4, group=grp_vis)
+showIfvgLabel = input.bool(true, "Show iFVG Label", group=grp_vis)
+
+var chartHighs = array.new<Pivot>()
+var chartLows = array.new<Pivot>()
+var compHighs = array.new<Pivot>()
+var compLows = array.new<Pivot>()
+
+var float asiaHighLive = na
+var float asiaLowLive = na
+var float asiaHigh = na
+var float asiaLow = na
+
+var float londonHighLive = na
+var float londonLowLive = na
+var float londonHigh = na
+var float londonLow = na
+
+var int state = 0
+var bool activeBearish = false
+var int sweepBar = na
+var int smtBar = na
+var int fvgBar = na
+var int signalBar = na
+var float activeRefPrice = na
+var string activeRefName = ""
+var int smtP1Index = na
+var int smtP2Index = na
+var float smtP1Price = na
+var float smtP2Price = na
+var float targetPrice = na
+var float fvgTop = na
+var float fvgBottom = na
+var float fvgTriggerOpen = na
+
+var line refLine = na
+var line smtLine = na
+var line targetLine = na
+var box ifvgBox = na
+var label refLabel = na
+var label ifvgLabel = na
+var label signalLabel = na
+
+method updatePivots(array<Pivot> pivots, float price, bool isHigh) =>
+    if not na(price)
+        array.unshift(pivots, Pivot.new(bar_index[pivotLookback], price, isHigh))
+        if array.size(pivots) > 40
+            array.pop(pivots)
+
+get_ohlc() =>
+    [open, high, low, close]
+
+findMatchingPivot(array<Pivot> pivots, int targetIndex, int tolerance) =>
+    Pivot result = na
+    if array.size(pivots) > 0
+        int bestDistance = 1000000
+        for i = 0 to array.size(pivots) - 1
+            Pivot p = array.get(pivots, i)
+            int distance = math.abs(p.index - targetIndex)
+            if distance <= tolerance and distance < bestDistance
+                bestDistance := distance
+                result := p
+    result
+
+[compOpen, compHigh, compLow, compClose] = request.security(compSymbol, timeframe.period, get_ohlc())
+
+bool inAsia = not na(time(timeframe.period, asiaSession))
+bool inLondon = not na(time(timeframe.period, londonSession))
+
+if inAsia and not inAsia[1]
+    asiaHighLive := high
+    asiaLowLive := low
+else if inAsia
+    asiaHighLive := math.max(asiaHighLive, high)
+    asiaLowLive := math.min(asiaLowLive, low)
+else if not inAsia and inAsia[1]
+    asiaHigh := asiaHighLive
+    asiaLow := asiaLowLive
+
+if inLondon and not inLondon[1]
+    londonHighLive := high
+    londonLowLive := low
+else if inLondon
+    londonHighLive := math.max(londonHighLive, high)
+    londonLowLive := math.min(londonLowLive, low)
+else if not inLondon and inLondon[1]
+    londonHigh := londonHighLive
+    londonLow := londonLowLive
+
+prevDayHigh = request.security(syminfo.tickerid, "D", high[1], lookahead=barmerge.lookahead_off)
+prevDayLow = request.security(syminfo.tickerid, "D", low[1], lookahead=barmerge.lookahead_off)
+prevWeekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead=barmerge.lookahead_off)
+prevWeekLow = request.security(syminfo.tickerid, "W", low[1], lookahead=barmerge.lookahead_off)
+prevMonthHigh = request.security(syminfo.tickerid, "M", high[1], lookahead=barmerge.lookahead_off)
+prevMonthLow = request.security(syminfo.tickerid, "M", low[1], lookahead=barmerge.lookahead_off)
+
+chartPH = ta.pivothigh(pivotLookback, pivotLookback)
+chartPL = ta.pivotlow(pivotLookback, pivotLookback)
+compPH = ta.pivothigh(compHigh, pivotLookback, pivotLookback)
+compPL = ta.pivotlow(compLow, pivotLookback, pivotLookback)
+
+chartHighs.updatePivots(chartPH, true)
+chartLows.updatePivots(chartPL, false)
+compHighs.updatePivots(compPH, true)
+compLows.updatePivots(compPL, false)
+
+bool shouldReset = (state == 4 and not na(signalBar) and bar_index - signalBar > signalHoldBars) or (state == 1 and not na(sweepBar) and bar_index - sweepBar > sweepToSmtBars) or (state == 2 and not na(smtBar) and bar_index - smtBar > smtToFvgBars) or (state == 3 and not na(fvgBar) and bar_index - fvgBar > fvgExpiryBars)
+
+if shouldReset
+    if not na(refLine)
+        line.delete(refLine)
+        refLine := na
+    if not na(smtLine)
+        line.delete(smtLine)
+        smtLine := na
+    if not na(targetLine)
+        line.delete(targetLine)
+        targetLine := na
+    if not na(ifvgBox)
+        box.delete(ifvgBox)
+        ifvgBox := na
+    if not na(refLabel)
+        label.delete(refLabel)
+        refLabel := na
+    if not na(ifvgLabel)
+        label.delete(ifvgLabel)
+        ifvgLabel := na
+    if not na(signalLabel)
+        label.delete(signalLabel)
+        signalLabel := na
+    state := 0
+    activeBearish := false
+    sweepBar := na
+    smtBar := na
+    fvgBar := na
+    signalBar := na
+    activeRefPrice := na
+    activeRefName := ""
+    smtP1Index := na
+    smtP2Index := na
+    smtP1Price := na
+    smtP2Price := na
+    targetPrice := na
+    fvgTop := na
+    fvgBottom := na
+    fvgTriggerOpen := na
+
+if state == 0
+    if useLondon and not na(londonHigh) and high > londonHigh and close < londonHigh
+        activeBearish := true
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := londonHigh
+        activeRefName := "LO.H"
+        refLine := line.new(bar_index - 30, londonHigh, bar_index + 20, londonHigh, extend=extend.right, color=COLOR_BEAR, width=refLineWidth)
+        refLabel := label.new(bar_index, londonHigh, "LO.H", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if useLondon and not na(londonLow) and low < londonLow and close > londonLow
+        activeBearish := false
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := londonLow
+        activeRefName := "LO.L"
+        refLine := line.new(bar_index - 30, londonLow, bar_index + 20, londonLow, extend=extend.right, color=COLOR_BULL, width=refLineWidth)
+        refLabel := label.new(bar_index, londonLow, "LO.L", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if useAsia and not na(asiaHigh) and high > asiaHigh and close < asiaHigh
+        activeBearish := true
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := asiaHigh
+        activeRefName := "AS.H"
+        refLine := line.new(bar_index - 30, asiaHigh, bar_index + 20, asiaHigh, extend=extend.right, color=COLOR_BEAR, width=refLineWidth)
+        refLabel := label.new(bar_index, asiaHigh, "AS.H", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if useAsia and not na(asiaLow) and low < asiaLow and close > asiaLow
+        activeBearish := false
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := asiaLow
+        activeRefName := "AS.L"
+        refLine := line.new(bar_index - 30, asiaLow, bar_index + 20, asiaLow, extend=extend.right, color=COLOR_BULL, width=refLineWidth)
+        refLabel := label.new(bar_index, asiaLow, "AS.L", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if usePrevDay and not na(prevDayHigh) and high > prevDayHigh and close < prevDayHigh
+        activeBearish := true
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := prevDayHigh
+        activeRefName := "PDH"
+        refLine := line.new(bar_index - 30, prevDayHigh, bar_index + 20, prevDayHigh, extend=extend.right, color=COLOR_BEAR, width=refLineWidth)
+        refLabel := label.new(bar_index, prevDayHigh, "PDH", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if usePrevDay and not na(prevDayLow) and low < prevDayLow and close > prevDayLow
+        activeBearish := false
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := prevDayLow
+        activeRefName := "PDL"
+        refLine := line.new(bar_index - 30, prevDayLow, bar_index + 20, prevDayLow, extend=extend.right, color=COLOR_BULL, width=refLineWidth)
+        refLabel := label.new(bar_index, prevDayLow, "PDL", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if usePrevWeek and not na(prevWeekHigh) and high > prevWeekHigh and close < prevWeekHigh
+        activeBearish := true
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := prevWeekHigh
+        activeRefName := "PWH"
+        refLine := line.new(bar_index - 30, prevWeekHigh, bar_index + 20, prevWeekHigh, extend=extend.right, color=COLOR_BEAR, width=refLineWidth)
+        refLabel := label.new(bar_index, prevWeekHigh, "PWH", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if usePrevWeek and not na(prevWeekLow) and low < prevWeekLow and close > prevWeekLow
+        activeBearish := false
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := prevWeekLow
+        activeRefName := "PWL"
+        refLine := line.new(bar_index - 30, prevWeekLow, bar_index + 20, prevWeekLow, extend=extend.right, color=COLOR_BULL, width=refLineWidth)
+        refLabel := label.new(bar_index, prevWeekLow, "PWL", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if usePrevMonth and not na(prevMonthHigh) and high > prevMonthHigh and close < prevMonthHigh
+        activeBearish := true
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := prevMonthHigh
+        activeRefName := "PMH"
+        refLine := line.new(bar_index - 30, prevMonthHigh, bar_index + 20, prevMonthHigh, extend=extend.right, color=COLOR_BEAR, width=refLineWidth)
+        refLabel := label.new(bar_index, prevMonthHigh, "PMH", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if usePrevMonth and not na(prevMonthLow) and low < prevMonthLow and close > prevMonthLow
+        activeBearish := false
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := prevMonthLow
+        activeRefName := "PML"
+        refLine := line.new(bar_index - 30, prevMonthLow, bar_index + 20, prevMonthLow, extend=extend.right, color=COLOR_BULL, width=refLineWidth)
+        refLabel := label.new(bar_index, prevMonthLow, "PML", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if useSwingPoint and array.size(chartHighs) > 0 and high > array.get(chartHighs, 0).price and close < array.get(chartHighs, 0).price
+        activeBearish := true
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := array.get(chartHighs, 0).price
+        activeRefName := "Swing High"
+        refLine := line.new(bar_index - 30, activeRefPrice, bar_index + 20, activeRefPrice, extend=extend.right, color=COLOR_BEAR, width=refLineWidth)
+        refLabel := label.new(bar_index, activeRefPrice, "Swing High", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if useSwingPoint and array.size(chartLows) > 0 and low < array.get(chartLows, 0).price and close > array.get(chartLows, 0).price
+        activeBearish := false
+        state := 1
+        sweepBar := bar_index
+        activeRefPrice := array.get(chartLows, 0).price
+        activeRefName := "Swing Low"
+        refLine := line.new(bar_index - 30, activeRefPrice, bar_index + 20, activeRefPrice, extend=extend.right, color=COLOR_BULL, width=refLineWidth)
+        refLabel := label.new(bar_index, activeRefPrice, "Swing Low", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+if state == 1
+    if activeBearish and array.size(chartHighs) >= 2 and array.size(compHighs) >= 2
+        Pivot es2 = array.get(chartHighs, 0)
+        Pivot es1 = array.get(chartHighs, 1)
+        Pivot nq2 = findMatchingPivot(compHighs, es2.index, pivotTolerance)
+        Pivot nq1 = findMatchingPivot(compHighs, es1.index, pivotTolerance)
+        if not na(nq2) and not na(nq1)
+            bool smtConfirmed = es2.index >= sweepBar and es2.price < es1.price and nq2.price > nq1.price
+            if smtConfirmed
+                state := 2
+                smtBar := es2.index
+                smtP1Index := es1.index
+                smtP2Index := es2.index
+                smtP1Price := es1.price
+                smtP2Price := es2.price
+                targetPrice := array.size(chartLows) > 0 ? array.get(chartLows, 0).price : low
+                smtLine := line.new(smtP1Index, smtP1Price, smtP2Index, smtP2Price, color=COLOR_BEAR, width=smtLineWidth)
+    else if not activeBearish and array.size(chartLows) >= 2 and array.size(compLows) >= 2
+        Pivot es2 = array.get(chartLows, 0)
+        Pivot es1 = array.get(chartLows, 1)
+        Pivot nq2 = findMatchingPivot(compLows, es2.index, pivotTolerance)
+        Pivot nq1 = findMatchingPivot(compLows, es1.index, pivotTolerance)
+        if not na(nq2) and not na(nq1)
+            bool smtConfirmed = es2.index >= sweepBar and es2.price > es1.price and nq2.price < nq1.price
+            if smtConfirmed
+                state := 2
+                smtBar := es2.index
+                smtP1Index := es1.index
+                smtP2Index := es2.index
+                smtP1Price := es1.price
+                smtP2Price := es2.price
+                targetPrice := array.size(chartHighs) > 0 ? array.get(chartHighs, 0).price : high
+                smtLine := line.new(smtP1Index, smtP1Price, smtP2Index, smtP2Price, color=COLOR_BULL, width=smtLineWidth)
+
+bool bullishFvg = high[2] < low and close[1] > open[1]
+bool bearishFvg = low[2] > high and close[1] < open[1]
+
+if state == 2 and bar_index > smtBar
+    if activeBearish and bullishFvg
+        state := 3
+        fvgBar := bar_index
+        fvgTop := low
+        fvgBottom := high[2]
+        fvgTriggerOpen := open[2]
+        ifvgBox := box.new(bar_index[2], fvgTop, bar_index + 4, fvgBottom, border_color=color.new(color.white, 0), border_style=line.style_dotted, bgcolor=color.new(color.white, 100))
+        if showIfvgLabel
+            ifvgLabel := label.new(bar_index + 2, math.avg(fvgTop, fvgBottom), "iFVG", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+    else if not activeBearish and bearishFvg
+        state := 3
+        fvgBar := bar_index
+        fvgTop := low[2]
+        fvgBottom := high
+        fvgTriggerOpen := open[2]
+        ifvgBox := box.new(bar_index[2], fvgTop, bar_index + 4, fvgBottom, border_color=color.new(color.white, 0), border_style=line.style_dotted, bgcolor=color.new(color.white, 100))
+        if showIfvgLabel
+            ifvgLabel := label.new(bar_index + 2, math.avg(fvgTop, fvgBottom), "iFVG", color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+if state == 3
+    if not na(ifvgBox)
+        box.set_right(ifvgBox, bar_index + 4)
+    if not na(ifvgLabel)
+        label.set_x(ifvgLabel, bar_index + 2)
+    bool triggered = activeBearish ? close < fvgTriggerOpen : close > fvgTriggerOpen
+    if triggered
+        state := 4
+        signalBar := bar_index
+        string signalText = activeBearish ? "Sell Signal" : "Buy Signal"
+        color sigColor = activeBearish ? COLOR_BEAR : COLOR_BULL
+        signalLabel := label.new(bar_index + 3, math.avg(fvgTop, fvgBottom), signalText, color=color.new(color.black, 100), textcolor=color.white, style=label.style_label_left, size=size.normal)
+        targetLine := line.new(bar_index - 10, targetPrice, bar_index + 40, targetPrice, extend=extend.none, color=sigColor, width=2)

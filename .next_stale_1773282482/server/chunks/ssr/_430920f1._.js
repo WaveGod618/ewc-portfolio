@@ -1,0 +1,3 @@
+module.exports=[35112,(a,b,c)=>{"use strict";b.exports=a.r(42602).vendored["react-ssr"].ReactDOM},73517,a=>{"use strict";var b=a.i(87924),c=a.i(35112),d=a.i(99570);function e({children:a,pendingLabel:e="Saving...",variant:f,className:g,disabled:h}){let{pending:i}=(0,c.useFormStatus)();return(0,b.jsx)(d.Button,{className:g,disabled:h||i,type:"submit",variant:f,children:i?e:a})}a.s(["SubmitButton",()=>e])}];
+
+//# sourceMappingURL=_430920f1._.js.map

@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USDBRL - Higher Timeframe Elliott Wave Analysis</title>
+    <style>
+      :root {
+        --bg: #121416;
+        --bg-deep: #0c0f12;
+        --surface: rgba(255, 255, 255, 0.038);
+        --surface-strong: rgba(255, 255, 255, 0.058);
+        --line: rgba(255, 255, 255, 0.08);
+        --line-strong: rgba(255, 255, 255, 0.12);
+        --text: #f5f7f8;
+        --soft: #d7dde3;
+        --muted: #99a3ad;
+        --teal: #5dcab9;
+        --gold: #d7bd8b;
+        --red: #e06f6a;
+        --shadow: 0 34px 80px rgba(0, 0, 0, 0.34);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(93, 202, 185, 0.11), transparent 26%),
+          radial-gradient(circle at top right, rgba(215, 189, 139, 0.08), transparent 22%),
+          var(--bg);
+        color: var(--text);
+        font-family: "SF Pro Display", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .deck {
+        width: 100%;
+        display: grid;
+        justify-content: center;
+        gap: 28px;
+        padding: 28px 16px 40px;
+      }
+
+      .sheet {
+        position: relative;
+        width: min(11in, calc(100vw - 32px));
+        min-height: 8.5in;
+        padding: 0.44in 0.48in 0.34in;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(19, 22, 24, 0.985), rgba(15, 18, 21, 0.99)),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 26%);
+        border: 1px solid var(--line);
+        border-radius: 30px;
+        box-shadow: var(--shadow);
+      }
+
+      .sheet::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 20%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.018) 0,
+            rgba(255, 255, 255, 0.018) 1px,
+            transparent 1px,
+            transparent 160px
+          );
+        opacity: 0.55;
+      }
+
+      .sheet > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .page-header,
+      .title-row,
+      .panel,
+      .level-card,
+      .chart-stage,
+      .chart-notes,
+      .footer {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .cover-sheet {
+        display: grid;
+        grid-template-rows: auto auto auto auto auto 1fr auto;
+        gap: 16px;
+      }
+
+      .cover-sheet-inner {
+        display: grid;
+        grid-template-rows: inherit;
+        gap: inherit;
+        min-height: 100%;
+      }
+
+      .chart-sheet {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto auto;
+        gap: 14px;
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-logo {
+        width: 44px;
+        height: 44px;
+        display: block;
+        object-fit: contain;
+        border-radius: 14px;
+        flex: none;
+      }
+
+      .brand-fallback {
+        display: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+        place-items: center;
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        color: var(--soft);
+        flex: none;
+      }
+
+      .brand-copy {
+        display: grid;
+        gap: 3px;
+      }
+
+      .brand-label,
+      .page-index,
+      .meta-pill,
+      .panel-label,
+      .level-label,
+      .eyebrow,
+      .footer-copy {
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .brand-label {
+        margin: 0;
+        font-size: 0.64rem;
+        color: var(--muted);
+      }
+
+      .brand-name {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .meta-pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.035);
+        font-size: 0.62rem;
+        color: var(--soft);
+        white-space: nowrap;
+      }
+
+      .meta-pill.accent {
+        color: var(--teal);
+        border-color: rgba(93, 202, 185, 0.18);
+        background: rgba(93, 202, 185, 0.07);
+      }
+
+      .title-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 0.64rem;
+        color: var(--gold);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        letter-spacing: -0.035em;
+        font-weight: 600;
+      }
+
+      h1 {
+        font-size: 2.08rem;
+        line-height: 1.05;
+        max-width: 9.2in;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        max-width: 6.9in;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .page-index {
+        margin: 2px 0 0;
+        font-size: 0.76rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .panel {
+        background: linear-gradient(180deg, var(--surface-strong), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: 24px;
+      }
+
+      .panel.pad {
+        padding: 20px 22px;
+      }
+
+      .panel-label {
+        margin: 0 0 10px;
+        font-size: 0.62rem;
+        color: var(--muted);
+      }
+
+      .summary-panel {
+        background:
+          linear-gradient(135deg, rgba(93, 202, 185, 0.1), rgba(255, 255, 255, 0.035) 34%, rgba(215, 189, 139, 0.08)),
+          linear-gradient(180deg, var(--surface-strong), var(--surface));
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1.35fr 0.9fr;
+        gap: 20px;
+        align-items: start;
+      }
+
+      .summary-copy {
+        margin: 0;
+        font-size: 1.02rem;
+        line-height: 1.7;
+        color: var(--soft);
+      }
+
+      .summary-copy strong {
+        color: var(--text);
+      }
+
+      .summary-stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .summary-stat {
+        padding: 12px 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: rgba(0, 0, 0, 0.16);
+      }
+
+      .summary-stat-label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.6rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .summary-stat-value {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--text);
+        line-height: 1.45;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .analysis-panel h3,
+      .closing-panel h3 {
+        margin-bottom: 8px;
+        font-size: 1.02rem;
+      }
+
+      .analysis-panel p,
+      .closing-panel p {
+        margin: 0;
+        font-size: 0.88rem;
+        line-height: 1.62;
+        color: var(--muted);
+      }
+
+      .levels-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .level-card {
+        position: relative;
+        padding: 18px 18px 16px;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, var(--surface-strong), var(--surface));
+      }
+
+      .level-card::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 0;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent-tone), transparent 72%);
+      }
+
+      .level-card.red {
+        --accent-tone: var(--red);
+      }
+
+      .level-card.gold {
+        --accent-tone: var(--gold);
+      }
+
+      .level-card.teal {
+        --accent-tone: var(--teal);
+      }
+
+      .level-label {
+        margin: 0 0 10px;
+        font-size: 0.58rem;
+        color: var(--accent-tone);
+      }
+
+      .level-value {
+        margin: 0 0 8px;
+        font-size: 1.18rem;
+        line-height: 1.05;
+      }
+
+      .level-note {
+        margin: 0;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .closing-panel {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .closing-panel .divider {
+        width: 1px;
+        align-self: stretch;
+        background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .footer-copy {
+        margin: 0;
+        font-size: 0.62rem;
+        color: var(--muted);
+      }
+
+      .footer-detail {
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--soft);
+      }
+
+      .chart-title-block {
+        display: grid;
+        gap: 8px;
+      }
+
+      .chart-title {
+        font-size: 1.72rem;
+        line-height: 1.06;
+      }
+
+      .chart-caption {
+        margin: 0;
+        max-width: 8.8in;
+        font-size: 0.88rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .chart-stage {
+        position: relative;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.16in;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)),
+          var(--bg-deep);
+        border: 1px solid var(--line-strong);
+        border-radius: 26px;
+        overflow: hidden;
+      }
+
+      .chart-stage img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: center center;
+        background: #121416;
+      }
+
+      .chart-stage.missing::after {
+        content: attr(data-missing-message);
+        position: absolute;
+        inset: 0.24in;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        border: 1px dashed rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        text-align: center;
+        font-size: 0.82rem;
+        line-height: 1.6;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: rgba(0, 0, 0, 0.12);
+      }
+
+      .chart-stage.missing img {
+        display: none;
+      }
+
+      .chart-notes {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, var(--surface-strong), var(--surface));
+      }
+
+      .chart-note-item {
+        display: grid;
+        gap: 3px;
+      }
+
+      .chart-note-label {
+        font-size: 0.58rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .chart-note-value {
+        font-size: 0.84rem;
+        color: var(--soft);
+      }
+
+      @media (max-width: 1180px) {
+        .deck {
+          padding: 16px 10px 28px;
+          gap: 18px;
+        }
+
+        .sheet {
+          width: min(11in, calc(100vw - 20px));
+          min-height: auto;
+          padding: 22px;
+          border-radius: 24px;
+        }
+
+        .summary-grid,
+        .analysis-grid,
+        .levels-grid,
+        .closing-panel {
+          grid-template-columns: 1fr;
+        }
+
+        .closing-panel .divider {
+          display: none;
+        }
+
+        .page-header,
+        .title-row,
+        .chart-notes {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .meta-row {
+          justify-content: flex-start;
+        }
+
+        .chart-sheet {
+          grid-template-rows: auto auto auto auto auto;
+        }
+
+        .chart-stage {
+          min-height: 320px;
+        }
+      }
+
+      @media print {
+        @page {
+          size: 11in 8.5in;
+          margin: 0;
+        }
+
+        html,
+        body {
+          width: 11in;
+          margin: 0;
+          padding: 0;
+          background: var(--bg);
+        }
+
+        .deck {
+          display: block;
+          width: 11in;
+          gap: 0;
+          padding: 0;
+        }
+
+        .sheet {
+          width: 11in;
+          height: 8.5in;
+          min-height: 8.5in;
+          max-height: 8.5in;
+          margin: 0;
+          padding: 0.32in 0.36in 0.22in;
+          overflow: hidden;
+          border: 0;
+          border-radius: 0;
+          box-shadow: none;
+          break-after: page;
+          page-break-after: always;
+        }
+
+        .sheet:last-child {
+          break-after: auto;
+          page-break-after: auto;
+        }
+
+        .sheet > * {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        .cover-sheet {
+          grid-template-rows: auto auto auto auto auto auto auto;
+          align-content: start;
+          padding: 0.27in 0.31in 0.34in;
+          gap: 7px;
+        }
+
+        .cover-sheet-inner {
+          width: 147%;
+          transform: scale(0.68);
+          transform-origin: top left;
+        }
+
+        .chart-sheet {
+          gap: 10px;
+          grid-template-rows: auto auto 5.15in auto auto;
+        }
+
+        .page-header {
+          gap: 12px;
+        }
+
+        .brand {
+          gap: 10px;
+        }
+
+        .brand-logo,
+        .brand-fallback {
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+        }
+
+        .brand-label {
+          font-size: 0.58rem;
+        }
+
+        .brand-name {
+          font-size: 0.92rem;
+        }
+
+        .meta-row {
+          gap: 6px;
+        }
+
+        .meta-pill {
+          padding: 6px 10px;
+          font-size: 0.56rem;
+        }
+
+        .title-row {
+          gap: 18px;
+        }
+
+        .eyebrow {
+          margin-bottom: 6px;
+          font-size: 0.58rem;
+        }
+
+        h1 {
+          font-size: 1.78rem;
+          max-width: 8.8in;
+        }
+
+        .subtitle {
+          margin-top: 8px;
+          font-size: 0.84rem;
+          line-height: 1.45;
+        }
+
+        .page-index {
+          font-size: 0.66rem;
+        }
+
+        .panel.pad {
+          padding: 16px 18px;
+        }
+
+        .panel-label {
+          margin-bottom: 8px;
+          font-size: 0.56rem;
+        }
+
+        .summary-grid {
+          gap: 14px;
+        }
+
+        .summary-copy {
+          font-size: 0.91rem;
+          line-height: 1.56;
+        }
+
+        .summary-stack {
+          gap: 8px;
+        }
+
+        .summary-stat {
+          padding: 10px 12px;
+        }
+
+        .summary-stat-label {
+          margin-bottom: 3px;
+          font-size: 0.56rem;
+        }
+
+        .summary-stat-value {
+          font-size: 0.82rem;
+          line-height: 1.35;
+        }
+
+        .analysis-grid {
+          gap: 10px;
+        }
+
+        .analysis-panel h3,
+        .closing-panel h3 {
+          margin-bottom: 6px;
+          font-size: 0.92rem;
+        }
+
+        .analysis-panel p,
+        .closing-panel p {
+          font-size: 0.8rem;
+          line-height: 1.48;
+        }
+
+        .levels-grid {
+          gap: 10px;
+        }
+
+        .level-card {
+          padding: 14px 14px 13px;
+          border-radius: 18px;
+        }
+
+        .level-card::before {
+          left: 14px;
+          right: 14px;
+        }
+
+        .level-label {
+          margin-bottom: 8px;
+          font-size: 0.52rem;
+        }
+
+        .level-value {
+          margin-bottom: 6px;
+          font-size: 1rem;
+        }
+
+        .level-note {
+          font-size: 0.74rem;
+          line-height: 1.34;
+        }
+
+        .closing-panel {
+          gap: 14px;
+        }
+
+        .footer {
+          padding-top: 6px;
+        }
+
+        .footer-copy {
+          font-size: 0.56rem;
+        }
+
+        .footer-detail {
+          font-size: 0.64rem;
+        }
+
+        .cover-sheet .page-header {
+          gap: 10px;
+        }
+
+        .cover-sheet .brand {
+          gap: 8px;
+        }
+
+        .cover-sheet .brand-logo,
+        .cover-sheet .brand-fallback {
+          width: 36px;
+          height: 36px;
+          border-radius: 11px;
+        }
+
+        .cover-sheet .brand-label {
+          font-size: 0.54rem;
+        }
+
+        .cover-sheet .brand-name {
+          font-size: 0.86rem;
+        }
+
+        .cover-sheet .meta-row {
+          gap: 5px;
+        }
+
+        .cover-sheet .meta-pill {
+          padding: 5px 9px;
+          font-size: 0.52rem;
+        }
+
+        .cover-sheet .title-row {
+          gap: 14px;
+        }
+
+        .cover-sheet .eyebrow {
+          margin-bottom: 4px;
+          font-size: 0.54rem;
+        }
+
+        .cover-sheet h1 {
+          font-size: 1.64rem;
+          max-width: 8.5in;
+        }
+
+        .cover-sheet .subtitle {
+          margin-top: 6px;
+          font-size: 0.78rem;
+          line-height: 1.36;
+        }
+
+        .cover-sheet .page-index {
+          font-size: 0.6rem;
+        }
+
+        .cover-sheet .panel.pad {
+          padding: 13px 15px;
+        }
+
+        .cover-sheet .panel-label {
+          margin-bottom: 6px;
+          font-size: 0.51rem;
+        }
+
+        .cover-sheet .summary-grid {
+          gap: 10px;
+        }
+
+        .cover-sheet .summary-copy {
+          font-size: 0.84rem;
+          line-height: 1.44;
+        }
+
+        .cover-sheet .summary-stack {
+          gap: 6px;
+        }
+
+        .cover-sheet .summary-stat {
+          padding: 8px 10px;
+          border-radius: 14px;
+        }
+
+        .cover-sheet .summary-stat-label {
+          margin-bottom: 2px;
+          font-size: 0.52rem;
+        }
+
+        .cover-sheet .summary-stat-value {
+          font-size: 0.75rem;
+          line-height: 1.24;
+        }
+
+        .cover-sheet .analysis-grid {
+          gap: 8px;
+        }
+
+        .cover-sheet .analysis-panel h3,
+        .cover-sheet .closing-panel h3 {
+          margin-bottom: 5px;
+          font-size: 0.84rem;
+        }
+
+        .cover-sheet .analysis-panel p,
+        .cover-sheet .closing-panel p {
+          font-size: 0.73rem;
+          line-height: 1.34;
+        }
+
+        .cover-sheet .levels-grid {
+          gap: 5px;
+          margin-top: -3px;
+          margin-bottom: 4px;
+        }
+
+        .cover-sheet .level-card {
+          padding: 8px 9px 7px;
+          border-radius: 16px;
+        }
+
+        .cover-sheet .level-card::before {
+          left: 9px;
+          right: 9px;
+        }
+
+        .cover-sheet .level-label {
+          margin-bottom: 4px;
+          font-size: 0.46rem;
+        }
+
+        .cover-sheet .level-value {
+          margin-bottom: 3px;
+          font-size: 0.86rem;
+        }
+
+        .cover-sheet .level-note {
+          font-size: 0.62rem;
+          line-height: 1.12;
+        }
+
+        .cover-sheet .closing-panel {
+          gap: 7px;
+          margin-top: -2px;
+        }
+
+        .cover-sheet .closing-panel.panel.pad {
+          padding: 8px 10px;
+        }
+
+        .cover-sheet .footer {
+          margin-top: 4px;
+          padding-top: 2px;
+        }
+
+        .cover-sheet .footer-copy {
+          font-size: 0.52rem;
+        }
+
+        .cover-sheet .footer-detail {
+          font-size: 0.58rem;
+        }
+
+        .chart-title-block {
+          gap: 6px;
+        }
+
+        .chart-title {
+          font-size: 1.48rem;
+        }
+
+        .chart-caption {
+          max-width: 8.5in;
+          font-size: 0.78rem;
+          line-height: 1.4;
+        }
+
+        .chart-stage {
+          height: 5.15in;
+          min-height: 5.15in;
+          max-height: 5.15in;
+          padding: 0.12in;
+          border-radius: 20px;
+        }
+
+        .chart-stage.missing::after {
+          inset: 0.16in;
+          padding: 18px;
+          font-size: 0.72rem;
+        }
+
+        .chart-notes {
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 16px;
+        }
+
+        .chart-note-item {
+          gap: 2px;
+        }
+
+        .chart-note-label {
+          font-size: 0.52rem;
+        }
+
+        .chart-note-value {
+          font-size: 0.76rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="sheet cover-sheet">
+        <div class="cover-sheet-inner">
+        <header class="page-header">
+          <div class="brand">
+            <img
+              class="brand-logo"
+              src="./ewc-logo.png"
+              alt="Elliott Wave Club logo"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+            />
+            <span class="brand-fallback" aria-hidden="true">EWC</span>
+            <div class="brand-copy">
+              <p class="brand-label">Client Research Note</p>
+              <p class="brand-name">Elliott Wave Club</p>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <span class="meta-pill accent">USDBRL</span>
+            <span class="meta-pill">Higher Timeframe</span>
+            <span class="meta-pill">Page 01 of 03</span>
+          </div>
+        </header>
+
+        <div class="title-row">
+          <div>
+            <p class="eyebrow">Macro Technical Brief</p>
+            <h1>USDBRL &mdash; Higher Timeframe Elliott Wave Analysis</h1>
+            <p class="subtitle">
+              Macro scenario, weekly structure, key levels, and invalidation framework.
+            </p>
+          </div>
+          <p class="page-index">March 10, 2026</p>
+        </div>
+
+        <section class="panel pad summary-panel">
+          <p class="panel-label">Executive Summary</p>
+          <div class="summary-grid">
+            <p class="summary-copy">
+              USDBRL likely completed a higher-degree <strong>Wave 3</strong> at
+              <strong>6.3139</strong> and now appears to be in a broader corrective phase, with
+              downside still favored toward the yearly fair value gap at
+              <strong>4.8947&ndash;4.2768</strong>.
+            </p>
+
+            <div class="summary-stack">
+              <div class="summary-stat">
+                <span class="summary-stat-label">Base case</span>
+                <span class="summary-stat-value">Broader correction remains the primary path.</span>
+              </div>
+              <div class="summary-stat">
+                <span class="summary-stat-label">Main target</span>
+                <span class="summary-stat-value">Yearly FVG at 4.8947&ndash;4.2768.</span>
+              </div>
+              <div class="summary-stat">
+                <span class="summary-stat-label">Risk point</span>
+                <span class="summary-stat-value">A decisive break above 6.3139 weakens the bearish count.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-grid">
+          <article class="panel pad analysis-panel">
+            <p class="panel-label">Macro View</p>
+            <h3>Yearly structure favors a completed higher-degree third wave</h3>
+            <p>
+              The yearly chart suggests the rally into 6.3139 completed a higher-degree Wave 3.
+              That framework keeps the yearly fair value gap at 4.8947&ndash;4.2768 as the
+              primary downside objective, while the lower bound also aligns with a likely sweep
+              of the prior Wave 4 extreme at 4.2768.
+            </p>
+          </article>
+
+          <article class="panel pad analysis-panel">
+            <p class="panel-label">Weekly Structure</p>
+            <h3>Five-wave decline keeps corrective bounce scenarios contained</h3>
+            <p>
+              The weekly chart can be counted as a five-wave decline from the high, suggesting
+              price may be in the final stages of a potential A-wave. If a bounce develops
+              first, it is still favored to be corrective and reject into weekly resistance
+              rather than mark a durable structural reversal.
+            </p>
+          </article>
+        </section>
+
+        <section class="levels-grid" aria-label="Key levels">
+          <article class="level-card red">
+            <p class="level-label">Bearish Invalidation</p>
+            <h3 class="level-value">6.3139</h3>
+            <p class="level-note">Only a material reclaim above the prior high undermines the present bearish framework.</p>
+          </article>
+
+          <article class="level-card gold">
+            <p class="level-label">Weekly Resistance 1</p>
+            <h3 class="level-value">5.2904&ndash;5.3509</h3>
+            <p class="level-note">First resistance band for a corrective bounce before broader downside continuation.</p>
+          </article>
+
+          <article class="level-card gold">
+            <p class="level-label">Weekly Resistance 2</p>
+            <h3 class="level-value">5.4525&ndash;5.5192</h3>
+            <p class="level-note">Secondary rejection zone if the rebound extends beyond the initial weekly supply area.</p>
+          </article>
+
+          <article class="level-card teal">
+            <p class="level-label">Main Support / Primary Target</p>
+            <h3 class="level-value">4.8947&ndash;4.2768</h3>
+            <p class="level-note">Yearly fair value gap and primary downside objective within the larger corrective structure.</p>
+          </article>
+        </section>
+
+        <section class="panel pad closing-panel">
+          <div>
+            <p class="panel-label">Invalidation Framework</p>
+            <h3>Corrective bias remains intact unless higher-timeframe structure is reclaimed</h3>
+            <p>
+              Interim rallies are treated as countertrend unless price reclaims higher-timeframe
+              structure and starts invalidating the count above 6.3139.
+            </p>
+          </div>
+
+          <div class="divider" aria-hidden="true"></div>
+
+          <div>
+            <p class="panel-label">Bottom Line</p>
+            <h3>Base case remains lower into yearly support</h3>
+            <p>
+              Base case remains a broader correction into 4.8947&ndash;4.2768. Any bounce ahead
+              of that zone is favored to stay corrective unless structure is materially reclaimed.
+            </p>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <p class="footer-copy">Prepared by Elliott Wave Club</p>
+          <p class="footer-detail">Paid chart analysis | USDBRL higher timeframe note</p>
+        </footer>
+        </div>
+      </section>
+
+      <section class="sheet chart-sheet">
+        <header class="page-header">
+          <div class="brand">
+            <img
+              class="brand-logo"
+              src="./ewc-logo.png"
+              alt="Elliott Wave Club logo"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+            />
+            <span class="brand-fallback" aria-hidden="true">EWC</span>
+            <div class="brand-copy">
+              <p class="brand-label">Chart Analysis</p>
+              <p class="brand-name">Elliott Wave Club</p>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <span class="meta-pill accent">Yearly Chart</span>
+            <span class="meta-pill">Page 02 of 03</span>
+          </div>
+        </header>
+
+        <div class="chart-title-block">
+          <p class="eyebrow">Higher Timeframe Context</p>
+          <h2 class="chart-title">USDBRL Yearly Chart</h2>
+          <p class="chart-caption">
+            The yearly structure continues to frame the 6.3139 high as a completed higher-degree
+            Wave 3, keeping the yearly fair value gap at 4.8947&ndash;4.2768 as the principal
+            corrective destination.
+          </p>
+        </div>
+
+        <div
+          class="chart-stage"
+          data-missing-message="Place usdbrl-yearly.png in the same folder as index.html"
+        >
+          <img
+            src="./usdbrl-yearly.png"
+            alt="USDBRL yearly Elliott Wave chart"
+            loading="eager"
+            decoding="sync"
+            onerror="this.closest('.chart-stage').classList.add('missing')"
+          />
+        </div>
+
+        <div class="chart-notes">
+          <div class="chart-note-item">
+            <span class="chart-note-label">Primary target</span>
+            <span class="chart-note-value">4.8947&ndash;4.2768 yearly FVG</span>
+          </div>
+          <div class="chart-note-item">
+            <span class="chart-note-label">Invalidation</span>
+            <span class="chart-note-value">Bearish count weakens above 6.3139</span>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <p class="footer-copy">Prepared by Elliott Wave Club</p>
+          <p class="footer-detail">USDBRL yearly chart</p>
+        </footer>
+      </section>
+
+      <section class="sheet chart-sheet">
+        <header class="page-header">
+          <div class="brand">
+            <img
+              class="brand-logo"
+              src="./ewc-logo.png"
+              alt="Elliott Wave Club logo"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+            />
+            <span class="brand-fallback" aria-hidden="true">EWC</span>
+            <div class="brand-copy">
+              <p class="brand-label">Chart Analysis</p>
+              <p class="brand-name">Elliott Wave Club</p>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <span class="meta-pill accent">Weekly Chart</span>
+            <span class="meta-pill">Page 03 of 03</span>
+          </div>
+        </header>
+
+        <div class="chart-title-block">
+          <p class="eyebrow">Weekly Structure</p>
+          <h2 class="chart-title">USDBRL Weekly Chart</h2>
+          <p class="chart-caption">
+            The weekly decline still reads as a five-wave sequence from the high. Any bounce
+            into 5.2904&ndash;5.3509 or 5.4525&ndash;5.5192 is favored as corrective unless price
+            starts materially reclaiming structure.
+          </p>
+        </div>
+
+        <div
+          class="chart-stage"
+          data-missing-message="Place usdbrl-weekly.png in the same folder as index.html"
+        >
+          <img
+            src="./usdbrl-weekly.png"
+            alt="USDBRL weekly Elliott Wave chart"
+            loading="eager"
+            decoding="sync"
+            onerror="this.closest('.chart-stage').classList.add('missing')"
+          />
+        </div>
+
+        <div class="chart-notes">
+          <div class="chart-note-item">
+            <span class="chart-note-label">Resistance zones</span>
+            <span class="chart-note-value">5.2904&ndash;5.3509 and 5.4525&ndash;5.5192</span>
+          </div>
+          <div class="chart-note-item">
+            <span class="chart-note-label">Downside objective</span>
+            <span class="chart-note-value">Continuation toward 4.8947&ndash;4.2768</span>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <p class="footer-copy">Prepared by Elliott Wave Club</p>
+          <p class="footer-detail">USDBRL weekly chart</p>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elliott Wave Club Client Note Template</title>
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0e12;
+        --sheet: #11161b;
+        --sheet-top: rgba(255, 255, 255, 0.028);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.12);
+        --surface: rgba(255, 255, 255, 0.04);
+        --surface-strong: rgba(255, 255, 255, 0.06);
+        --text: #f3f5f6;
+        --text-soft: #d3dae0;
+        --text-muted: #97a2ad;
+        --teal: #6bd2c2;
+        --gold: #ccb07a;
+        --red: #df746c;
+        --shadow: 0 32px 100px rgba(0, 0, 0, 0.42);
+        --page-width: 1600px;
+        --page-height: 1236px;
+        --radius-xl: 34px;
+        --radius-lg: 28px;
+        --radius-md: 22px;
+        --radius-sm: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background:
+          radial-gradient(circle at 12% 5%, rgba(107, 210, 194, 0.11), transparent 24%),
+          radial-gradient(circle at 86% 4%, rgba(204, 176, 122, 0.09), transparent 19%),
+          linear-gradient(180deg, #0a0d10 0%, #0d1115 100%);
+        color: var(--text);
+        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      body {
+        display: grid;
+        justify-content: center;
+        gap: 28px;
+        padding: 32px 24px 48px;
+      }
+
+      .sheet {
+        position: relative;
+        width: var(--page-width);
+        height: var(--page-height);
+        padding: 52px 58px 48px;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(18, 23, 28, 0.985), rgba(13, 17, 21, 0.995)),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 28%);
+        border: 1px solid var(--border);
+        border-radius: 36px;
+        box-shadow: var(--shadow);
+      }
+
+      .sheet::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.028), transparent 22%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.016) 0,
+            rgba(255, 255, 255, 0.016) 1px,
+            transparent 1px,
+            transparent 200px
+          );
+        opacity: 0.72;
+      }
+
+      .sheet > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .header,
+      .title-row,
+      .summary-card,
+      .split-grid,
+      .levels-grid,
+      .footer,
+      .chart-stage,
+      .caption-row {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .page-one {
+        display: grid;
+        grid-template-rows: auto auto auto auto auto 1fr auto;
+        gap: 18px;
+      }
+
+      .page-chart {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto auto;
+        gap: 18px;
+      }
+
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 54px;
+        height: 54px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border-strong);
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025));
+        color: var(--text);
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+      }
+
+      .brand-copy {
+        display: grid;
+        gap: 4px;
+      }
+
+      .label,
+      .eyebrow,
+      .meta-chip,
+      .section-label,
+      .kicker,
+      .footer-label {
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+      }
+
+      .label {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .brand-name {
+        font-size: 32px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .meta-group {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .meta-chip {
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.038);
+        color: var(--text-soft);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .meta-chip.accent {
+        color: var(--teal);
+        border-color: rgba(107, 210, 194, 0.22);
+        background: rgba(107, 210, 194, 0.08);
+      }
+
+      .title-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 40px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--gold);
+      }
+
+      .title-block h1,
+      .title-block h2 {
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: -0.045em;
+      }
+
+      .title-block h1 {
+        max-width: 940px;
+        font-size: 66px;
+        line-height: 1.02;
+      }
+
+      .title-block h2 {
+        font-size: 60px;
+        line-height: 1.03;
+      }
+
+      .subtitle {
+        margin: 14px 0 0;
+        max-width: 780px;
+        color: var(--text-muted);
+        font-size: 25px;
+        line-height: 1.45;
+      }
+
+      .date-block {
+        min-width: 270px;
+        padding: 22px 24px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+      }
+
+      .date-block .kicker {
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .date-block .date {
+        margin-top: 10px;
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .summary-card {
+        padding: 28px 30px;
+        border: 1px solid rgba(107, 210, 194, 0.18);
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(135deg, rgba(107, 210, 194, 0.16), rgba(20, 25, 30, 0.72) 34%, rgba(25, 30, 34, 0.88)),
+          rgba(255, 255, 255, 0.02);
+      }
+
+      .section-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .summary-card .headline {
+        margin: 16px 0 12px;
+        max-width: 1180px;
+        font-size: 38px;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+        line-height: 1.18;
+      }
+
+      .summary-card .copy {
+        max-width: 1240px;
+        color: var(--text-soft);
+        font-size: 22px;
+        line-height: 1.5;
+      }
+
+      .signal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .signal-pill {
+        display: grid;
+        gap: 8px;
+        padding: 16px 18px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .signal-pill .key {
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .signal-pill .value {
+        font-size: 18px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+
+      .split-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .panel {
+        padding: 28px 30px 30px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.028)),
+          rgba(255, 255, 255, 0.014);
+      }
+
+      .panel h3 {
+        margin: 14px 0 10px;
+        font-size: 34px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 21px;
+        line-height: 1.48;
+      }
+
+      .levels-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .level-card {
+        padding: 24px 26px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.034);
+      }
+
+      .level-topline {
+        width: 190px;
+        height: 3px;
+        border-radius: 999px;
+        margin-bottom: 18px;
+      }
+
+      .level-card .name {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .level-card .price {
+        margin-top: 20px;
+        font-size: 40px;
+        font-weight: 650;
+        letter-spacing: -0.05em;
+      }
+
+      .level-card .note {
+        margin-top: 14px;
+        color: var(--text-muted);
+        font-size: 18px;
+        line-height: 1.45;
+      }
+
+      .invalidation-bottom {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.028)),
+          rgba(255, 255, 255, 0.014);
+        overflow: hidden;
+      }
+
+      .invalidation-bottom > div {
+        padding: 28px 30px 32px;
+      }
+
+      .invalidation-bottom > div + div {
+        border-left: 1px solid var(--border);
+      }
+
+      .invalidation-bottom h4 {
+        margin: 14px 0 10px;
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .invalidation-bottom p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 20px;
+        line-height: 1.5;
+      }
+
+      .chart-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 40px;
+      }
+
+      .chart-note {
+        max-width: 340px;
+        padding: 22px 24px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .chart-note p {
+        margin: 8px 0 0;
+        color: var(--text-muted);
+        font-size: 18px;
+        line-height: 1.45;
+      }
+
+      .chart-stage {
+        position: relative;
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(180deg, rgba(29, 35, 41, 0.86), rgba(16, 20, 25, 0.96)),
+          rgba(255, 255, 255, 0.02);
+      }
+
+      .chart-stage::before {
+        content: "";
+        position: absolute;
+        inset: 28px;
+        border-radius: 28px;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.05) 0,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px,
+            transparent 128px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.04) 0,
+            rgba(255, 255, 255, 0.04) 1px,
+            transparent 1px,
+            transparent 176px
+          ),
+          linear-gradient(180deg, rgba(13, 18, 24, 0.98), rgba(10, 14, 18, 1));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .chart-shell {
+        position: relative;
+        z-index: 1;
+        height: 730px;
+        display: grid;
+        align-items: center;
+        justify-items: center;
+        border: 1px dashed rgba(255, 255, 255, 0.14);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.014);
+      }
+
+      .chart-shell .placeholder-title {
+        font-size: 48px;
+        font-weight: 600;
+        letter-spacing: -0.04em;
+      }
+
+      .chart-shell .placeholder-copy {
+        margin-top: 14px;
+        max-width: 700px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 24px;
+        line-height: 1.45;
+      }
+
+      .wave-line {
+        position: absolute;
+        left: 260px;
+        right: 210px;
+        bottom: 140px;
+        height: 260px;
+        z-index: 1;
+      }
+
+      .wave-line svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+
+      .chart-badges {
+        position: absolute;
+        top: 56px;
+        left: 56px;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+      }
+
+      .chart-badge {
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(11, 16, 21, 0.64);
+        color: var(--text-soft);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .caption-row {
+        display: grid;
+        grid-template-columns: 170px 1fr;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 24px;
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.036);
+      }
+
+      .caption-row .copy {
+        color: var(--text-soft);
+        font-size: 20px;
+        line-height: 1.45;
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .footer-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .footer-copy {
+        color: var(--text-soft);
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="sheet page-one" id="page-1">
+      <header class="header">
+        <div class="brand">
+          <div class="brand-mark">EWC</div>
+          <div class="brand-copy">
+            <div class="label">Client Research Note</div>
+            <div class="brand-name">Elliott Wave Club</div>
+          </div>
+        </div>
+        <div class="meta-group">
+          <div class="meta-chip accent">Reusable Template</div>
+          <div class="meta-chip">Page 01 of 03</div>
+          <div class="meta-chip">PDF Export Ready</div>
+        </div>
+      </header>
+
+      <div class="title-row">
+        <div class="title-block">
+          <p class="eyebrow">Macro Technical Brief</p>
+          <h1>Client Note Title Placeholder</h1>
+          <p class="subtitle">
+            Executive summary, macro structure, key levels, invalidation framework, and a clean bottom-line takeaway for client-facing delivery.
+          </p>
+        </div>
+        <div class="date-block">
+          <div class="kicker">Publication Date</div>
+          <div class="date">Date Placeholder</div>
+        </div>
+      </div>
+
+      <section class="summary-card">
+        <div class="section-label">Executive Summary</div>
+        <div class="headline">Use this top card for the highest-conviction directional call and the exact scenario you want the client to remember.</div>
+        <div class="copy">
+          Keep the language concise and institutional. This paragraph should summarize the dominant wave count, the key destination or reversal zone, and the main condition that would force a reassessment.
+        </div>
+        <div class="signal-grid">
+          <div class="signal-pill">
+            <div class="key">Base Case</div>
+            <div class="value">Primary directional thesis placeholder</div>
+          </div>
+          <div class="signal-pill">
+            <div class="key">Main Target</div>
+            <div class="value">Target zone placeholder</div>
+          </div>
+          <div class="signal-pill">
+            <div class="key">Risk Point</div>
+            <div class="value">Invalidation level placeholder</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="split-grid">
+        <section class="panel">
+          <div class="section-label">Macro View</div>
+          <h3>Yearly structure header</h3>
+          <p>
+            Use this card for the top-down wave narrative, broader cycle position, and the context that frames the bigger destination.
+          </p>
+        </section>
+        <section class="panel">
+          <div class="section-label">Weekly Structure</div>
+          <h3>Weekly structure header</h3>
+          <p>
+            Use this card for the active count, internal corrective behavior, and the tactical setup that connects the macro view to current price action.
+          </p>
+        </section>
+      </div>
+
+      <div class="levels-grid">
+        <section class="level-card">
+          <div class="level-topline" style="background: var(--red)"></div>
+          <div class="name" style="color: var(--red)">Invalidation</div>
+          <div class="price">0.0000</div>
+          <div class="note">State the level that invalidates the working count.</div>
+        </section>
+        <section class="level-card">
+          <div class="level-topline" style="background: var(--gold)"></div>
+          <div class="name" style="color: var(--gold)">Key Level 1</div>
+          <div class="price">0.0000 - 0.0000</div>
+          <div class="note">Use for the first rejection or resistance zone.</div>
+        </section>
+        <section class="level-card">
+          <div class="level-topline" style="background: var(--gold)"></div>
+          <div class="name" style="color: var(--gold)">Key Level 2</div>
+          <div class="price">0.0000 - 0.0000</div>
+          <div class="note">Use for the secondary reaction or supply zone.</div>
+        </section>
+        <section class="level-card">
+          <div class="level-topline" style="background: var(--teal)"></div>
+          <div class="name" style="color: var(--teal)">Primary Target</div>
+          <div class="price">0.0000 - 0.0000</div>
+          <div class="note">Use for the main destination or support target.</div>
+        </section>
+      </div>
+
+      <section class="invalidation-bottom">
+        <div>
+          <div class="section-label">Invalidation</div>
+          <h4>State what would negate the active view.</h4>
+          <p>Keep this operational and binary so the reader knows exactly when the count is no longer valid.</p>
+        </div>
+        <div>
+          <div class="section-label">Bottom Line</div>
+          <h4>Final analyst takeaway.</h4>
+          <p>Use one tight client-facing paragraph that translates the structure into a clear actionable perspective.</p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-label">Prepared By Elliott Wave Club</div>
+        <div class="footer-copy">Reusable summary template with editable text blocks and chart-supporting level cards.</div>
+      </footer>
+    </section>
+
+    <section class="sheet page-chart" id="page-2">
+      <header class="header">
+        <div class="brand">
+          <div class="brand-mark">EWC</div>
+          <div class="brand-copy">
+            <div class="label">Client Research Note</div>
+            <div class="brand-name">Elliott Wave Club</div>
+          </div>
+        </div>
+        <div class="meta-group">
+          <div class="meta-chip accent">Yearly Chart</div>
+          <div class="meta-chip">Page 02 of 03</div>
+        </div>
+      </header>
+
+      <div class="chart-head">
+        <div class="title-block">
+          <p class="eyebrow">Higher Timeframe Context</p>
+          <h2>Yearly Chart Placeholder</h2>
+          <p class="subtitle">Use this page for the dominant multi-year structure with a large chart frame and a restrained caption beneath it.</p>
+        </div>
+        <aside class="chart-note">
+          <div class="section-label">Chart Notes</div>
+          <p>Replace the placeholder area with a chart image or keep it as a guide for a manual Figma image fill.</p>
+        </aside>
+      </div>
+
+      <section class="chart-stage">
+        <div class="chart-badges">
+          <div class="chart-badge">Chart Image Placeholder</div>
+          <div class="chart-badge">Yearly Context</div>
+        </div>
+        <div class="chart-shell">
+          <div>
+            <div class="placeholder-title">Drop Yearly Chart Here</div>
+            <div class="placeholder-copy">
+              Replace this placeholder with the exported yearly chart image. Keep the chart dominant and use the caption below for the client takeaway.
+            </div>
+          </div>
+        </div>
+        <div class="wave-line">
+          <svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30 250 L160 160 L300 198 L470 86 L630 142 L770 40 L950 108" fill="none" stroke="#6bd2c2" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></path>
+            <circle cx="30" cy="250" r="14" fill="#6bd2c2"></circle>
+            <circle cx="160" cy="160" r="14" fill="#6bd2c2"></circle>
+            <circle cx="300" cy="198" r="14" fill="#6bd2c2"></circle>
+            <circle cx="470" cy="86" r="14" fill="#6bd2c2"></circle>
+            <circle cx="630" cy="142" r="14" fill="#6bd2c2"></circle>
+            <circle cx="770" cy="40" r="14" fill="#6bd2c2"></circle>
+            <circle cx="950" cy="108" r="14" fill="#6bd2c2"></circle>
+          </svg>
+        </div>
+      </section>
+
+      <section class="caption-row">
+        <div class="section-label">Caption</div>
+        <div class="copy">Use one concise sentence to tell the client what matters most on the yearly chart and why it frames the broader thesis.</div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-label">Prepared By Elliott Wave Club</div>
+        <div class="footer-copy">Large-format chart page for PDF export with editable headline, note, and caption fields.</div>
+      </footer>
+    </section>
+
+    <section class="sheet page-chart" id="page-3">
+      <header class="header">
+        <div class="brand">
+          <div class="brand-mark">EWC</div>
+          <div class="brand-copy">
+            <div class="label">Client Research Note</div>
+            <div class="brand-name">Elliott Wave Club</div>
+          </div>
+        </div>
+        <div class="meta-group">
+          <div class="meta-chip accent">Weekly Chart</div>
+          <div class="meta-chip">Page 03 of 03</div>
+        </div>
+      </header>
+
+      <div class="chart-head">
+        <div class="title-block">
+          <p class="eyebrow">Intermediate Structure</p>
+          <h2>Weekly Chart Placeholder</h2>
+          <p class="subtitle">Use this page for the active weekly count, near-term structure, and the main visual clients should review after the macro page.</p>
+        </div>
+        <aside class="chart-note">
+          <div class="section-label">Chart Notes</div>
+          <p>Keep the chart as the hero. Use this note block only for minimal guidance or workflow placeholders.</p>
+        </aside>
+      </div>
+
+      <section class="chart-stage">
+        <div class="chart-badges">
+          <div class="chart-badge">Chart Image Placeholder</div>
+          <div class="chart-badge">Weekly Structure</div>
+        </div>
+        <div class="chart-shell">
+          <div>
+            <div class="placeholder-title">Drop Weekly Chart Here</div>
+            <div class="placeholder-copy">
+              Replace this placeholder with the exported weekly chart image. Use the caption below to direct attention to the active count or key reaction zone.
+            </div>
+          </div>
+        </div>
+        <div class="wave-line">
+          <svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 214 L146 138 L272 188 L396 94 L520 146 L650 72 L784 118 L958 24" fill="none" stroke="#ccb07a" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></path>
+            <circle cx="20" cy="214" r="14" fill="#ccb07a"></circle>
+            <circle cx="146" cy="138" r="14" fill="#ccb07a"></circle>
+            <circle cx="272" cy="188" r="14" fill="#ccb07a"></circle>
+            <circle cx="396" cy="94" r="14" fill="#ccb07a"></circle>
+            <circle cx="520" cy="146" r="14" fill="#ccb07a"></circle>
+            <circle cx="650" cy="72" r="14" fill="#ccb07a"></circle>
+            <circle cx="784" cy="118" r="14" fill="#ccb07a"></circle>
+            <circle cx="958" cy="24" r="14" fill="#ccb07a"></circle>
+          </svg>
+        </div>
+      </section>
+
+      <section class="caption-row">
+        <div class="section-label">Caption</div>
+        <div class="copy">Use one concise sentence to explain what the client should focus on in the weekly chart and how it confirms or challenges the macro thesis.</div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-label">Prepared By Elliott Wave Club</div>
+        <div class="footer-copy">Large-format chart page for weekly structure, optimized for editable updates before export.</div>
+      </footer>
+    </section>
+  </body>
+</html>
